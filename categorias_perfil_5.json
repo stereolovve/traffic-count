@@ -1,0 +1,26 @@
+[
+  {
+      "veiculo": "Carro",
+      "bind1": "a",
+      "bind2": "d",
+      "bind3": "g",
+      "bind4": "j",
+      "bind5": "m"
+  },
+  {
+      "veiculo": "Moto",
+      "bind1": "b",
+      "bind2": "e",
+      "bind3": "h",
+      "bind4": "k",
+      "bind5": "n"
+  },
+  {
+      "veiculo": "Bicicleta",
+      "bind1": "c",
+      "bind2": "f",
+      "bind3": "i",
+      "bind4": "l",
+      "bind5": "o"
+  }
+]

@@ -1,0 +1,14 @@
+[
+  {
+      "veiculo": "Carro",
+      "bind1": "a"
+  },
+  {
+      "veiculo": "Moto",
+      "bind1": "b"
+  },
+  {
+      "veiculo": "Bicicleta",
+      "bind1": "c"
+  }
+]

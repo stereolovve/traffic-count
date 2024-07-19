@@ -1,0 +1,16 @@
+[
+  { "veiculo": "LEVES", "bind": "1" },
+  { "veiculo": "MOTOS", "bind": "2" },
+  { "veiculo": "V.U.C", "bind": "3" },
+  { "veiculo": "Cam2E", "bind": "4" },
+  { "veiculo": "Cam3E", "bind": "5" },
+  { "veiculo": "Cam4E", "bind": "6" },
+  { "veiculo": "Car3E", "bind": "7" },
+  { "veiculo": "Car4E", "bind": "8" },
+  { "veiculo": "Car5E", "bind": "9" },
+  { "veiculo": "Car6E", "bind": "np1" },
+  { "veiculo": "Car7E", "bind": "np2" },
+  { "veiculo": "Car9E", "bind": "np3" },
+  { "veiculo": "Oni2E", "bind": "np4" },
+  { "veiculo": "Oni3E", "bind": "np5" }
+]
