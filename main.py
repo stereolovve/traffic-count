@@ -1,5 +1,7 @@
 import flet as ft
-import sqlite3
+from sqlalchemy import create_engine, Column, String, Integer, DateTime, Boolean
+from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.exc import SQLAlchemyError
 from pynput import keyboard
 import pandas as pd
 from datetime import datetime
@@ -11,14 +13,33 @@ import sys
 # Configuração do logging
 logging.basicConfig(level=logging.ERROR, format='%(asctime)s %(levelname)s %(message)s')
 
+Base = declarative_base()
+engine = create_engine('sqlite:///dados.db')
+Session = sessionmaker(bind=engine)
+session = Session()
+
+class Categoria(Base):
+    __tablename__ = 'categorias'
+    veiculo = Column(String, primary_key=True)
+    bind = Column(String)
+    count = Column(Integer, default=0)
+    criado_em = Column(DateTime, default=datetime.now)
+
+class Sessao(Base):
+    __tablename__ = 'sessoes'
+    sessao = Column(String, primary_key=True)
+    detalhes = Column(String)
+    criada_em = Column(DateTime, default=datetime.now)
+    ativa = Column(Boolean)
+
+Base.metadata.create_all(engine)
+
 class ContadorPerplan(ft.Column):
-    def __init__(self, page, caminho_db="dados.db"):
+    def __init__(self, page):
         super().__init__()
         self.page = page
-        self.caminho_db = caminho_db
         self.sessao = None
         self.detalhes = {}
-        self.init_db()
         self.carregar_categorias_padrao('categorias_padrao.json')
         self.contagens, self.binds, self.categorias = self.carregar_config()
         self.labels = {}
@@ -38,83 +59,78 @@ class ContadorPerplan(ft.Column):
             104: "np8",
             105: "np9",
         }
-        self.setup_ui()  # Inicializar a UI antes de carregar a sessão ativa
-        self.carregar_sessao_ativa()  # Carregar a sessão ativa
-
-    def init_db(self):
-        try:
-            with sqlite3.connect(self.caminho_db) as conn:
-                conn.execute('''CREATE TABLE IF NOT EXISTS categorias
-                                (veiculo TEXT PRIMARY KEY, bind TEXT, count INTEGER DEFAULT 0, criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
-                conn.execute('''CREATE TABLE IF NOT EXISTS sessoes
-                                (sessao TEXT PRIMARY KEY, detalhes TEXT, criada_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP, ativa INTEGER)''')
-                conn.commit()
-        except sqlite3.Error as e:
-            logging.error(f"Erro ao inicializar o banco de dados: {e}")
+        self.setup_ui()
+        self.carregar_sessao_ativa()
 
     def carregar_categorias_padrao(self, caminho_json):
         try:
-            with sqlite3.connect(self.caminho_db) as conn:
-                cur = conn.cursor()
-                cur.execute('SELECT COUNT(*) FROM categorias')
-                count = cur.fetchone()[0]
-                if count == 0:
-                    with open(caminho_json, 'r') as f:
-                        categorias_padrao = json.load(f)
-                        for categoria in categorias_padrao:
-                            veiculo = categoria.get('veiculo')
-                            bind = categoria.get('bind')
-                            if veiculo and bind:
-                                cur.execute('INSERT INTO categorias (veiculo, bind, count, criado_em) VALUES (?, ?, 0, ?)', 
-                                            (veiculo, bind, datetime.now().isoformat()))
-                    conn.commit()
-        except (FileNotFoundError, json.JSONDecodeError, sqlite3.Error) as e:
+            count = session.query(Categoria).count()
+            if count == 0:
+                with open(caminho_json, 'r') as f:
+                    categorias_padrao = json.load(f)
+                    for categoria in categorias_padrao:
+                        veiculo = categoria.get('veiculo')
+                        bind = categoria.get('bind')
+                        if veiculo and bind:
+                            nova_categoria = Categoria(
+                                veiculo=veiculo,
+                                bind=bind,
+                                criado_em=datetime.now()
+                            )
+                            session.add(nova_categoria)
+                    session.commit()
+        except (FileNotFoundError, json.JSONDecodeError, SQLAlchemyError) as e:
             logging.error(f"Erro ao carregar categorias padrão: {e}")
 
     def carregar_config(self):
         try:
-            with sqlite3.connect(self.caminho_db) as conn:
-                cur = conn.cursor()
-                cur.execute('SELECT veiculo, bind, count, criado_em FROM categorias ORDER BY criado_em')
-                data = cur.fetchall()
-            return {v: c for v, b, c, t in data}, {b: v for v, b, c, t in data}, data
-        except sqlite3.Error as e:
+            data = session.query(Categoria).order_by(Categoria.criado_em).all()
+            contagens = {categoria.veiculo: categoria.count for categoria in data}
+            binds = {categoria.bind: categoria.veiculo for categoria in data}
+            return contagens, binds, data
+        except SQLAlchemyError as e:
             logging.error(f"Erro ao carregar configuração: {e}")
             return {}, {}, []
 
     def carregar_sessao_ativa(self):
         try:
-            with sqlite3.connect(self.caminho_db) as conn:
-                cur = conn.cursor()
-                cur.execute('SELECT sessao, detalhes FROM sessoes WHERE ativa = 1')
-                sessao_ativa = cur.fetchone()
-                if sessao_ativa:
-                    self.sessao, detalhes_json = sessao_ativa
-                    self.detalhes = json.loads(detalhes_json)
-                    self.page.overlay.append(ft.SnackBar(ft.Text("Sessão ativa recuperada.")))
-                    self.setup_aba_contagem()  # Reconfigurar a aba "Contador"
-                    self.tabs.selected_index = 1
-                    self.tabs.tabs[1].content.visible = True  # Tornar a aba "Contador" visível
-                    self.update_sessao_status()
-        except sqlite3.Error as e:
+            sessao_ativa = session.query(Sessao).filter_by(ativa=True).first()
+            if sessao_ativa:
+                self.sessao = sessao_ativa.sessao
+                self.detalhes = json.loads(sessao_ativa.detalhes)
+                self.page.overlay.append(ft.SnackBar(ft.Text("Sessão ativa recuperada.")))
+                self.setup_aba_contagem()
+                self.tabs.selected_index = 1
+                self.tabs.tabs[1].content.visible = True
+                self.update_sessao_status()
+        except SQLAlchemyError as e:
             logging.error(f"Erro ao carregar sessão ativa: {e}")
 
     def salvar_sessao(self):
         try:
-            with sqlite3.connect(self.caminho_db) as conn:
-                detalhes_json = json.dumps(self.detalhes)
-                conn.execute('INSERT OR REPLACE INTO sessoes (sessao, detalhes, ativa) VALUES (?, ?, 1)', 
-                             (self.sessao, detalhes_json))
-                conn.commit()
-        except sqlite3.Error as e:
+            detalhes_json = json.dumps(self.detalhes)
+            sessao_existente = session.query(Sessao).filter_by(sessao=self.sessao).first()
+            if sessao_existente:
+                sessao_existente.detalhes = detalhes_json
+                sessao_existente.ativa = True
+            else:
+                nova_sessao = Sessao(
+                    sessao=self.sessao,
+                    detalhes=detalhes_json,
+                    ativa=True
+                )
+                session.add(nova_sessao)
+            session.commit()
+        except SQLAlchemyError as e:
             logging.error(f"Erro ao salvar sessão: {e}")
 
     def finalizar_sessao(self):
         try:
-            with sqlite3.connect(self.caminho_db) as conn:
-                conn.execute('UPDATE sessoes SET ativa = 0 WHERE sessao = ?', (self.sessao,))
-                conn.commit()
-        except sqlite3.Error as e:
+            sessao_existente = session.query(Sessao).filter_by(sessao=self.sessao).first()
+            if sessao_existente:
+                sessao_existente.ativa = False
+                session.commit()
+        except SQLAlchemyError as e:
             logging.error(f"Erro ao finalizar sessão: {e}")
 
     def setup_ui(self):
@@ -122,21 +138,23 @@ class ContadorPerplan(ft.Column):
             animation_duration=150,
             tabs=[
                 ft.Tab(text="Inicio", content=ft.Column()),
-                ft.Tab(text="Contador", content=ft.Column()),  # Desabilitado até criar uma sessão
+                ft.Tab(text="Contador", content=ft.Column()),
                 ft.Tab(text="Categorias", content=ft.Column()),
                 ft.Tab(text="", icon=ft.icons.SETTINGS, content=ft.Column()),
                 ft.Tab(text="", icon=ft.icons.BAR_CHART, content=ft.Column()),
             ]
         )
+        self.controls.clear()
         self.controls.append(self.tabs)
         self.setup_aba_inicio()
         self.setup_aba_categorias()
         self.setup_aba_perfil()
         self.setup_aba_relatorio()
-        self.tabs.tabs[1].content.visible = False  # Iniciar com a aba "Contador" invisível
+        self.tabs.tabs[1].content.visible = False
 
     def setup_aba_inicio(self):
         tab = self.tabs.tabs[0].content
+        tab.controls.clear()
         self.pesquisador_input = ft.TextField(label="Pesquisador")
         self.codigo_ponto_input = ft.TextField(label="Código")
         self.nome_ponto_input = ft.TextField(label="Ponto (ex: P10N)")
@@ -173,12 +191,12 @@ class ContadorPerplan(ft.Column):
                 "Data do Ponto": self.data_ponto_input.value
             }
             self.sessao = f"Sessao_{self.detalhes['Código']}_{self.detalhes['Ponto']}_{self.detalhes['Movimentos']}_{self.detalhes['Data do Ponto']}"
-            print("Detalhes da sessão:", self.detalhes)
             self.salvar_sessao()
-            self.setup_aba_contagem()  # Reconfigurar a aba "Contador"
+            self.contagens, self.binds, self.categorias = self.carregar_config()  # Recarregar configurações
+            self.setup_aba_contagem()
             self.page.overlay.append(ft.SnackBar(ft.Text("Sessão criada com sucesso!")))
             self.tabs.selected_index = 1
-            self.tabs.tabs[1].content.visible = True  # Tornar a aba "Contador" visível
+            self.tabs.tabs[1].content.visible = True
             self.update_sessao_status()
         except Exception as e:
             logging.error(f"Erro ao criar sessão: {e}")
@@ -210,14 +228,12 @@ class ContadorPerplan(ft.Column):
             return False
 
         try:
-            with sqlite3.connect(self.caminho_db) as conn:
-                cur = conn.cursor()
-                cur.execute('SELECT COUNT(*) FROM sessoes WHERE sessao = ?', (f"Sessao_{self.codigo_ponto_input.value}_{self.nome_ponto_input.value}_{self.movimentos_input.value}_{self.data_ponto_input.value}",))
-                if cur.fetchone()[0] > 0:
-                    self.page.overlay.append(ft.SnackBar(ft.Text("Sessão já existe com esses detalhes!")))
-                    self.page.update()
-                    return False
-        except sqlite3.Error as e:
+            sessao_existente = session.query(Sessao).filter_by(sessao=f"Sessao_{self.codigo_ponto_input.value}_{self.nome_ponto_input.value}_{self.movimentos_input.value}_{self.data_ponto_input.value}").first()
+            if sessao_existente:
+                self.page.overlay.append(ft.SnackBar(ft.Text("Sessão já existe com esses detalhes!")))
+                self.page.update()
+                return False
+        except SQLAlchemyError as e:
             logging.error(f"Erro ao validar campos: {e}")
             return False
 
@@ -229,7 +245,7 @@ class ContadorPerplan(ft.Column):
 
     def setup_aba_contagem(self):
         tab = self.tabs.tabs[1].content
-        tab.controls.clear()  # Limpar os controles existentes
+        tab.controls.clear()
         self.contagem_ativa = False
         
         self.toggle_button = ft.Switch(
@@ -277,9 +293,9 @@ class ContadorPerplan(ft.Column):
         
         tab.controls.append(row)
         
-        for veiculo, bind, count, criado_em in self.categorias:
-            self.add_row(veiculo, bind, tab)
-        self.page.update()  # Atualizar a página
+        for categoria in self.categorias:
+            self.add_row(categoria.veiculo, categoria.bind, tab)
+        self.page.update()
 
     def toggle_contagem(self, e):
         self.contagem_ativa = e.control.value
@@ -419,35 +435,43 @@ class ContadorPerplan(ft.Column):
             self.sessao = None
             self.page.overlay.append(ft.SnackBar(ft.Text("Sessão finalizada!")))
             self.page.update()
-            self.restart_app()  # Reiniciar a aplicação
+            self.restart_app()
         except Exception as e:
             logging.error(f"Erro ao finalizar sessão: {e}")
 
     def restart_app(self):
         self.stop_listener()
-        os.execv(sys.executable, [sys.executable] + sys.argv)
+        self.sessao = None
+        self.detalhes = {}
+        self.contagens = {}
+        self.binds = {}
+        self.labels = {}
+        self.carregar_categorias_padrao('categorias_padrao.json')
+        self.contagens, self.binds, self.categorias = self.carregar_config()  # Recarregar configurações
+        self.setup_ui()
+        self.page.update()
+        self.start_listener()  # Reiniciar o listener para a nova sessão
 
     def save_to_db(self, veiculo):
         try:
-            with sqlite3.connect(self.caminho_db) as conn:
-                conn.execute('UPDATE categorias SET count = ? WHERE veiculo = ?', (self.contagens[veiculo], veiculo))
-                conn.commit()
-        except sqlite3.Error as e:
+            categoria = session.query(Categoria).filter_by(veiculo=veiculo).first()
+            if categoria:
+                categoria.count = self.contagens[veiculo]
+                session.commit()
+        except SQLAlchemyError as e:
             logging.error(f"Erro ao salvar no banco de dados: {e}")
 
     def setup_aba_categorias(self):
         tab = self.tabs.tabs[2].content
+        tab.controls.clear()
         self.load_categorias(tab)
 
     def load_categorias(self, tab):
         try:
-            with sqlite3.connect(self.caminho_db) as conn:
-                cur = conn.cursor()
-                cur.execute('SELECT veiculo, bind FROM categorias ORDER BY criado_em')
-                categorias = cur.fetchall()
-            for veiculo, bind in categorias:
-                self.add_category_row(veiculo, bind, tab)
-        except sqlite3.Error as e:
+            categorias = session.query(Categoria).order_by(Categoria.criado_em).all()
+            for categoria in categorias:
+                self.add_category_row(categoria.veiculo, categoria.bind, tab)
+        except SQLAlchemyError as e:
             logging.error(f"Erro ao carregar categorias: {e}")
 
     def add_category_row(self, veiculo, bind, tab):
@@ -460,14 +484,12 @@ class ContadorPerplan(ft.Column):
     def update_bind(self, veiculo, new_bind):
         if new_bind:
             try:
-                old_bind = next(key for key, value in self.binds.items() if value == veiculo)
-                with sqlite3.connect(self.caminho_db) as conn:
-                    conn.execute('UPDATE categorias SET bind = ? WHERE veiculo = ?', (new_bind, veiculo))
-                    conn.commit()
-                self.binds.pop(old_bind, None)
-                self.binds[new_bind] = veiculo
+                categoria = session.query(Categoria).filter_by(veiculo=veiculo).first()
+                if categoria:
+                    categoria.bind = new_bind
+                    session.commit()
                 self.update_categorias()
-            except sqlite3.Error as e:
+            except SQLAlchemyError as e:
                 logging.error(f"Erro ao atualizar bind: {e}")
 
     def update_categorias(self):
@@ -487,6 +509,7 @@ class ContadorPerplan(ft.Column):
 
     def setup_aba_perfil(self):
         tab = self.tabs.tabs[3].content
+        tab.controls.clear()
         self.page.theme_mode = ft.ThemeMode.SYSTEM
         self.c = ft.Switch(label="Modo claro", on_change=self.theme_changed)
         opacity = ft.Slider(value=100, min=20, max=100, divisions=80, label="Opacidade", on_change=self.ajustar_opacidade)
@@ -514,6 +537,7 @@ class ContadorPerplan(ft.Column):
 
     def setup_aba_relatorio(self):
         tab = self.tabs.tabs[4].content
+        tab.controls.clear()
         self.page.scroll = ft.ScrollMode.AUTO
         self.view_relatorio(tab)
 
