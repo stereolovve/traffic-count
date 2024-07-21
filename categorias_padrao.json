@@ -1,16 +1,213 @@
 [
-  { "veiculo": "LEVES", "bind": "1" },
-  { "veiculo": "MOTOS", "bind": "2" },
-  { "veiculo": "V.U.C", "bind": "3" },
-  { "veiculo": "Cam2E", "bind": "4" },
-  { "veiculo": "Cam3E", "bind": "5" },
-  { "veiculo": "Cam4E", "bind": "6" },
-  { "veiculo": "Car3E", "bind": "7" },
-  { "veiculo": "Car4E", "bind": "8" },
-  { "veiculo": "Car5E", "bind": "9" },
-  { "veiculo": "Car6E", "bind": "np1" },
-  { "veiculo": "Car7E", "bind": "np2" },
-  { "veiculo": "Car9E", "bind": "np3" },
-  { "veiculo": "Oni2E", "bind": "np4" },
-  { "veiculo": "Oni3E", "bind": "np5" }
+  {
+    "movimento": 1,
+    "veiculo": "Leve",
+    "bind": "1"
+  },
+  {
+    "movimento": 1,
+    "veiculo": "Vuc",
+    "bind": "2"
+  },
+  {
+    "movimento": 1,
+    "veiculo": "Moto",
+    "bind": "3"
+  },
+  {
+    "movimento": 1,
+    "veiculo": "Cam2e",
+    "bind": "4"
+  },
+  {
+    "movimento": 1,
+    "veiculo": "Cam3e",
+    "bind": "5"
+  },
+  {
+    "movimento": 1,
+    "veiculo": "Cam4e",
+    "bind": "6"
+  },
+  {
+    "movimento": 1,
+    "veiculo": "Car3e",
+    "bind": "7"
+  },
+  {
+    "movimento": 1,
+    "veiculo": "Car4e",
+    "bind": "8"
+  },
+  {
+    "movimento": 1,
+    "veiculo": "Car5e",
+    "bind": "9"
+  },
+  {
+    "movimento": 1,
+    "veiculo": "Car6e",
+    "bind": "0"
+  },
+  {
+    "movimento": 1,
+    "veiculo": "Car7e",
+    "bind": "q"
+  },
+  {
+    "movimento": 1,
+    "veiculo": "Car9e",
+    "bind": "w"
+  },
+  {
+    "movimento": 1,
+    "veiculo": "Oni2e",
+    "bind": "e"
+  },
+  {
+    "movimento": 1,
+    "veiculo": "Oni3e",
+    "bind": "r"
+  },
+  {
+    "movimento": 2,
+    "veiculo": "Leve",
+    "bind": "!"
+  },
+  {
+    "movimento": 2,
+    "veiculo": "Vuc",
+    "bind": "@"
+  },
+  {
+    "movimento": 2,
+    "veiculo": "Moto",
+    "bind": "#"
+  },
+  {
+    "movimento": 2,
+    "veiculo": "Cam2e",
+    "bind": "$"
+  },
+  {
+    "movimento": 2,
+    "veiculo": "Cam3e",
+    "bind": "%"
+  },
+  {
+    "movimento": 2,
+    "veiculo": "Cam4e",
+    "bind": "¨"
+  },
+  {
+    "movimento": 2,
+    "veiculo": "Car3e",
+    "bind": "&"
+  },
+  {
+    "movimento": 2,
+    "veiculo": "Car4e",
+    "bind": "*"
+  },
+  {
+    "movimento": 2,
+    "veiculo": "Car5e",
+    "bind": "("
+  },
+  {
+    "movimento": 2,
+    "veiculo": "Car6e",
+    "bind": ")"
+  },
+  {
+    "movimento": 2,
+    "veiculo": "Car7e",
+    "bind": "Q"
+  },
+  {
+    "movimento": 2,
+    "veiculo": "Car9e",
+    "bind": "W"
+  },
+  {
+    "movimento": 2,
+    "veiculo": "Oni2e",
+    "bind": "E"
+  },
+  {
+    "movimento": 2,
+    "veiculo": "Oni3e",
+    "bind": "R"
+  },
+
+  {
+    "movimento": 3,
+    "veiculo": "Leve",
+    "bind": "a"
+  },
+  {
+    "movimento": 3,
+    "veiculo": "Vuc",
+    "bind": "s"
+  },
+  {
+    "movimento": 3,
+    "veiculo": "Moto",
+    "bind": "d"
+  },
+  {
+    "movimento": 3,
+    "veiculo": "Cam3e",
+    "bind": "f"
+  },
+  {
+    "movimento": 3,
+    "veiculo": "Cam3e",
+    "bind": "g"
+  },
+  {
+    "movimento": 3,
+    "veiculo": "Cam4e",
+    "bind": "h"
+  },
+  {
+    "movimento": 3,
+    "veiculo": "Car3e",
+    "bind": "j"
+  },
+  {
+    "movimento": 3,
+    "veiculo": "Car4e",
+    "bind": "k"
+  },
+  {
+    "movimento": 3,
+    "veiculo": "Car5e",
+    "bind": "l"
+  },
+  {
+    "movimento": 3,
+    "veiculo": "Car6e",
+    "bind": "ç"
+  },
+  {
+    "movimento": 3,
+    "veiculo": "Car7e",
+    "bind": "z"
+  },
+  {
+    "movimento": 3,
+    "veiculo": "Car9e",
+    "bind": "x"
+  },
+  {
+    "movimento": 3,
+    "veiculo": "Oni2e",
+    "bind": "c"
+  },
+  {
+    "movimento": 3,
+    "veiculo": "Oni3e",
+    "bind": "v"
+  }
 ]

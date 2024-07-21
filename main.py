@@ -1,5 +1,5 @@
 import flet as ft
-from sqlalchemy import create_engine, Column, String, Integer, DateTime, Boolean
+from sqlalchemy import create_engine, Column, String, Integer, DateTime, Boolean, ForeignKey, PrimaryKeyConstraint
 from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy.exc import SQLAlchemyError
 from pynput import keyboard
@@ -7,11 +7,6 @@ import pandas as pd
 from datetime import datetime
 import json
 import os
-import logging
-import sys
-
-# Configuração do logging
-logging.basicConfig(level=logging.ERROR, format='%(asctime)s %(levelname)s %(message)s')
 
 Base = declarative_base()
 engine = create_engine('sqlite:///dados.db')
@@ -20,10 +15,12 @@ session = Session()
 
 class Categoria(Base):
     __tablename__ = 'categorias'
-    veiculo = Column(String, primary_key=True)
+    veiculo = Column(String)
+    movimento = Column(Integer)
     bind = Column(String)
     count = Column(Integer, default=0)
     criado_em = Column(DateTime, default=datetime.now)
+    __table_args__ = (PrimaryKeyConstraint('veiculo', 'movimento'),)
 
 class Sessao(Base):
     __tablename__ = 'sessoes'
@@ -32,6 +29,14 @@ class Sessao(Base):
     criada_em = Column(DateTime, default=datetime.now)
     ativa = Column(Boolean)
 
+class Contagem(Base):
+    __tablename__ = 'contagens'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    sessao = Column(String, ForeignKey('sessoes.sessao'))
+    movimento = Column(Integer)
+    veiculo = Column(String, ForeignKey('categorias.veiculo'))
+    count = Column(Integer, default=0)
+
 Base.metadata.create_all(engine)
 
 class ContadorPerplan(ft.Column):
@@ -39,9 +44,11 @@ class ContadorPerplan(ft.Column):
         super().__init__()
         self.page = page
         self.sessao = None
+        self.movimentos = 1
         self.detalhes = {}
-        self.carregar_categorias_padrao('categorias_padrao.json')
-        self.contagens, self.binds, self.categorias = self.carregar_config()
+        self.contagens = {}
+        self.binds = {}
+        self.categorias = []
         self.labels = {}
         self.listener = None
         self.contagem_ativa = False
@@ -59,37 +66,42 @@ class ContadorPerplan(ft.Column):
             104: "np8",
             105: "np9",
         }
+        self.selected_movimento = None
         self.setup_ui()
         self.carregar_sessao_ativa()
 
     def carregar_categorias_padrao(self, caminho_json):
         try:
-            count = session.query(Categoria).count()
-            if count == 0:
-                with open(caminho_json, 'r') as f:
-                    categorias_padrao = json.load(f)
-                    for categoria in categorias_padrao:
-                        veiculo = categoria.get('veiculo')
-                        bind = categoria.get('bind')
-                        if veiculo and bind:
-                            nova_categoria = Categoria(
-                                veiculo=veiculo,
-                                bind=bind,
-                                criado_em=datetime.now()
-                            )
-                            session.add(nova_categoria)
-                    session.commit()
-        except (FileNotFoundError, json.JSONDecodeError, SQLAlchemyError) as e:
-            logging.error(f"Erro ao carregar categorias padrão: {e}")
+            with open(caminho_json, 'r') as f:
+                categorias_padrao = json.load(f)
+                for categoria in categorias_padrao:
+                    veiculo = categoria.get('veiculo')
+                    movimento = categoria.get('movimento')
+                    bind = categoria.get('bind')
+                    if veiculo and bind:
+                        nova_categoria = Categoria(
+                            veiculo=veiculo,
+                            movimento=movimento,
+                            bind=bind,
+                            criado_em=datetime.now()
+                        )
+                        session.merge(nova_categoria)
+                session.commit()
+        except (FileNotFoundError, json.JSONDecodeError, SQLAlchemyError) as ex:
+            print(f"Erro ao carregar categorias padrão: {ex}")
+            session.rollback()
 
     def carregar_config(self):
         try:
             data = session.query(Categoria).order_by(Categoria.criado_em).all()
-            contagens = {categoria.veiculo: categoria.count for categoria in data}
-            binds = {categoria.bind: categoria.veiculo for categoria in data}
+            contagens = {}
+            for categoria in data:
+                contagens[(categoria.veiculo, categoria.movimento)] = 0
+
+            binds = {categoria.bind: (categoria.veiculo, categoria.movimento) for categoria in data}
             return contagens, binds, data
-        except SQLAlchemyError as e:
-            logging.error(f"Erro ao carregar configuração: {e}")
+        except SQLAlchemyError as ex:
+            print(f"Erro ao carregar config: {ex}")
             return {}, {}, []
 
     def carregar_sessao_ativa(self):
@@ -98,13 +110,16 @@ class ContadorPerplan(ft.Column):
             if sessao_ativa:
                 self.sessao = sessao_ativa.sessao
                 self.detalhes = json.loads(sessao_ativa.detalhes)
+                self.movimentos = int(self.detalhes["Movimentos"])
                 self.page.overlay.append(ft.SnackBar(ft.Text("Sessão ativa recuperada.")))
+                self.contagens, self.binds, self.categorias = self.carregar_config()
                 self.setup_aba_contagem()
                 self.tabs.selected_index = 1
                 self.tabs.tabs[1].content.visible = True
                 self.update_sessao_status()
-        except SQLAlchemyError as e:
-            logging.error(f"Erro ao carregar sessão ativa: {e}")
+                self.recuperar_contagens()
+        except SQLAlchemyError as ex:
+            print(f"Erro ao carregar sessão ativa: {ex}")
 
     def salvar_sessao(self):
         try:
@@ -121,8 +136,9 @@ class ContadorPerplan(ft.Column):
                 )
                 session.add(nova_sessao)
             session.commit()
-        except SQLAlchemyError as e:
-            logging.error(f"Erro ao salvar sessão: {e}")
+        except SQLAlchemyError as ex:
+            print(f"Erro ao salvar sessão: {ex}")
+            session.rollback()
 
     def finalizar_sessao(self):
         try:
@@ -130,8 +146,9 @@ class ContadorPerplan(ft.Column):
             if sessao_existente:
                 sessao_existente.ativa = False
                 session.commit()
-        except SQLAlchemyError as e:
-            logging.error(f"Erro ao finalizar sessão: {e}")
+        except SQLAlchemyError as ex:
+            print(f"Erro ao finalizar sessão: {ex}")
+            session.rollback()
 
     def setup_ui(self):
         self.tabs = ft.Tabs(
@@ -140,8 +157,7 @@ class ContadorPerplan(ft.Column):
                 ft.Tab(text="Inicio", content=ft.Column()),
                 ft.Tab(text="Contador", content=ft.Column()),
                 ft.Tab(text="Categorias", content=ft.Column()),
-                ft.Tab(text="", icon=ft.icons.SETTINGS, content=ft.Column()),
-                ft.Tab(text="", icon=ft.icons.BAR_CHART, content=ft.Column()),
+                ft.Tab(text="", icon=ft.icons.SETTINGS, content=ft.Column())
             ]
         )
         self.controls.clear()
@@ -149,7 +165,6 @@ class ContadorPerplan(ft.Column):
         self.setup_aba_inicio()
         self.setup_aba_categorias()
         self.setup_aba_perfil()
-        self.setup_aba_relatorio()
         self.tabs.tabs[1].content.visible = False
 
     def setup_aba_inicio(self):
@@ -159,7 +174,11 @@ class ContadorPerplan(ft.Column):
         self.codigo_ponto_input = ft.TextField(label="Código")
         self.nome_ponto_input = ft.TextField(label="Ponto (ex: P10N)")
         self.horas_contagem_input = ft.TextField(label="Periodo (ex: 6h-18h)")
-        self.movimentos_input = ft.TextField(label="Movimentos (ex: A-B)")
+        self.movimentos_input = ft.Dropdown(
+            label="Movimentos",
+            options=[ft.dropdown.Option(str(i)) for i in range(1, 4)],
+            value="1"
+        )
         self.data_ponto_input = ft.TextField(label="Data do Ponto (dd-mm-aaaa)")
         criar_sessao_button = ft.ElevatedButton(text="Criar Sessão", on_click=self.criar_sessao)
 
@@ -190,7 +209,9 @@ class ContadorPerplan(ft.Column):
                 "Movimentos": self.movimentos_input.value,
                 "Data do Ponto": self.data_ponto_input.value
             }
+            self.movimentos = int(self.movimentos_input.value)
             self.sessao = f"Sessao_{self.detalhes['Código']}_{self.detalhes['Ponto']}_{self.detalhes['Movimentos']}_{self.detalhes['Data do Ponto']}"
+            self.carregar_categorias_padrao('categorias_padrao.json')  # Carregar categorias padrão apenas ao criar sessão
             self.salvar_sessao()
             self.contagens, self.binds, self.categorias = self.carregar_config()  # Recarregar configurações
             self.setup_aba_contagem()
@@ -198,8 +219,8 @@ class ContadorPerplan(ft.Column):
             self.tabs.selected_index = 1
             self.tabs.tabs[1].content.visible = True
             self.update_sessao_status()
-        except Exception as e:
-            logging.error(f"Erro ao criar sessão: {e}")
+        except Exception as ex:
+            print(f"Erro ao criar sessão: {ex}")
 
     def validar_campos(self):
         if not self.pesquisador_input.value:
@@ -233,8 +254,8 @@ class ContadorPerplan(ft.Column):
                 self.page.overlay.append(ft.SnackBar(ft.Text("Sessão já existe com esses detalhes!")))
                 self.page.update()
                 return False
-        except SQLAlchemyError as e:
-            logging.error(f"Erro ao validar campos: {e}")
+        except SQLAlchemyError as ex:
+            print(f"Erro ao validar campos: {ex}")
             return False
 
         return True
@@ -293,112 +314,105 @@ class ContadorPerplan(ft.Column):
         
         tab.controls.append(row)
         
-        for categoria in self.categorias:
-            self.add_row(categoria.veiculo, categoria.bind, tab)
+        # Adicionar Columns para cada movimento
+        colunas = []
+        for movimento in range(1, self.movimentos + 1):
+            col = ft.Column([ft.Text(f"Movimento {movimento}", weight=ft.FontWeight.BOLD)])
+            for categoria in self.categorias:
+                if categoria.movimento == movimento:
+                    self.add_contagem_row(col, categoria.veiculo, categoria.bind, self.contagens[(categoria.veiculo, movimento)], movimento)
+            colunas.append(col)
+
+        tab.controls.append(ft.Row(controls=colunas))
         self.page.update()
 
-    def toggle_contagem(self, e):
-        self.contagem_ativa = e.control.value
-        print("Contagem ativada" if self.contagem_ativa else "Contagem desativada")
-        self.page.update()
-
-    def add_row(self, veiculo, bind, tab):
-        label_bind = ft.Text(f"({bind})", width=30, size=16, color="AMBER")
-        label_veiculo = ft.Text(f"{veiculo}", width=80, size=18)
-        label_count = ft.Text(f"{self.contagens[veiculo]}", width=50, size=20)
-        self.labels[veiculo] = label_count
+    def add_contagem_row(self, col, veiculo, bind, contagem, movimento):
+        label_veiculo = ft.Text(f"{veiculo}", width=80)
+        label_bind = ft.Text(f"({bind})", width=40)
+        label_count = ft.Text(f"{contagem}", width=80)
+        self.labels[(veiculo, movimento)] = label_count
         
-        add_button = ft.IconButton(
-            ft.icons.ADD,
-            style=ft.ButtonStyle(color=ft.colors.GREEN),
-            on_click=lambda e, v=veiculo: self.increment(v)
-        )
-        
-        remove_button = ft.IconButton(
-            ft.icons.REMOVE,
-            style=ft.ButtonStyle(color=ft.colors.RED),
-            on_click=lambda e, v=veiculo: self.decrement(v)
-        )
-        
-        reset_button = ft.IconButton(
-            ft.icons.RESTART_ALT_ROUNDED,
-            style=ft.ButtonStyle(color=ft.colors.BLUE),
-            on_click=lambda e, v=veiculo: self.reset(v)
+        popup_menu = ft.PopupMenuButton(
+            items=[
+                ft.PopupMenuItem(text="Incrementar", on_click=lambda e, v=veiculo, m=movimento: self.increment(v, m)),
+                ft.PopupMenuItem(text="Decrementar", on_click=lambda e, v=veiculo, m=movimento: self.decrement(v, m)),
+                ft.PopupMenuItem(text="Resetar", on_click=lambda e, v=veiculo, m=movimento: self.reset(v, m))
+            ]
         )
         
         row = ft.Row(
             alignment=ft.MainAxisAlignment.CENTER,
             controls=[
-                label_bind,
                 label_veiculo,
+                label_bind,
                 label_count,
-                add_button,
-                remove_button,
-                reset_button
+                popup_menu
             ]
         )
-        tab.controls.append(row)
+        col.controls.append(row)
 
-    def increment(self, veiculo):
-        try:
-            self.contagens[veiculo] += 1
-            self.update_labels(veiculo)
-            self.save_to_db(veiculo)
-        except Exception as e:
-            logging.error(f"Erro ao incrementar contagem: {e}")
+    def toggle_contagem(self, e):
+        self.contagem_ativa = e.control.value
+        self.page.update()
 
-    def decrement(self, veiculo):
+    def increment(self, veiculo, movimento):
         try:
-            if self.contagens[veiculo] > 0:
-                self.contagens[veiculo] -= 1
-                self.update_labels(veiculo)
-                self.save_to_db(veiculo)
-        except Exception as e:
-            logging.error(f"Erro ao decrementar contagem: {e}")
+            self.contagens[(veiculo, movimento)] += 1
+            self.update_labels(veiculo, movimento)
+            self.save_to_db(veiculo, movimento)
+        except Exception as ex:
+            print(f"Erro ao incrementar: {ex}")
 
-    def reset(self, veiculo):
+    def decrement(self, veiculo, movimento):
         try:
-            self.contagens[veiculo] = 0
-            self.update_labels(veiculo)
-            self.save_to_db(veiculo)
-        except Exception as e:
-            logging.error(f"Erro ao resetar contagem: {e}")
+            if self.contagens[(veiculo, movimento)] > 0:
+                self.contagens[(veiculo, movimento)] -= 1
+                self.update_labels(veiculo, movimento)
+                self.save_to_db(veiculo, movimento)
+        except Exception as ex:
+            print(f"Erro ao decrementar: {ex}")
 
-    def update_labels(self, veiculo):
+    def reset(self, veiculo, movimento):
         try:
-            self.labels[veiculo].value = str(self.contagens[veiculo])
+            self.contagens[(veiculo, movimento)] = 0
+            self.update_labels(veiculo, movimento)
+            self.save_to_db(veiculo, movimento)
+        except Exception as ex:
+            print(f"Erro ao resetar: {ex}")
+
+    def update_labels(self, veiculo, movimento):
+        try:
+            self.labels[(veiculo, movimento)].value = str(self.contagens[(veiculo, movimento)])
             self.page.update()
-        except Exception as e:
-            logging.error(f"Erro ao atualizar rótulos: {e}")
+        except Exception as ex:
+            print(f"Erro ao atualizar labels: {ex}")
 
     def save_contagens(self, e):
         try:
-            contagens_df = pd.DataFrame([self.contagens])
-            detalhes_df = pd.DataFrame([self.detalhes])
-            
-            contagens_df.fillna(0, inplace=True)
-            
-            if not os.path.exists('contagens'):
-                os.makedirs('contagens')
-            arquivo_sessao = f'contagens/{self.sessao}.xlsx'
+            for movimento in range(1, self.movimentos + 1):
+                contagens_df = pd.DataFrame([{veiculo: count for (veiculo, mov), count in self.contagens.items() if mov == movimento}])
+                detalhes_df = pd.DataFrame([self.detalhes])
+                
+                contagens_df.fillna(0, inplace=True)
+                
+                if not os.path.exists('contagens'):
+                    os.makedirs('contagens')
+                arquivo_sessao = f'contagens/{self.sessao}.xlsx'
 
-            try:
-                existing_df = pd.read_excel(arquivo_sessao, sheet_name=None)
-                if 'Detalhes' in existing_df and 'Contagens' in existing_df:
-                    contagens_df = pd.concat([existing_df['Contagens'], contagens_df])
-                    detalhes_df = pd.concat([existing_df['Detalhes'], detalhes_df])
+                try:
+                    existing_df = pd.read_excel(arquivo_sessao, sheet_name=None)
+                    if f'Movimento_{movimento}' in existing_df and 'Detalhes' in existing_df:
+                        contagens_df = pd.concat([existing_df[f'Movimento_{movimento}'], contagens_df])
+                        detalhes_df = pd.concat([existing_df['Detalhes'], detalhes_df])
 
-            except FileNotFoundError:
-                pass
+                except FileNotFoundError:
+                    pass
 
-            with pd.ExcelWriter(arquivo_sessao, engine='xlsxwriter') as writer:
-                contagens_df.to_excel(writer, sheet_name='Contagens', index=False)
-                detalhes_df.to_excel(writer, sheet_name='Detalhes', index=False)
-
-            print(f"Contagem salva em {arquivo_sessao}")
-            self.load_data_table()
-        except Exception as e:
-            logging.error(f"Erro ao salvar contagens: {e}")
+                with pd.ExcelWriter(arquivo_sessao, engine='xlsxwriter') as writer:
+                    contagens_df.to_excel(writer, sheet_name=f'Movimento_{movimento}', index=False)
+                    detalhes_df.to_excel(writer, sheet_name='Detalhes', index=False)
+        except Exception as ex:
+            print(f"Erro ao salvar contagens: {ex}")
 
     def confirmar_finalizar_sessao(self, e):
         def close_dialog(e):
@@ -410,8 +424,8 @@ class ContadorPerplan(ft.Column):
                 dialog.open = False
                 self.page.update()
                 self.end_session()
-            except Exception as e:
-                logging.error(f"Erro ao finalizar sessão no diálogo: {e}")
+            except Exception as ex:
+                print(f"Erro ao finalizar sessão: {ex}")
             
         dialog = ft.AlertDialog(
             title=ft.Text("Finalizar Sessão"),
@@ -428,16 +442,16 @@ class ContadorPerplan(ft.Column):
     def end_session(self):
         try:
             self.finalizar_sessao()
-            for veiculo in self.contagens:
-                self.contagens[veiculo] = 0
-                self.update_labels(veiculo)
-                self.save_to_db(veiculo)
+            for veiculo, movimento in self.contagens:
+                self.contagens[(veiculo, movimento)] = 0
+                self.update_labels(veiculo, movimento)
+                self.save_to_db(veiculo, movimento)
             self.sessao = None
             self.page.overlay.append(ft.SnackBar(ft.Text("Sessão finalizada!")))
             self.page.update()
             self.restart_app()
-        except Exception as e:
-            logging.error(f"Erro ao finalizar sessão: {e}")
+        except Exception as ex:
+            print(f"Erro ao finalizar sessão: {ex}")
 
     def restart_app(self):
         self.stop_listener()
@@ -446,60 +460,98 @@ class ContadorPerplan(ft.Column):
         self.contagens = {}
         self.binds = {}
         self.labels = {}
-        self.carregar_categorias_padrao('categorias_padrao.json')
-        self.contagens, self.binds, self.categorias = self.carregar_config()  # Recarregar configurações
         self.setup_ui()
         self.page.update()
         self.start_listener()  # Reiniciar o listener para a nova sessão
 
-    def save_to_db(self, veiculo):
+    def save_to_db(self, veiculo, movimento):
         try:
-            categoria = session.query(Categoria).filter_by(veiculo=veiculo).first()
-            if categoria:
-                categoria.count = self.contagens[veiculo]
-                session.commit()
-        except SQLAlchemyError as e:
-            logging.error(f"Erro ao salvar no banco de dados: {e}")
+            contagem = session.query(Contagem).filter_by(sessao=self.sessao, veiculo=veiculo, movimento=movimento).first()
+            if contagem:
+                contagem.count = self.contagens[(veiculo, movimento)]
+            else:
+                nova_contagem = Contagem(
+                    sessao=self.sessao,
+                    veiculo=veiculo,
+                    movimento=movimento,
+                    count=self.contagens[(veiculo, movimento)]
+                )
+                session.add(nova_contagem)
+            session.commit()
+        except SQLAlchemyError as ex:
+            print(f"Erro ao salvar no DB: {ex}")
+            session.rollback()
+
+    def recuperar_contagens(self):
+        try:
+            contagens_db = session.query(Contagem).filter_by(sessao=self.sessao).all()
+            for contagem in contagens_db:
+                self.contagens[(contagem.veiculo, contagem.movimento)] = contagem.count
+                self.update_labels(contagem.veiculo, contagem.movimento)
+        except SQLAlchemyError as ex:
+            print(f"Erro ao recuperar contagens: {ex}")
 
     def setup_aba_categorias(self):
         tab = self.tabs.tabs[2].content
         tab.controls.clear()
-        self.load_categorias(tab)
 
-    def load_categorias(self, tab):
+        movimentos = sorted(set(c.movimento for c in session.query(Categoria).all()))
+        movimento_dropdown = ft.Dropdown(
+            label="Selecione o movimento",
+            options=[ft.dropdown.Option(str(mov)) for mov in movimentos],
+            on_change=self.on_movimento_change,
+        )
+        tab.controls.append(movimento_dropdown)
+
+        self.movimento_content = ft.Column()
+        tab.controls.append(self.movimento_content)
+
+        self.page.update()
+
+    def on_movimento_change(self, e):
+        self.selected_movimento = int(e.control.value)
+        self.load_categorias(self.movimento_content)
+
+    def load_categorias(self, container):
+        container.controls.clear()
         try:
-            categorias = session.query(Categoria).order_by(Categoria.criado_em).all()
-            for categoria in categorias:
-                self.add_category_row(categoria.veiculo, categoria.bind, tab)
-        except SQLAlchemyError as e:
-            logging.error(f"Erro ao carregar categorias: {e}")
+            if self.selected_movimento is not None:
+                categorias = session.query(Categoria).filter_by(movimento=self.selected_movimento).order_by(Categoria.criado_em).all()
+                for categoria in categorias:
+                    container.controls.append(self.create_category_control(categoria.veiculo, categoria.bind, self.selected_movimento))
+        except SQLAlchemyError as ex:
+            print(f"Erro ao carregar categorias: {ex}")
 
-    def add_category_row(self, veiculo, bind, tab):
+        self.page.update()
+
+    def create_category_control(self, veiculo, bind, movimento):
         veiculo_input = ft.TextField(value=veiculo, width=150, disabled=True)
         bind_input = ft.TextField(value=bind, width=90)
-        update_button = ft.IconButton(icon=ft.icons.UPDATE, icon_color="BLUE", on_click=lambda e, v=veiculo, bi=bind_input: self.update_bind(v, bi.value))
-        row = ft.Row([veiculo_input, bind_input, update_button])
-        tab.controls.append(row)
+        update_button = ft.IconButton(icon=ft.icons.UPDATE, icon_color="BLUE", on_click=lambda e, v=veiculo, bi=bind_input: self.update_bind(v, bi.value, movimento))
+        return ft.Row([veiculo_input, bind_input, update_button])
 
-    def update_bind(self, veiculo, new_bind):
+    def update_bind(self, veiculo, new_bind, movimento):
         if new_bind:
             try:
-                categoria = session.query(Categoria).filter_by(veiculo=veiculo).first()
+                categoria = session.query(Categoria).filter_by(veiculo=veiculo, movimento=movimento).first()
                 if categoria:
                     categoria.bind = new_bind
                     session.commit()
-                self.update_categorias()
-            except SQLAlchemyError as e:
-                logging.error(f"Erro ao atualizar bind: {e}")
+                self.update_binds()
+                self.update_ui()
+            except SQLAlchemyError as ex:
+                print(f"Erro ao atualizar bind: {ex}")
+                session.rollback()
 
-    def update_categorias(self):
-        self.categorias = self.carregar_config()[2]
-        self.update_ui()
+    def update_binds(self):
+        try:
+            self.binds = {categoria.bind: (categoria.veiculo, categoria.movimento) for categoria in session.query(Categoria).all()}
+        except SQLAlchemyError as ex:
+            print(f"Erro ao atualizar binds: {ex}")
 
     def update_ui(self):
-        tab_categorias = self.tabs.tabs[2].content
-        tab_categorias.controls.clear()
-        self.load_categorias(tab_categorias)
+        if self.selected_movimento is not None:
+            self.load_categorias(self.movimento_content)
 
         tab_contagem = self.tabs.tabs[1].content
         tab_contagem.controls.clear()
@@ -532,57 +584,8 @@ class ContadorPerplan(ft.Column):
             nova_opacidade = e.control.value / 100
             self.page.window.opacity = nova_opacidade
             self.page.update()
-        except Exception as e:
-            logging.error(f"Erro ao ajustar opacidade: {e}")
-
-    def setup_aba_relatorio(self):
-        tab = self.tabs.tabs[4].content
-        tab.controls.clear()
-        self.page.scroll = ft.ScrollMode.AUTO
-        self.view_relatorio(tab)
-
-    def view_relatorio(self, tab):
-        try:
-            arquivo_sessao = f'contagens/{self.sessao}.xlsx'
-            df_contagens = pd.read_excel(arquivo_sessao, sheet_name='Contagens')
-            if df_contagens.empty:
-                tab.controls.append(ft.Text("Não há dados salvos."))
-            else:
-                detalhes_texto = "\n".join([f"{key}: {value}" for key, value in self.detalhes.items()])
-                tab.controls.append(ft.Text(detalhes_texto, weight=ft.FontWeight.BOLD))
-                columns = [
-                    ft.DataColumn(ft.Text(col, weight=ft.FontWeight.BOLD))
-                    for col in df_contagens.columns
-                ]
-                rows = [
-                    ft.DataRow(
-                        cells=[
-                            ft.DataCell(ft.Text(str(int(row[col])) if pd.api.types.is_numeric_dtype(row[col]) else str(row[col]))) for col in df_contagens.columns if pd.notna(row[col])
-                        ]
-                    )
-                    for _, row in df_contagens.iterrows()
-                ]
-                data_table = ft.DataTable(
-                    columns=columns,
-                    rows=rows,
-                    border=ft.border.all(2, "red"),
-                    divider_thickness=0,
-                    border_radius=5,
-                    show_checkbox_column=False,
-                )
-                tab.controls.append(data_table)
-        except FileNotFoundError:
-            tab.controls.append(ft.Text("Não há dados salvos."))
-        except ValueError as e:
-            tab.controls.append(ft.Text(str(e)))
-        except Exception as e:
-            logging.error(f"Erro ao visualizar relatório: {e}")
-        self.page.update()
-
-    def load_data_table(self):
-        tab = self.tabs.tabs[4].content
-        tab.controls.clear()
-        self.view_relatorio(tab)
+        except Exception as ex:
+            print(f"Erro ao ajustar opacidade: {ex}")
 
     def on_key_press(self, key):
         if not self.contagem_ativa:
@@ -593,12 +596,13 @@ class ContadorPerplan(ft.Column):
                 char = self.numpad_mappings[key.vk]
             elif hasattr(key, 'char'):
                 char = key.char
-            if char:
-                veiculo = self.binds.get(char)
-                if veiculo:
-                    self.increment(veiculo)
-        except Exception as e:
-            logging.error(f"Erro ao processar tecla: {e}")
+            else:
+                char = str(key).strip("'")
+            if char and char in self.binds:
+                veiculo, movimento = self.binds[char]
+                self.increment(veiculo, movimento)
+        except Exception as ex:
+            print(f"Erro ao pressionar tecla: {ex}")
 
     def start_listener(self):
         if self.listener is None:
@@ -620,7 +624,7 @@ def main(page: ft.Page):
     page.theme = ft.Theme(font_family="Jetbrains")
     page.scroll = ft.ScrollMode.AUTO
     
-    page.window.width = 450
+    page.window.width = 900
     page.window.height = 700
     page.window.always_on_top = True
     page.add(contador)
