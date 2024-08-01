@@ -157,6 +157,11 @@
   },
   {
     "movimento": 3,
+    "veiculo": "Cam2e",
+    "bind": "e"
+  },
+  {
+    "movimento": 3,
     "veiculo": "Cam3e",
     "bind": "f"
   },

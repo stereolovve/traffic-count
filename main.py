@@ -79,6 +79,7 @@ class ContadorPerplan(ft.Column):
                     movimento = categoria.get('movimento')
                     bind = categoria.get('bind')
                     if veiculo and bind:
+                        
                         nova_categoria = Categoria(
                             veiculo=veiculo,
                             movimento=movimento,
@@ -268,40 +269,42 @@ class ContadorPerplan(ft.Column):
         tab = self.tabs.tabs[1].content
         tab.controls.clear()
         self.contagem_ativa = False
-        
+
         self.toggle_button = ft.Switch(
             label="",
             label_position="left",
             value=False,
             on_change=self.toggle_contagem
         )
-        
+
         save_button = ft.IconButton(
             icon=ft.icons.SAVE,
+            icon_color="lightblue",
             tooltip="Salvar contagem",
             on_click=self.save_contagens
         )
-        
+
         end_session_button = ft.IconButton(
             icon=ft.icons.STOP,
             tooltip="Finalizar sessão",
             icon_size=30,
+            icon_color="RED",
             on_click=self.confirmar_finalizar_sessao
         )
-        
+
         container_switch = ft.Container(
             content=self.toggle_button,
             tooltip="Contagem Ativada/Desativada",
         )
-        
+
         container_save = ft.Container(
             content=save_button,
         )
-        
+
         container_stop = ft.Container(
             content=end_session_button,
         )
-        
+
         row = ft.Row(
             alignment=ft.MainAxisAlignment.CENTER,
             spacing=20,
@@ -311,45 +314,99 @@ class ContadorPerplan(ft.Column):
                 container_stop
             ],
         )
-        
+
         tab.controls.append(row)
-        
-        # Adicionar Columns para cada movimento
+
+        # Cabeçalho da Tabela
+        header = ft.Row(
+            alignment=ft.MainAxisAlignment.CENTER,
+            controls=[
+                ft.Container(content=ft.Text("Categoria", weight=ft.FontWeight.W_400, size=12), width=80),
+                ft.Container(content=ft.Text("Bind", weight=ft.FontWeight.W_400, size=12), width=50),
+                ft.Container(content=ft.Text("Contagem", weight=ft.FontWeight.W_400, size=12), width=80),
+                ft.Container(content=ft.Text("Ações", weight=ft.FontWeight.W_400, size=12), width=50),
+            ],
+        )
+        tab.controls.append(header)
+
+        # Adicionar Divider
+        divider = ft.Divider(height=2, thickness=1)
+        tab.controls.append(divider)
+
+        # Adicionar Columns para cada movimento com VerticalDivider
         colunas = []
         for movimento in range(1, self.movimentos + 1):
-            col = ft.Column([ft.Text(f"Movimento {movimento}", weight=ft.FontWeight.BOLD)])
+            col = ft.Column([ft.Text(f"Mov. {movimento}", weight=ft.FontWeight.BOLD)])
             for categoria in self.categorias:
                 if categoria.movimento == movimento:
-                    self.add_contagem_row(col, categoria.veiculo, categoria.bind, self.contagens[(categoria.veiculo, movimento)], movimento)
+                    if movimento == 1:
+                        self.add_contagem_row(col, categoria.veiculo, categoria.bind, self.contagens[(categoria.veiculo, movimento)], movimento)
+                    else:
+                        self.add_contagem_row_movimentos(col, categoria.veiculo, categoria.bind, self.contagens[(categoria.veiculo, movimento)], movimento)
             colunas.append(col)
+            if movimento < self.movimentos:
+                colunas.append(ft.VerticalDivider(width=5, thickness=2, color="white"))
 
-        tab.controls.append(ft.Row(controls=colunas))
+        tab.controls.append(ft.Row(controls=colunas, alignment=ft.MainAxisAlignment.CENTER, spacing=10))
         self.page.update()
 
     def add_contagem_row(self, col, veiculo, bind, contagem, movimento):
-        label_veiculo = ft.Text(f"{veiculo}", width=80)
-        label_bind = ft.Text(f"({bind})", width=40)
-        label_count = ft.Text(f"{contagem}", width=80)
+        label_veiculo = ft.Text(f"{veiculo}", size=15, width=80)
+        label_bind = ft.Text(f"({bind})", color="cyan", size=15, width=50)
+        label_count = ft.Text(f"{contagem}", size=15, width=50)
         self.labels[(veiculo, movimento)] = label_count
-        
+
         popup_menu = ft.PopupMenuButton(
+            icon_color="teal",
             items=[
-                ft.PopupMenuItem(text="Incrementar", on_click=lambda e, v=veiculo, m=movimento: self.increment(v, m)),
-                ft.PopupMenuItem(text="Decrementar", on_click=lambda e, v=veiculo, m=movimento: self.decrement(v, m)),
-                ft.PopupMenuItem(text="Resetar", on_click=lambda e, v=veiculo, m=movimento: self.reset(v, m))
+                ft.PopupMenuItem(text=" ", icon=ft.icons.ADD, on_click=lambda e, v=veiculo, m=movimento: self.increment(v, m)),
+                ft.PopupMenuItem(text=" ", icon=ft.icons.REMOVE, on_click=lambda e, v=veiculo, m=movimento: self.decrement(v, m)),
+                ft.PopupMenuItem(text=" ", icon=ft.icons.LOOP, on_click=lambda e, v=veiculo, m=movimento: self.reset(v, m))
             ]
         )
-        
+
         row = ft.Row(
-            alignment=ft.MainAxisAlignment.CENTER,
+            alignment=ft.MainAxisAlignment.START,
+            spacing=5,
             controls=[
-                label_veiculo,
-                label_bind,
-                label_count,
+                ft.Container(content=label_veiculo, alignment=ft.alignment.center_left),
+                ft.Container(content=label_bind, alignment=ft.alignment.center),
+                ft.Container(content=label_count, alignment=ft.alignment.center_right),
                 popup_menu
             ]
         )
         col.controls.append(row)
+
+    def add_contagem_row_movimentos(self, col, veiculo, bind, contagem, movimento):
+        label_bind = ft.Text(f"({bind})", color="cyan", size=15, width=50)
+        label_count = ft.Text(f"{contagem}", size=15, width=50)
+        self.labels[(veiculo, movimento)] = label_count
+
+        popup_menu = ft.PopupMenuButton(
+            icon_color="teal",
+            items=[
+                ft.PopupMenuItem(text=" ", icon=ft.icons.ADD, on_click=lambda e, v=veiculo, m=movimento: self.increment(v, m)),
+                ft.PopupMenuItem(text=" ", icon=ft.icons.REMOVE, on_click=lambda e, v=veiculo, m=movimento: self.decrement(v, m)),
+                ft.PopupMenuItem(text=" ", icon=ft.icons.LOOP, on_click=lambda e, v=veiculo, m=movimento: self.reset(v, m))
+            ]
+        )
+
+        row = ft.Row(
+            alignment=ft.MainAxisAlignment.START,
+            spacing=5,
+            controls=[
+                ft.Container(content=label_bind, alignment=ft.alignment.center),
+                ft.Container(content=label_count, alignment=ft.alignment.center_right),
+                popup_menu
+            ]
+        )
+        col.controls.append(row)
+
+
+
+
+
+
 
     def toggle_contagem(self, e):
         self.contagem_ativa = e.control.value
@@ -624,8 +681,8 @@ def main(page: ft.Page):
     page.theme = ft.Theme(font_family="Jetbrains")
     page.scroll = ft.ScrollMode.AUTO
     
-    page.window.width = 900
-    page.window.height = 700
+    page.window.width = 450
+    page.window.height = 1080
     page.window.always_on_top = True
     page.add(contador)
     
