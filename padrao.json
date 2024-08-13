@@ -12,16 +12,20 @@
       "bind": "3"
     },
     {
-      "veiculo": "Caminhão 2",
+      "veiculo": "Caminhao 2",
       "bind": "4"
     },
     {
-      "veiculo": "Caminhão 3",
+      "veiculo": "Caminhao 3",
       "bind": "5"
     },
     {
-      "veiculo": "Caminhão 4",
+      "veiculo": "Caminhao 4",
       "bind": "6"
+    },
+    {
+      "veiculo": "Carreta 3",
+      "bind": "q"
     },
     {
       "veiculo": "Carreta 4",
@@ -42,6 +46,10 @@
     {
       "veiculo": "Carreta 9",
       "bind": "s"
+    },
+    {
+      "veiculo": "Carreta 10+",
+      "bind": "w"
     },
     {
       "veiculo": "Onibus 2",
