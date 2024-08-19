@@ -40,6 +40,7 @@ class Contagem(Base):
 Base.metadata.create_all(engine)
 
 class ContadorPerplan(ft.Column):
+    # Função que inicializa o aplicativo como um todo
     def __init__(self, page):
         super().__init__()
         self.page = page
@@ -51,8 +52,6 @@ class ContadorPerplan(ft.Column):
         self.labels = {}
         self.listener = None
         self.contagem_ativa = False
-        self.novo_veiculo_input = None
-        self.nova_bind_input = None
         self.numpad_mappings = {
             96: "np0", 97: "np1", 98: "np2", 99: "np3", 100: "np4",
             101: "np5", 102: "np6", 103: "np7", 104: "np8", 105: "np9",
@@ -61,19 +60,20 @@ class ContadorPerplan(ft.Column):
         self.setup_ui()
         self.carregar_sessao_ativa()
 
+    # Cria as abas do app
     def setup_ui(self):
         self.tabs = ft.Tabs(
-            animation_duration=150,
+            animation_duration=50,
             tabs=[
                 ft.Tab(text="Inicio", content=ft.Column()),
                 ft.Tab(text="Contador", content=ft.Column()),
                 ft.Tab(text="", icon=ft.icons.SETTINGS, content=ft.Column())
             ]
         )
-        self.controls.clear()
+        self.controls.clear() # Garantir que a interface seja reiniciada e evita duplicação
         self.controls.append(self.tabs)
         self.setup_aba_inicio()
-        self.setup_aba_perfil()
+        self.setup_aba_config()
         self.tabs.tabs[1].content.visible = False
 
     def setup_aba_inicio(self):
@@ -94,12 +94,13 @@ class ContadorPerplan(ft.Column):
         criar_sessao_button = ft.ElevatedButton(text="Criar Sessão", on_click=self.criar_sessao)
 
         tab.controls.extend([
+            ft.Text(""),
             self.pesquisador_input,
             self.codigo_ponto_input,
             self.nome_ponto_input,
             self.horas_contagem_input,
             self.data_ponto_input,
-            ft.Text("Movimentos:"),
+            ft.Text("Adicione os movimentos:"),
             self.movimentos_container,
             adicionar_movimento_button,
             criar_sessao_button
@@ -129,7 +130,6 @@ class ContadorPerplan(ft.Column):
     def criar_sessao(self, e):
         if not self.validar_campos():
             return
-
         try:
             self.detalhes = {
                 "Pesquisador": self.pesquisador_input.value,
@@ -144,7 +144,11 @@ class ContadorPerplan(ft.Column):
             self.carregar_categorias_padrao('padrao.json')
             self.contagens, self.binds, self.categorias = self.carregar_config()
             self.setup_aba_contagem()
-            self.page.overlay.append(ft.SnackBar(ft.Text("Sessão criada com sucesso!")))
+
+            snackbar = ft.SnackBar(ft.Text("Sessão criada com sucesso!"))
+            self.page.snack_bar = snackbar
+            snackbar.open = True
+
             self.tabs.selected_index = 1
             self.tabs.tabs[1].content.visible = True
             self.update_sessao_status()
@@ -196,7 +200,7 @@ class ContadorPerplan(ft.Column):
         self.contagem_ativa = False
 
         self.toggle_button = ft.Switch(
-            label="Ativar Contagem",
+            tooltip="Ativar contagem",
             value=False,
             on_change=self.toggle_contagem
         )
@@ -215,17 +219,35 @@ class ContadorPerplan(ft.Column):
             on_click=self.confirmar_finalizar_sessao
         )
 
+        reset_all_button = ft.IconButton(
+            icon=ft.icons.REFRESH,
+            icon_color="orange",
+            tooltip="Resetar todas as contagens",
+            on_click=self.resetar_todas_contagens
+        )
+
         controls_row = ft.Row(
             alignment=ft.MainAxisAlignment.CENTER,
             spacing=20,
-            controls=[self.toggle_button, save_button, end_session_button],
+            controls=[self.toggle_button, save_button, end_session_button, reset_all_button],
         )
 
         tab.controls.append(controls_row)
 
+        header = ft.Row(
+            alignment=ft.MainAxisAlignment.CENTER,
+            controls=[
+                ft.Container(content=ft.Text("Categoria", weight=ft.FontWeight.W_400, size=12), width=80),
+                ft.Container(content=ft.Text("Bind", weight=ft.FontWeight.W_400, size=12), width=50),
+                ft.Container(content=ft.Text("Contagem", weight=ft.FontWeight.W_400, size=12), width=80),
+                ft.Container(content=ft.Text("Ações", weight=ft.FontWeight.W_400, size=12), width=50),
+            ],
+        )
+        tab.controls.append(header)
+
         self.movimento_tabs = ft.Tabs(
             selected_index=0,
-            animation_duration=300,
+            animation_duration=50,
             tabs=[ft.Tab(text=movimento, content=self.criar_conteudo_movimento(movimento)) 
               for movimento in self.detalhes["Movimentos"]],
             expand=1,
@@ -237,26 +259,32 @@ class ContadorPerplan(ft.Column):
 
         tab.controls.append(self.movimento_tabs)
 
-        atalhos_text = ft.Text(
-            "Atalhos: F1, F2, F3... para alternar entre movimentos",
-            size=12,
-            color=ft.colors.GREY_400
-        )
-        tab.controls.append(atalhos_text)
-
+        # Cabeçalho da Tabela
+        
         self.page.update()
+    def resetar_todas_contagens(self, e):
+        try:
+            for (veiculo, movimento) in self.contagens.keys():
+                self.contagens[(veiculo, movimento)] = 0
+                self.update_labels(veiculo, movimento)
+                self.save_to_db(veiculo, movimento)
+            self.page.overlay.append(ft.SnackBar(ft.Text("Todas as contagens foram resetadas.")))
+            self.page.update()
+        except Exception as ex:
+            print(f"Erro ao resetar todas as contagens: {ex}")
+            self.page.overlay.append(ft.SnackBar(ft.Text("Erro ao resetar todas as contagens.")))
+            self.page.update()
 
     def criar_conteudo_movimento(self, movimento):
         content = ft.Column()
         categorias = [c for c in self.categorias if c.movimento == movimento]
-        print(f"Criando conteúdo para {movimento}: {len(categorias)} categorias")
         for categoria in categorias:
             control = self.create_category_control(categoria.veiculo, categoria.bind, movimento)
             content.controls.append(control)
         return content
 
     def create_category_control(self, veiculo, bind, movimento):
-        label_veiculo = ft.Text(f"{veiculo}", size=15, width=80)
+        label_veiculo = ft.Text(f"{veiculo}", size=15, width=100)
         label_bind = ft.Text(f"({bind})", color="cyan", size=15, width=50)
         label_count = ft.Text(f"{self.contagens.get((veiculo, movimento), 0)}", size=15, width=50)
         self.labels[(veiculo, movimento)] = label_count
@@ -272,7 +300,7 @@ class ContadorPerplan(ft.Column):
         )
 
         return ft.Row(
-            alignment=ft.MainAxisAlignment.START,
+            alignment=ft.MainAxisAlignment.CENTER,
             spacing=5,
             controls=[
                 ft.Container(content=label_veiculo, alignment=ft.alignment.center_left),
@@ -289,7 +317,6 @@ class ContadorPerplan(ft.Column):
     def increment(self, veiculo, movimento):
         try:
             self.contagens[(veiculo, movimento)] = self.contagens.get((veiculo, movimento), 0) + 1
-            print(f"Incrementado {veiculo} no movimento {movimento}. Nova contagem: {self.contagens[(veiculo, movimento)]}")
             self.update_labels(veiculo, movimento)
             self.save_to_db(veiculo, movimento)
             self.update_current_tab()
@@ -298,7 +325,6 @@ class ContadorPerplan(ft.Column):
 
     def update_current_tab(self):
         current_tab = self.movimento_tabs.tabs[self.movimento_tabs.selected_index]
-        print(f"Atualizando aba: {current_tab.text}")
         current_tab.content.update()
         self.page.update()
 
@@ -320,11 +346,9 @@ class ContadorPerplan(ft.Column):
             print(f"Erro ao resetar: {ex}")
 
     def update_labels(self, veiculo, movimento):
-        try:
             self.labels[(veiculo, movimento)].value = str(self.contagens.get((veiculo, movimento), 0))
             self.page.update()
-        except Exception as ex:
-            print(f"Erro ao atualizar labels: {ex}")
+
 
     def save_contagens(self, e):
         try:
@@ -363,8 +387,6 @@ class ContadorPerplan(ft.Column):
             print(f"Erro ao salvar contagens: {ex}")
             self.page.overlay.append(ft.SnackBar(ft.Text("Erro ao salvar contagens.")))
             self.page.update()
-
-
 
     def confirmar_finalizar_sessao(self, e):
         def close_dialog(e):
@@ -471,39 +493,6 @@ class ContadorPerplan(ft.Column):
             session.rollback()
         self.page.update()
 
-
-
-    def adicionar_categoria(self, movimento):
-        def salvar_categoria(e):
-            novo_veiculo = veiculo_input.value
-            novo_bind = bind_input.value
-            if novo_veiculo and novo_bind:
-                try:
-                    nova_categoria = Categoria(veiculo=novo_veiculo, movimento=movimento, bind=novo_bind)
-                    session.add(nova_categoria)
-                    session.commit()
-                    self.update_binds()
-                    dialog.open = False
-                    self.page.overlay.append(ft.SnackBar(ft.Text(f"Categoria {novo_veiculo} adicionada")))
-                except SQLAlchemyError as ex:
-                    print(f"Erro ao adicionar categoria: {ex}")
-                    session.rollback()
-            self.page.update()
-
-        veiculo_input = ft.TextField(label="Veículo")
-        bind_input = ft.TextField(label="Bind")
-        dialog = ft.AlertDialog(
-            title=ft.Text("Adicionar Nova Categoria"),
-            content=ft.Column([veiculo_input, bind_input]),
-            actions=[
-                ft.TextButton("Salvar", on_click=salvar_categoria),
-                ft.TextButton("Cancelar", on_click=lambda _: setattr(dialog, 'open', False))
-            ]
-        )
-        self.page.overlay.append(dialog)
-        dialog.open = True
-        self.page.update()
-
     def editar_bind(self, veiculo, movimento):
         def on_bind_submit(e):
             new_bind = bind_input.value
@@ -552,13 +541,13 @@ class ContadorPerplan(ft.Column):
         self.setup_aba_contagem()
         self.page.update()
 
-    def setup_aba_perfil(self):
+    def setup_aba_config(self):
         tab = self.tabs.tabs[2].content
         tab.controls.clear()
         self.page.theme_mode = ft.ThemeMode.SYSTEM
-        self.c = ft.Switch(label="Modo claro", on_change=self.theme_changed)
+        self.modo_claro_escuro = ft.Switch(label="Modo claro", on_change=self.theme_changed)
         opacity = ft.Slider(value=100, min=20, max=100, divisions=80, label="Opacidade", on_change=self.ajustar_opacidade)
-        tab.controls.append(self.c)
+        tab.controls.append(self.modo_claro_escuro)
         tab.controls.append(opacity)
 
     def theme_changed(self, e):
@@ -567,7 +556,7 @@ class ContadorPerplan(ft.Column):
             if self.page.theme_mode == ft.ThemeMode.LIGHT
             else ft.ThemeMode.LIGHT
         )
-        self.c.label = (
+        self.modo_claro_escuro.label = (
             "Modo claro" if self.page.theme_mode == ft.ThemeMode.LIGHT else "Modo escuro"
         )
         self.page.update()
@@ -584,7 +573,7 @@ class ContadorPerplan(ft.Column):
         if not self.contagem_ativa:
             return
         try:
-            if hasattr(key, 'name') and key.name.startswith('f') and key.name[1:].isdigit():
+            if hasattr(key, 'name') and key.name.startswith('f') and key.name[1:].isdigit(): # Define as teclas de função para alternar as abas
                 index = int(key.name[1:]) - 1
                 if 0 <= index < len(self.movimento_tabs.tabs):
                     self.movimento_tabs.selected_index = index
@@ -602,7 +591,6 @@ class ContadorPerplan(ft.Column):
             current_movimento = self.movimento_tabs.tabs[self.movimento_tabs.selected_index].text
             if (char, current_movimento) in self.binds:
                 veiculo, movimento = self.binds[(char, current_movimento)]
-                print(f"Char: {char}, Veículo: {veiculo}, Movimento: {movimento}, Movimento Atual: {current_movimento}")
                 self.increment(veiculo, movimento)
             else:
                 print(f"Nenhum bind encontrado para a tecla {char} no movimento {current_movimento}")
@@ -681,7 +669,6 @@ class ContadorPerplan(ft.Column):
                             )
                             session.merge(nova_categoria)
                 session.commit()
-            print("Categorias padrão carregadas com sucesso")
         except (FileNotFoundError, json.JSONDecodeError, SQLAlchemyError) as ex:
             print(f"Erro ao carregar categorias padrão: {ex}")
             session.rollback()
@@ -689,14 +676,12 @@ class ContadorPerplan(ft.Column):
     def carregar_config(self):
         try:
             data = session.query(Categoria).order_by(Categoria.criado_em).all()
-            print(f"Categorias carregadas: {len(data)}")
             contagens = {}
             binds = {}
             for categoria in data:
                 contagens[(categoria.veiculo, categoria.movimento)] = 0
                 binds[(categoria.bind, categoria.movimento)] = (categoria.veiculo, categoria.movimento)
             
-            print(f"Binds carregados: {binds}")
             return contagens, binds, data
         except SQLAlchemyError as ex:
             print(f"Erro ao carregar config: {ex}")
