@@ -70,7 +70,7 @@ class ContadorPerplan(ft.Column):
                 ft.Tab(text="", icon=ft.icons.SETTINGS, content=ft.Column())
             ]
         )
-        self.controls.clear() # Garantir que a interface seja reiniciada e evita duplicação
+        self.controls.clear()  # Garantir que a interface seja reiniciada e evita duplicação
         self.controls.append(self.tabs)
         self.setup_aba_inicio()
         self.setup_aba_config()
@@ -148,6 +148,7 @@ class ContadorPerplan(ft.Column):
             snackbar = ft.SnackBar(ft.Text("Sessão criada com sucesso!"))
             self.page.snack_bar = snackbar
             snackbar.open = True
+            self.page.update()
 
             self.tabs.selected_index = 1
             self.tabs.tabs[1].content.visible = True
@@ -192,7 +193,6 @@ class ContadorPerplan(ft.Column):
             return False
 
         return True
-
 
     def setup_aba_contagem(self):
         tab = self.tabs.tabs[1].content
@@ -262,17 +262,23 @@ class ContadorPerplan(ft.Column):
         # Cabeçalho da Tabela
         
         self.page.update()
+
     def resetar_todas_contagens(self, e):
         try:
-            for (veiculo, movimento) in self.contagens.keys():
-                self.contagens[(veiculo, movimento)] = 0
-                self.update_labels(veiculo, movimento)
-                self.save_to_db(veiculo, movimento)
-            self.page.overlay.append(ft.SnackBar(ft.Text("Todas as contagens foram resetadas.")))
+            current_movimento = self.movimento_tabs.tabs[self.movimento_tabs.selected_index].text
+            for veiculo in [v for v, m in self.contagens.keys() if m == current_movimento]:
+                self.contagens[(veiculo, current_movimento)] = 0
+                self.update_labels(veiculo, current_movimento)
+                self.save_to_db(veiculo, current_movimento)
+            snackbar = ft.SnackBar(ft.Text(f"Contagens do movimento '{current_movimento}' foram resetadas."))
+            self.page.snack_bar = snackbar
+            snackbar.open = True
             self.page.update()
         except Exception as ex:
-            print(f"Erro ao resetar todas as contagens: {ex}")
-            self.page.overlay.append(ft.SnackBar(ft.Text("Erro ao resetar todas as contagens.")))
+            print(f"Erro ao resetar contagens do movimento '{current_movimento}': {ex}")
+            snackbar = ft.SnackBar(ft.Text(f"Erro ao resetar contagens do movimento '{current_movimento}'"))
+            self.page.snack_bar = snackbar
+            snackbar.open = True
             self.page.update()
 
     def criar_conteudo_movimento(self, movimento):
@@ -346,9 +352,8 @@ class ContadorPerplan(ft.Column):
             print(f"Erro ao resetar: {ex}")
 
     def update_labels(self, veiculo, movimento):
-            self.labels[(veiculo, movimento)].value = str(self.contagens.get((veiculo, movimento), 0))
-            self.page.update()
-
+        self.labels[(veiculo, movimento)].value = str(self.contagens.get((veiculo, movimento), 0))
+        self.page.update()
 
     def save_contagens(self, e):
         try:
@@ -380,12 +385,15 @@ class ContadorPerplan(ft.Column):
                     df.to_excel(writer, sheet_name=movimento, index=False)
                 detalhes_df.to_excel(writer, sheet_name='Detalhes', index=False)
 
-            print(f"Contagem salva em {arquivo_sessao}")
-            self.page.overlay.append(ft.SnackBar(ft.Text("Contagens salvas com sucesso!")))
+            snackbar = ft.SnackBar(ft.Text("Contagens salvas com sucesso!"))
+            self.page.snack_bar = snackbar
+            snackbar.open = True
             self.page.update()
         except Exception as ex:
             print(f"Erro ao salvar contagens: {ex}")
-            self.page.overlay.append(ft.SnackBar(ft.Text("Erro ao salvar contagens.")))
+            snackbar = ft.SnackBar(ft.Text("Erro ao salvar contagens."))
+            self.page.snack_bar = snackbar
+            snackbar.open = True
             self.page.update()
 
     def confirmar_finalizar_sessao(self, e):
@@ -421,11 +429,17 @@ class ContadorPerplan(ft.Column):
                 self.update_labels(veiculo, movimento)
                 self.save_to_db(veiculo, movimento)
             self.sessao = None
-            self.page.overlay.append(ft.SnackBar(ft.Text("Sessão finalizada!")))
+            snackbar = ft.SnackBar(ft.Text("Sessão finalizada!"))
+            self.page.snack_bar = snackbar
+            snackbar.open = True
             self.page.update()
             self.restart_app()
         except Exception as ex:
             print(f"Erro ao finalizar sessão: {ex}")
+            snackbar = ft.SnackBar(ft.Text("Erro ao finalizar sessão."))
+            self.page.snack_bar = snackbar
+            snackbar.open = True
+            self.page.update()
 
     def restart_app(self):
         self.stop_listener()
@@ -473,11 +487,17 @@ class ContadorPerplan(ft.Column):
                 categoria.bind = novo_atalho
                 session.commit()
                 self.update_binds()
-                self.page.overlay.append(ft.SnackBar(ft.Text(f"Atalho atualizado para {veiculo}")))
+                snackbar = ft.SnackBar(ft.Text(f"Atalho atualizado para {veiculo}"))
+                self.page.snack_bar = snackbar
+                snackbar.open = True
+                self.page.update()
         except SQLAlchemyError as ex:
             print(f"Erro ao atualizar atalho: {ex}")
             session.rollback()
-        self.page.update()
+            snackbar = ft.SnackBar(ft.Text(f"Erro ao atualizar atalho para {veiculo}"))
+            self.page.snack_bar = snackbar
+            snackbar.open = True
+            self.page.update()
 
     def atualizar_bind(self, e, veiculo, movimento):
         novo_bind = e.control.value
@@ -487,11 +507,17 @@ class ContadorPerplan(ft.Column):
                 categoria.bind = novo_bind
                 session.commit()
                 self.update_binds()
-                self.page.overlay.append(ft.SnackBar(ft.Text(f"Bind atualizado para {veiculo}")))
+                snackbar = ft.SnackBar(ft.Text(f"Bind atualizado para {veiculo}"))
+                self.page.snack_bar = snackbar
+                snackbar.open = True
+                self.page.update()
         except SQLAlchemyError as ex:
             print(f"Erro ao atualizar bind: {ex}")
             session.rollback()
-        self.page.update()
+            snackbar = ft.SnackBar(ft.Text(f"Erro ao atualizar bind para {veiculo}"))
+            self.page.snack_bar = snackbar
+            snackbar.open = True
+            self.page.update()
 
     def editar_bind(self, veiculo, movimento):
         def on_bind_submit(e):
@@ -573,7 +599,7 @@ class ContadorPerplan(ft.Column):
         if not self.contagem_ativa:
             return
         try:
-            if hasattr(key, 'name') and key.name.startswith('f') and key.name[1:].isdigit(): # Define as teclas de função para alternar as abas
+            if hasattr(key, 'name') and key.name.startswith('f') and key.name[1:].isdigit():  # Define as teclas de função para alternar as abas
                 index = int(key.name[1:]) - 1
                 if 0 <= index < len(self.movimento_tabs.tabs):
                     self.movimento_tabs.selected_index = index
@@ -613,7 +639,9 @@ class ContadorPerplan(ft.Column):
             if sessao_ativa:
                 self.sessao = sessao_ativa.sessao
                 self.detalhes = json.loads(sessao_ativa.detalhes)
-                self.page.overlay.append(ft.SnackBar(ft.Text("Sessão ativa recuperada.")))
+                snackbar = ft.SnackBar(ft.Text("Sessão ativa recuperada."))
+                self.page.snack_bar = snackbar
+                snackbar.open = True
                 self.contagens, self.binds, self.categorias = self.carregar_config()
                 self.setup_aba_contagem()
                 self.tabs.selected_index = 1
@@ -622,6 +650,10 @@ class ContadorPerplan(ft.Column):
                 self.recuperar_contagens()
         except SQLAlchemyError as ex:
             print(f"Erro ao carregar sessão ativa: {ex}")
+            snackbar = ft.SnackBar(ft.Text("Erro ao carregar sessão ativa."))
+            self.page.snack_bar = snackbar
+            snackbar.open = True
+            self.page.update()
 
     def salvar_sessao(self):
         try:
