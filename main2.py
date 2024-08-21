@@ -37,6 +37,14 @@ class Contagem(Base):
     veiculo = Column(String, ForeignKey('categorias.veiculo'))
     count = Column(Integer, default=0)
 
+class Historico(Base):
+    __tablename__ = 'historico'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    sessao = Column(String, ForeignKey('sessoes.sessao'))
+    veiculo = Column(String, ForeignKey('categorias.veiculo'))
+    movimento = Column(String)
+    timestamp = Column(DateTime, default=datetime.now)
+
 Base.metadata.create_all(engine)
 
 class ContadorPerplan(ft.Column):
@@ -67,12 +75,15 @@ class ContadorPerplan(ft.Column):
             tabs=[
                 ft.Tab(text="Inicio", content=ft.Column()),
                 ft.Tab(text="Contador", content=ft.Column()),
+                ft.Tab(text="Histórico", content=ft.Column()),
                 ft.Tab(text="", icon=ft.icons.SETTINGS, content=ft.Column())
             ]
         )
-        self.controls.clear()  # Garantir que a interface seja reiniciada e evita duplicação
+        self.controls.clear() # Garantir que a interface seja reiniciada e evita duplicação
         self.controls.append(self.tabs)
         self.setup_aba_inicio()
+        self.setup_aba_contagem()
+        self.setup_aba_historico()
         self.setup_aba_config()
         self.tabs.tabs[1].content.visible = False
 
@@ -130,7 +141,13 @@ class ContadorPerplan(ft.Column):
     def criar_sessao(self, e):
         if not self.validar_campos():
             return
+
         try:
+            # Deletar todas as sessões anteriores
+            session.query(Sessao).delete()
+            session.commit()
+
+            # Criar nova sessão
             self.detalhes = {
                 "Pesquisador": self.pesquisador_input.value,
                 "Código": self.codigo_ponto_input.value,
@@ -145,16 +162,14 @@ class ContadorPerplan(ft.Column):
             self.contagens, self.binds, self.categorias = self.carregar_config()
             self.setup_aba_contagem()
 
-            snackbar = ft.SnackBar(ft.Text("Sessão criada com sucesso!"))
-            self.page.snack_bar = snackbar
-            snackbar.open = True
-            self.page.update()
-
+            self.page.overlay.append(ft.SnackBar(ft.Text("Sessão criada com sucesso!")))
             self.tabs.selected_index = 1
             self.tabs.tabs[1].content.visible = True
             self.update_sessao_status()
         except Exception as ex:
             print(f"Erro ao criar sessão: {ex}")
+
+
 
     def validar_campos(self):
         campos_obrigatorios = [
@@ -167,15 +182,15 @@ class ContadorPerplan(ft.Column):
 
         for campo, nome in campos_obrigatorios:
             if not campo.value:
-                snackbar = ft.SnackBar(ft.Text(f"{nome} é obrigatório!"))
-                self.page.snack_bar = snackbar
+                snackbar = ft.SnackBar(ft.Text(f"{nome} é obrigatório!"), bgcolor="ORANGE")
+                self.page.overlay.append(snackbar)
                 snackbar.open = True
                 self.page.update()
                 return False
 
         if not self.movimentos_container.controls:
-            snackbar = ft.SnackBar(ft.Text("Adicione pelo menos um movimento!"))
-            self.page.snack_bar = snackbar
+            snackbar = ft.SnackBar(ft.Text("Adicione pelo menos um movimento!"), bgcolor="ORANGE")
+            self.page.overlay.append(snackbar)
             snackbar.open = True
             self.page.update()
             return False
@@ -183,8 +198,8 @@ class ContadorPerplan(ft.Column):
         try:
             sessao_existente = session.query(Sessao).filter_by(sessao=f"Sessao_{self.codigo_ponto_input.value}_{self.nome_ponto_input.value}_{self.data_ponto_input.value}").first()
             if sessao_existente:
-                snackbar = ft.SnackBar(ft.Text("Sessão já existe com esses detalhes!"))
-                self.page.snack_bar = snackbar
+                snackbar = ft.SnackBar(ft.Text("Sessão já existe com esses detalhes!"), bgcolor="YELLOW")
+                self.page.overlay.append(snackbar)
                 snackbar.open = True
                 self.page.update()
                 return False
@@ -193,6 +208,7 @@ class ContadorPerplan(ft.Column):
             return False
 
         return True
+
 
     def setup_aba_contagem(self):
         tab = self.tabs.tabs[1].content
@@ -270,16 +286,17 @@ class ContadorPerplan(ft.Column):
                 self.contagens[(veiculo, current_movimento)] = 0
                 self.update_labels(veiculo, current_movimento)
                 self.save_to_db(veiculo, current_movimento)
-            snackbar = ft.SnackBar(ft.Text(f"Contagens do movimento '{current_movimento}' foram resetadas."))
-            self.page.snack_bar = snackbar
+            snackbar = ft.SnackBar(ft.Text(f"Contagens do movimento '{current_movimento}' foram resetadas."), bgcolor="BLUE")
+            self.page.overlay.append(snackbar)
             snackbar.open = True
             self.page.update()
         except Exception as ex:
             print(f"Erro ao resetar contagens do movimento '{current_movimento}': {ex}")
-            snackbar = ft.SnackBar(ft.Text(f"Erro ao resetar contagens do movimento '{current_movimento}'"))
-            self.page.snack_bar = snackbar
+            snackbar = ft.SnackBar(ft.Text(f"Erro ao resetar contagens do movimento '{current_movimento}'."), bgcolor="RED") 
+            self.page.overlay.append(snackbar)
             snackbar.open = True
             self.page.update()
+
 
     def criar_conteudo_movimento(self, movimento):
         content = ft.Column()
@@ -325,14 +342,10 @@ class ContadorPerplan(ft.Column):
             self.contagens[(veiculo, movimento)] = self.contagens.get((veiculo, movimento), 0) + 1
             self.update_labels(veiculo, movimento)
             self.save_to_db(veiculo, movimento)
+            self.salvar_historico(veiculo, movimento)
             self.update_current_tab()
         except Exception as ex:
             print(f"Erro ao incrementar: {ex}")
-
-    def update_current_tab(self):
-        current_tab = self.movimento_tabs.tabs[self.movimento_tabs.selected_index]
-        current_tab.content.update()
-        self.page.update()
 
     def decrement(self, veiculo, movimento):
         try:
@@ -340,20 +353,53 @@ class ContadorPerplan(ft.Column):
                 self.contagens[(veiculo, movimento)] = self.contagens.get((veiculo, movimento), 0) - 1
                 self.update_labels(veiculo, movimento)
                 self.save_to_db(veiculo, movimento)
+                self.salvar_historico(veiculo, movimento)
         except Exception as ex:
             print(f"Erro ao decrementar: {ex}")
-
+        
     def reset(self, veiculo, movimento):
+            try:
+                # Redefine a contagem para 0
+                self.contagens[(veiculo, movimento)] = 0
+                # Atualiza a interface gráfica
+                self.update_labels(veiculo, movimento)
+                # Salva a alteração no banco de dados
+                self.save_to_db(veiculo, movimento)
+                
+                # Exibe uma notificação
+                snackbar = ft.SnackBar(ft.Text(f"Contagem de '{veiculo}' no movimento '{movimento}' foi resetada."), bgcolor="BLUE")
+                self.page.overlay.append(snackbar)
+                snackbar.open = True
+                self.page.update()
+            except Exception as ex:
+                print(f"Erro ao resetar contagem: {ex}")
+                snackbar = ft.SnackBar(ft.Text(f"Erro ao resetar contagem de '{veiculo}' no movimento '{movimento}'."), bgcolor="RED")
+                self.page.overlay.append(snackbar)
+                snackbar.open = True
+                self.page.update()
+
+    def salvar_historico(self, veiculo, movimento):
         try:
-            self.contagens[(veiculo, movimento)] = 0
-            self.update_labels(veiculo, movimento)
-            self.save_to_db(veiculo, movimento)
-        except Exception as ex:
-            print(f"Erro ao resetar: {ex}")
+            novo_registro = Historico(
+                sessao=self.sessao,
+                veiculo=veiculo,
+                movimento=movimento,
+                timestamp=datetime.now()
+            )
+            session.add(novo_registro)
+            session.commit()
+        except SQLAlchemyError as ex:
+            print(f"Erro ao salvar histórico: {ex}")
+            session.rollback()
+
+    def update_current_tab(self):
+        current_tab = self.movimento_tabs.tabs[self.movimento_tabs.selected_index]
+        current_tab.content.update()
+        self.page.update()
 
     def update_labels(self, veiculo, movimento):
-        self.labels[(veiculo, movimento)].value = str(self.contagens.get((veiculo, movimento), 0))
-        self.page.update()
+            self.labels[(veiculo, movimento)].value = str(self.contagens.get((veiculo, movimento), 0))
+            self.page.update()
 
     def save_contagens(self, e):
         try:
@@ -385,14 +431,15 @@ class ContadorPerplan(ft.Column):
                     df.to_excel(writer, sheet_name=movimento, index=False)
                 detalhes_df.to_excel(writer, sheet_name='Detalhes', index=False)
 
-            snackbar = ft.SnackBar(ft.Text("Contagens salvas com sucesso!"))
-            self.page.snack_bar = snackbar
+            print(f"Contagem salva em {arquivo_sessao}")
+            snackbar = ft.SnackBar(ft.Text("Contagens salvas com sucesso!"), bgcolor="GREEN")
+            self.page.overlay.append(snackbar)
             snackbar.open = True
             self.page.update()
         except Exception as ex:
             print(f"Erro ao salvar contagens: {ex}")
-            snackbar = ft.SnackBar(ft.Text("Erro ao salvar contagens."))
-            self.page.snack_bar = snackbar
+            snackbar = ft.SnackBar(ft.Text("Erro ao salvar contagens."), bgcolor="RED")
+            self.page.overlay.append(snackbar)
             snackbar.open = True
             self.page.update()
 
@@ -423,23 +470,32 @@ class ContadorPerplan(ft.Column):
 
     def end_session(self):
         try:
-            self.finalizar_sessao()
+            self.finalizar_sessao()  # Marca a sessão como finalizada no banco de dados
+            
+            # Reseta as contagens atuais para 0
             for veiculo, movimento in list(self.contagens.keys()):
                 self.contagens[(veiculo, movimento)] = 0
                 self.update_labels(veiculo, movimento)
                 self.save_to_db(veiculo, movimento)
+            
+            # Limpa a sessão ativa
             self.sessao = None
-            snackbar = ft.SnackBar(ft.Text("Sessão finalizada!"))
-            self.page.snack_bar = snackbar
-            snackbar.open = True
+            self.detalhes = {"Movimentos": []}
+            self.contagens = {}
+            self.binds = {}
+            self.labels = {}
+
+            # Notifica o usuário
+            self.page.overlay.append(ft.SnackBar(ft.Text("Sessão finalizada!")))
             self.page.update()
+
+            # Reinicia o aplicativo
             self.restart_app()
         except Exception as ex:
             print(f"Erro ao finalizar sessão: {ex}")
-            snackbar = ft.SnackBar(ft.Text("Erro ao finalizar sessão."))
-            self.page.snack_bar = snackbar
-            snackbar.open = True
+            self.page.overlay.append(ft.SnackBar(ft.Text(f"Erro ao finalizar sessão: {ex}")))
             self.page.update()
+
 
     def restart_app(self):
         self.stop_listener()
@@ -487,17 +543,13 @@ class ContadorPerplan(ft.Column):
                 categoria.bind = novo_atalho
                 session.commit()
                 self.update_binds()
-                snackbar = ft.SnackBar(ft.Text(f"Atalho atualizado para {veiculo}"))
-                self.page.snack_bar = snackbar
+                snackbar = ft.SnackBar(ft.Text(f"Atalho atualizado para {veiculo}"), bgcolor="GREEN")
+                self.page.overlay.append(snackbar)
                 snackbar.open = True
-                self.page.update()
         except SQLAlchemyError as ex:
             print(f"Erro ao atualizar atalho: {ex}")
             session.rollback()
-            snackbar = ft.SnackBar(ft.Text(f"Erro ao atualizar atalho para {veiculo}"))
-            self.page.snack_bar = snackbar
-            snackbar.open = True
-            self.page.update()
+        self.page.update()
 
     def atualizar_bind(self, e, veiculo, movimento):
         novo_bind = e.control.value
@@ -507,17 +559,13 @@ class ContadorPerplan(ft.Column):
                 categoria.bind = novo_bind
                 session.commit()
                 self.update_binds()
-                snackbar = ft.SnackBar(ft.Text(f"Bind atualizado para {veiculo}"))
-                self.page.snack_bar = snackbar
+                snackbar = ft.SnackBar(ft.Text(f"Bind atualizado para {veiculo}"), bgcolor="GREEN")
+                self.page.overlay.append(snackbar)
                 snackbar.open = True
-                self.page.update()
         except SQLAlchemyError as ex:
             print(f"Erro ao atualizar bind: {ex}")
             session.rollback()
-            snackbar = ft.SnackBar(ft.Text(f"Erro ao atualizar bind para {veiculo}"))
-            self.page.snack_bar = snackbar
-            snackbar.open = True
-            self.page.update()
+        self.page.update()
 
     def editar_bind(self, veiculo, movimento):
         def on_bind_submit(e):
@@ -567,8 +615,44 @@ class ContadorPerplan(ft.Column):
         self.setup_aba_contagem()
         self.page.update()
 
-    def setup_aba_config(self):
+    def setup_aba_historico(self):
         tab = self.tabs.tabs[2].content
+        tab.controls.clear()
+
+        header = ft.Row(
+            alignment=ft.MainAxisAlignment.CENTER,
+            controls=[
+                ft.Container(content=ft.Text("Clique e carregue o histórico", weight=ft.FontWeight.W_400, size=15))
+            ]
+        )
+
+        self.historico_lista = ft.ListView(spacing=10, padding=20, auto_scroll=True)
+
+        carregar_historico_button = ft.ElevatedButton(
+            text="Carregar",
+            on_click=self.carregar_historico
+        )
+
+        tab.controls.append(header)
+        tab.controls.append(carregar_historico_button)
+        tab.controls.append(self.historico_lista)
+        self.page.update()
+
+    def carregar_historico(self, e):
+        try:
+            self.historico_lista.controls.clear()
+            registros = session.query(Historico).filter_by(sessao=self.sessao).order_by(Historico.timestamp.desc()).all()
+
+            for registro in registros:
+                self.historico_lista.controls.append(
+                    ft.Text(f"{registro.timestamp.strftime('%Y-%m-%d %H:%M:%S')} | Categoria: {registro.veiculo} | Movimento: {registro.movimento}")
+                )
+            self.page.update()
+        except SQLAlchemyError as ex:
+            print(f"Erro ao carregar histórico: {ex}")
+
+    def setup_aba_config(self):
+        tab = self.tabs.tabs[3].content
         tab.controls.clear()
         self.page.theme_mode = ft.ThemeMode.SYSTEM
         self.modo_claro_escuro = ft.Switch(label="Modo claro", on_change=self.theme_changed)
@@ -599,7 +683,7 @@ class ContadorPerplan(ft.Column):
         if not self.contagem_ativa:
             return
         try:
-            if hasattr(key, 'name') and key.name.startswith('f') and key.name[1:].isdigit():  # Define as teclas de função para alternar as abas
+            if hasattr(key, 'name') and key.name.startswith('f') and key.name[1:].isdigit(): # Define as teclas de função para alternar as abas
                 index = int(key.name[1:]) - 1
                 if 0 <= index < len(self.movimento_tabs.tabs):
                     self.movimento_tabs.selected_index = index
@@ -639,8 +723,8 @@ class ContadorPerplan(ft.Column):
             if sessao_ativa:
                 self.sessao = sessao_ativa.sessao
                 self.detalhes = json.loads(sessao_ativa.detalhes)
-                snackbar = ft.SnackBar(ft.Text("Sessão ativa recuperada."))
-                self.page.snack_bar = snackbar
+                snackbar = ft.SnackBar(ft.Text("Sessão ativa recuperada."), bgcolor="GREEN")
+                self.page.overlay.append(snackbar)
                 snackbar.open = True
                 self.contagens, self.binds, self.categorias = self.carregar_config()
                 self.setup_aba_contagem()
@@ -650,10 +734,6 @@ class ContadorPerplan(ft.Column):
                 self.recuperar_contagens()
         except SQLAlchemyError as ex:
             print(f"Erro ao carregar sessão ativa: {ex}")
-            snackbar = ft.SnackBar(ft.Text("Erro ao carregar sessão ativa."))
-            self.page.snack_bar = snackbar
-            snackbar.open = True
-            self.page.update()
 
     def salvar_sessao(self):
         try:
@@ -676,13 +756,36 @@ class ContadorPerplan(ft.Column):
 
     def finalizar_sessao(self):
         try:
-            sessao_existente = session.query(Sessao).filter_by(sessao=self.sessao).first()
-            if sessao_existente:
-                sessao_existente.ativa = False
-                session.commit()
-        except SQLAlchemyError as ex:
-            print(f"Erro ao finalizar sessão: {ex}")
+            # Primeiro, remover todas as contagens associadas à sessão
+            contagens_a_remover = session.query(Contagem).filter_by(sessao=self.sessao).all()
+            for contagem in contagens_a_remover:
+                session.delete(contagem)
+
+            # Em seguida, remover a própria sessão
+            sessao_a_remover = session.query(Sessao).filter_by(sessao=self.sessao).first()
+            if sessao_a_remover:
+                session.delete(sessao_a_remover)
+
+            session.commit()
+            print(f"Sessão '{self.sessao}' e seus dados foram removidos com sucesso.")
+
+            # Resetar contagens locais e atualizar a interface
+            self.contagens.clear()
+            self.binds.clear()
+            self.labels.clear()
+            self.sessao = None
+            self.page.overlay.append(ft.SnackBar(ft.Text("Sessão finalizada e removida!")))
+            self.page.update()
+
+            self.restart_app()
+
+        except Exception as ex:
+            print(f"Erro ao finalizar e remover sessão: {ex}")
+            self.page.overlay.append(ft.SnackBar(ft.Text(f"Erro ao finalizar sessão: {ex}")))
             session.rollback()
+            self.page.update()
+
+
 
     def carregar_categorias_padrao(self, caminho_json):
         try:
@@ -726,7 +829,7 @@ class ContadorPerplan(ft.Column):
 def main(page: ft.Page):
     contador = ContadorPerplan(page)
     page.fonts = {
-        'RobotoSlab': "https://github.com/google/fonts/raw/main/apache/robotoslab/RobotoSlab%5Bwght%5D.ttf"}
+        'RobotoSlab': "https://github.com/google/fonts/raw/main/apache/robotomono/RobotoMono%5Bwght%5D.ttf"}
 
     page.theme = ft.Theme(font_family="RobotoSlab")
     page.scroll = ft.ScrollMode.AUTO
