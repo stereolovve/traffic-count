@@ -63,7 +63,9 @@ class ContadorPerplan(ft.Column):
         self.numpad_mappings = {
             96: "np0", 97: "np1", 98: "np2", 99: "np3", 100: "np4",
             101: "np5", 102: "np6", 103: "np7", 104: "np8", 105: "np9",
+            106: "np*", 110: "np,", 111: "np/"
         }
+
         self.movimento_tabs = None
         self.setup_ui()
         self.carregar_sessao_ativa()
@@ -250,33 +252,18 @@ class ContadorPerplan(ft.Column):
 
         tab.controls.append(controls_row)
 
-        header = ft.Row(
-            alignment=ft.MainAxisAlignment.CENTER,
-            controls=[
-                ft.Container(content=ft.Text("Categoria", weight=ft.FontWeight.W_400, size=12), width=80),
-                ft.Container(content=ft.Text("Bind", weight=ft.FontWeight.W_400, size=12), width=50),
-                ft.Container(content=ft.Text("Contagem", weight=ft.FontWeight.W_400, size=12), width=80),
-                ft.Container(content=ft.Text("Ações", weight=ft.FontWeight.W_400, size=12), width=50),
-            ],
-        )
-        tab.controls.append(header)
-
+        # Adicionar cabeçalho dentro de cada aba de contagem
         self.movimento_tabs = ft.Tabs(
             selected_index=0,
             animation_duration=50,
-            tabs=[ft.Tab(text=movimento, content=self.criar_conteudo_movimento(movimento)) 
-              for movimento in self.detalhes["Movimentos"]],
+            tabs=[ft.Tab(text=movimento, content=self.criar_conteudo_movimento(movimento))
+                for movimento in self.detalhes["Movimentos"]],
             expand=1,
         )
 
-        for i, movimento in enumerate(self.detalhes["Movimentos"]):
-            movimento_content = self.criar_conteudo_movimento(movimento)
-            self.movimento_tabs.tabs[i].content = ft.Container(content=movimento_content, height=400)  # Altura fixa para teste
-
         tab.controls.append(self.movimento_tabs)
 
-        # Cabeçalho da Tabela
-        
+        # Cabeçalho movido para dentro da função `criar_conteudo_movimento`
         self.page.update()
 
     def resetar_todas_contagens(self, e):
@@ -300,10 +287,26 @@ class ContadorPerplan(ft.Column):
 
     def criar_conteudo_movimento(self, movimento):
         content = ft.Column()
+
+        # Adicionar o cabeçalho para cada movimento
+        header = ft.Row(
+            alignment=ft.MainAxisAlignment.CENTER,
+            controls=[
+                ft.Container(content=ft.Text("       Categoria", weight=ft.FontWeight.W_400, size=12), width=150),
+                ft.Container(content=ft.Text("Bind", weight=ft.FontWeight.W_400, size=12), width=50),
+                ft.Container(content=ft.Text("Contagem", weight=ft.FontWeight.W_400, size=12), width=80),
+                ft.Container(content=ft.Text("Ações", weight=ft.FontWeight.W_400, size=12), width=50),
+            ],
+        )
+
+        # Adicionar o cabeçalho antes de adicionar os controles
+        content.controls.append(header)
+
         categorias = [c for c in self.categorias if c.movimento == movimento]
         for categoria in categorias:
             control = self.create_category_control(categoria.veiculo, categoria.bind, movimento)
             content.controls.append(control)
+        
         return content
 
     def create_category_control(self, veiculo, bind, movimento):
@@ -359,14 +362,9 @@ class ContadorPerplan(ft.Column):
         
     def reset(self, veiculo, movimento):
             try:
-                # Redefine a contagem para 0
                 self.contagens[(veiculo, movimento)] = 0
-                # Atualiza a interface gráfica
                 self.update_labels(veiculo, movimento)
-                # Salva a alteração no banco de dados
                 self.save_to_db(veiculo, movimento)
-                
-                # Exibe uma notificação
                 snackbar = ft.SnackBar(ft.Text(f"Contagem de '{veiculo}' no movimento '{movimento}' foi resetada."), bgcolor="BLUE")
                 self.page.overlay.append(snackbar)
                 snackbar.open = True
@@ -829,9 +827,9 @@ class ContadorPerplan(ft.Column):
 def main(page: ft.Page):
     contador = ContadorPerplan(page)
     page.fonts = {
-        'RobotoSlab': "https://github.com/google/fonts/raw/main/apache/robotomono/RobotoMono%5Bwght%5D.ttf"}
+        'RobotoMono': "https://github.com/google/fonts/raw/main/apache/robotomono/RobotoMono%5Bwght%5D.ttf"}
 
-    page.theme = ft.Theme(font_family="RobotoSlab")
+    page.theme = ft.Theme(font_family="RobotoMono")
     page.scroll = ft.ScrollMode.AUTO
     
     page.window.width = 450
