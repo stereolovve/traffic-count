@@ -14,35 +14,25 @@
 
 O projeto ainda está em desenvolvimento e as próximas atualizações serão voltadas para as seguintes tarefas:
 
-- [x] Tarefa 1
-- [x] Tarefa 2
-- [x] Tarefa 3
-- [ ] Tarefa 4
-- [ ] Tarefa 5
+- [x] Contagens com mais de um movimento
+- [x] Salvamento em planilha consistente
+- [x] Histórico
+- [ ] Contagem DNIT e EIXO SUSPENSO
+- [ ] Login para armazenamento de preferências
 
-## 💻 Pré-requisitos
+## 💻 Documentação
 
-Antes de começar, verifique se você atendeu aos seguintes requisitos:
+Link para a documentação
 
-- Você instalou a versão mais recente de `<linguagem / dependência / requeridos>`
-- Você tem uma máquina `<Windows / Linux / Mac>`. Indique qual sistema operacional é compatível / não compatível.
-- Você leu `<guia / link / documentação_relacionada_ao_projeto>`.
-
-## 🚀 Instalando <nome_do_projeto>
-
-Para instalar o <nome_do_projeto>, siga estas etapas:
-
-Linux e macOS:
+## 🚀 XXXXX 
 
 ```
 <comando_de_instalação>
 ```
 
-Windows:
-
-```
-<comando_de_instalação>
-```
+## Contato
+Entre em contato comigo pelo meu e-mail!
+lucas.diegoo0011@gmail.com
 
 ## 🤝 Colaboradores
 
