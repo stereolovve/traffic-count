@@ -7,6 +7,7 @@ import pandas as pd
 from datetime import datetime
 import json
 import os
+import re
 
 Base = declarative_base()
 engine = create_engine('sqlite:///dados.db')
@@ -68,6 +69,7 @@ class ContadorPerplan(ft.Column):
 
         self.movimento_tabs = None
         self.setup_ui()
+        self.historico_page_size = 10  # Número de registros a serem carregados por vez
         self.carregar_sessao_ativa()
 
     # Cria as abas do app
@@ -398,6 +400,10 @@ class ContadorPerplan(ft.Column):
     def update_labels(self, veiculo, movimento):
             self.labels[(veiculo, movimento)].value = str(self.contagens.get((veiculo, movimento), 0))
             self.page.update()
+            
+    def update_sessao_status(self):
+        self.sessao_status.value = f"Sessão ativa: {self.sessao}" if self.sessao else "Nenhuma sessão ativa"
+        self.page.update()
 
     def save_contagens(self, e):
         try:
@@ -410,9 +416,16 @@ class ContadorPerplan(ft.Column):
 
             detalhes_df = pd.DataFrame([self.detalhes])
 
-            if not os.path.exists('contagens'):
-                os.makedirs('contagens')
-            arquivo_sessao = f'contagens/{self.sessao}.xlsx'
+            # Sanitização dos nomes
+            nome_pesquisador = re.sub(r'[<>:"/\\|?*]', '', self.detalhes['Pesquisador'])
+            codigo = re.sub(r'[<>:"/\\|?*]', '', self.detalhes['Código'])
+
+            # Criação do diretório com o nome do pesquisador e código
+            diretorio_pesquisador_codigo = os.path.join(nome_pesquisador, codigo)
+            if not os.path.exists(diretorio_pesquisador_codigo):
+                os.makedirs(diretorio_pesquisador_codigo)
+
+            arquivo_sessao = os.path.join(diretorio_pesquisador_codigo, f'{self.sessao}.xlsx')
 
             try:
                 existing_df = pd.read_excel(arquivo_sessao, sheet_name=None)
@@ -620,30 +633,36 @@ class ContadorPerplan(ft.Column):
         header = ft.Row(
             alignment=ft.MainAxisAlignment.CENTER,
             controls=[
-                ft.Container(content=ft.Text("Clique e carregue o histórico", weight=ft.FontWeight.W_400, size=15))
+                ft.Container(content=ft.Text("Histórico de Contagens", weight=ft.FontWeight.W_400, size=15))
             ]
         )
 
         self.historico_lista = ft.ListView(spacing=10, padding=20, auto_scroll=True)
 
         carregar_historico_button = ft.ElevatedButton(
-            text="Carregar",
+            text="Carregar próximos 10 registros",
             on_click=self.carregar_historico
         )
 
-        tab.controls.append(header)
-        tab.controls.append(carregar_historico_button)
-        tab.controls.append(self.historico_lista)
+        tab.controls.extend([
+            header,
+            carregar_historico_button,
+            self.historico_lista
+        ])
         self.page.update()
 
     def carregar_historico(self, e):
         try:
-            self.historico_lista.controls.clear()
-            registros = session.query(Historico).filter_by(sessao=self.sessao).order_by(Historico.timestamp.desc()).all()
+            registros = session.query(Historico)\
+                .filter_by(sessao=self.sessao)\
+                .order_by(Historico.timestamp.desc())\
+                .limit(self.historico_page_size)\
+                .all()
 
+            self.historico_lista.controls.clear()
             for registro in registros:
                 self.historico_lista.controls.append(
-                    ft.Text(f"{registro.timestamp.strftime('%Y-%m-%d %H:%M:%S')} | Categoria: {registro.veiculo} | Movimento: {registro.movimento}")
+                    ft.Text(f"{registro.timestamp.strftime('%d/%m/%Y %H:%M:%S')} | Categoria: {registro.veiculo} | Movimento: {registro.movimento}")
                 )
             self.page.update()
         except SQLAlchemyError as ex:
@@ -835,6 +854,7 @@ def main(page: ft.Page):
     page.window.width = 450
     page.window.height = 1080
     page.window.always_on_top = True
+    
 
     page.add(contador)
     
