@@ -7,7 +7,6 @@ import pandas as pd
 from datetime import datetime
 import json
 import os
-import re
 
 Base = declarative_base()
 engine = create_engine('sqlite:///dados.db')
@@ -69,13 +68,12 @@ class ContadorPerplan(ft.Column):
 
         self.movimento_tabs = None
         self.setup_ui()
-        self.historico_page_size = 10  # Número de registros a serem carregados por vez
         self.carregar_sessao_ativa()
 
     # Cria as abas do app
     def setup_ui(self):
         self.tabs = ft.Tabs(
-            animation_duration=50,
+            animation_duration=0,
             tabs=[
                 ft.Tab(text="Inicio", content=ft.Column()),
                 ft.Tab(text="Contador", content=ft.Column()),
@@ -98,7 +96,7 @@ class ContadorPerplan(ft.Column):
         self.codigo_ponto_input = ft.TextField(label="Código")
         self.nome_ponto_input = ft.TextField(label="Ponto (ex: P10N)")
         self.horas_contagem_input = ft.TextField(label="Periodo (ex: 6h-18h)")
-        self.data_ponto_input = ft.TextField(label="Data do Ponto (dd-mm-aaaa)")
+        self.data_ponto_input = ft.TextField(label="Data do Ponto (USE O '-' OU '.')")
         
         self.movimentos_container = ft.Column()
         adicionar_movimento_button = ft.ElevatedButton(
@@ -115,7 +113,7 @@ class ContadorPerplan(ft.Column):
             self.nome_ponto_input,
             self.horas_contagem_input,
             self.data_ponto_input,
-            ft.Text("Adicione os movimentos:"),
+            ft.Text("Adicione os movimentos e crie a sessão"),
             self.movimentos_container,
             adicionar_movimento_button,
             criar_sessao_button
@@ -160,7 +158,8 @@ class ContadorPerplan(ft.Column):
                 "Data do Ponto": self.data_ponto_input.value,
                 "Movimentos": [mov.controls[0].value for mov in self.movimentos_container.controls]
             }
-            self.sessao = f"Sessao_{self.detalhes['Código']}_{self.detalhes['Ponto']}_{self.detalhes['Data do Ponto']}"
+            movimentos_str = ', '.join(self.detalhes['Movimentos'])
+            self.sessao = f"{self.detalhes['Ponto']} - {movimentos_str} - {self.detalhes['Periodo']}"
             self.salvar_sessao()
             self.carregar_categorias_padrao('padrao.json')
             self.contagens, self.binds, self.categorias = self.carregar_config()
@@ -172,6 +171,7 @@ class ContadorPerplan(ft.Column):
             self.update_sessao_status()
         except Exception as ex:
             print(f"Erro ao criar sessão: {ex}")
+
 
 
 
@@ -200,7 +200,7 @@ class ContadorPerplan(ft.Column):
             return False
 
         try:
-            sessao_existente = session.query(Sessao).filter_by(sessao=f"Sessao_{self.codigo_ponto_input.value}_{self.nome_ponto_input.value}_{self.data_ponto_input.value}").first()
+            sessao_existente = session.query(Sessao).filter_by(sessao=f"{self.codigo_ponto_input.value} - {self.nome_ponto_input.value} - {self.movimentos_container.controls}").first()
             if sessao_existente:
                 snackbar = ft.SnackBar(ft.Text("Sessão já existe com esses detalhes!"), bgcolor="YELLOW")
                 self.page.overlay.append(snackbar)
@@ -254,10 +254,9 @@ class ContadorPerplan(ft.Column):
 
         tab.controls.append(controls_row)
 
-        # Adicionar cabeçalho dentro de cada aba de contagem
         self.movimento_tabs = ft.Tabs(
             selected_index=0,
-            animation_duration=50,
+            animation_duration=0,
             tabs=[ft.Tab(text=movimento, content=self.criar_conteudo_movimento(movimento))
                 for movimento in self.detalhes["Movimentos"]],
             expand=1,
@@ -265,7 +264,6 @@ class ContadorPerplan(ft.Column):
 
         tab.controls.append(self.movimento_tabs)
 
-        # Cabeçalho movido para dentro da função `criar_conteudo_movimento`
         self.page.update()
 
     def resetar_todas_contagens(self, e):
@@ -294,9 +292,9 @@ class ContadorPerplan(ft.Column):
         header = ft.Row(
             alignment=ft.MainAxisAlignment.CENTER,
             controls=[
-                ft.Container(content=ft.Text("       Categoria", weight=ft.FontWeight.W_400, size=12), width=150),
-                ft.Container(content=ft.Text("Bind", weight=ft.FontWeight.W_400, size=12), width=50),
-                ft.Container(content=ft.Text("Contagem", weight=ft.FontWeight.W_400, size=12), width=80),
+                ft.Container(content=ft.Text("    Categoria", weight=ft.FontWeight.W_400, size=12), width=130),
+                ft.Container(content=ft.Text("Bind", weight=ft.FontWeight.W_400, size=12), width=30),
+                ft.Container(content=ft.Text("Contagem", weight=ft.FontWeight.W_400, size=12), width=70),
                 ft.Container(content=ft.Text("Ações", weight=ft.FontWeight.W_400, size=12), width=50),
             ],
         )
@@ -400,10 +398,6 @@ class ContadorPerplan(ft.Column):
     def update_labels(self, veiculo, movimento):
             self.labels[(veiculo, movimento)].value = str(self.contagens.get((veiculo, movimento), 0))
             self.page.update()
-            
-    def update_sessao_status(self):
-        self.sessao_status.value = f"Sessão ativa: {self.sessao}" if self.sessao else "Nenhuma sessão ativa"
-        self.page.update()
 
     def save_contagens(self, e):
         try:
@@ -416,16 +410,20 @@ class ContadorPerplan(ft.Column):
 
             detalhes_df = pd.DataFrame([self.detalhes])
 
-            # Sanitização dos nomes
-            nome_pesquisador = re.sub(r'[<>:"/\\|?*]', '', self.detalhes['Pesquisador'])
-            codigo = re.sub(r'[<>:"/\\|?*]', '', self.detalhes['Código'])
+            # Criar estrutura de diretórios
+            pesquisador = self.detalhes["Pesquisador"]  
+            codigo = self.detalhes["Código"]
+            ponto = self.detalhes["Ponto"]
+            periodo = self.detalhes["Periodo"]
+            movimentos = "-".join(self.detalhes["Movimentos"])
 
-            # Criação do diretório com o nome do pesquisador e código
-            diretorio_pesquisador_codigo = os.path.join(nome_pesquisador, codigo)
-            if not os.path.exists(diretorio_pesquisador_codigo):
-                os.makedirs(diretorio_pesquisador_codigo)
+            diretorio = os.path.join(pesquisador, codigo)
+            if not os.path.exists(diretorio):
+                os.makedirs(diretorio)
 
-            arquivo_sessao = os.path.join(diretorio_pesquisador_codigo, f'{self.sessao}.xlsx')
+            # Nome do arquivo
+            nome_arquivo = f"{ponto} - {movimentos} - {periodo}.xlsx"
+            arquivo_sessao = os.path.join(diretorio, nome_arquivo)
 
             try:
                 existing_df = pd.read_excel(arquivo_sessao, sheet_name=None)
@@ -453,6 +451,7 @@ class ContadorPerplan(ft.Column):
             self.page.overlay.append(snackbar)
             snackbar.open = True
             self.page.update()
+
 
     def confirmar_finalizar_sessao(self, e):
         def close_dialog(e):
@@ -633,36 +632,30 @@ class ContadorPerplan(ft.Column):
         header = ft.Row(
             alignment=ft.MainAxisAlignment.CENTER,
             controls=[
-                ft.Container(content=ft.Text("Histórico de Contagens", weight=ft.FontWeight.W_400, size=15))
+                ft.Container(content=ft.Text("Clique e carregue o histórico", weight=ft.FontWeight.W_400, size=15))
             ]
         )
 
         self.historico_lista = ft.ListView(spacing=10, padding=20, auto_scroll=True)
 
         carregar_historico_button = ft.ElevatedButton(
-            text="Carregar próximos 10 registros",
+            text="Carregar",
             on_click=self.carregar_historico
         )
 
-        tab.controls.extend([
-            header,
-            carregar_historico_button,
-            self.historico_lista
-        ])
+        tab.controls.append(header)
+        tab.controls.append(carregar_historico_button)
+        tab.controls.append(self.historico_lista)
         self.page.update()
 
     def carregar_historico(self, e):
         try:
-            registros = session.query(Historico)\
-                .filter_by(sessao=self.sessao)\
-                .order_by(Historico.timestamp.desc())\
-                .limit(self.historico_page_size)\
-                .all()
-
             self.historico_lista.controls.clear()
+            registros = session.query(Historico).filter_by(sessao=self.sessao).order_by(Historico.timestamp.desc()).limit(10).all()
+
             for registro in registros:
                 self.historico_lista.controls.append(
-                    ft.Text(f"{registro.timestamp.strftime('%d/%m/%Y %H:%M:%S')} | Categoria: {registro.veiculo} | Movimento: {registro.movimento}")
+                    ft.Text(f"{registro.timestamp.strftime('%Y-%m-%d %H:%M:%S')} | Categoria: {registro.veiculo} | Movimento: {registro.movimento}")
                 )
             self.page.update()
         except SQLAlchemyError as ex:
@@ -854,7 +847,6 @@ def main(page: ft.Page):
     page.window.width = 450
     page.window.height = 1080
     page.window.always_on_top = True
-    
 
     page.add(contador)
     
