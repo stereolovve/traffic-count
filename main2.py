@@ -72,26 +72,31 @@ class ContadorPerplan(ft.Column):
         self.historico_page_size = 10  # Número de registros a serem carregados por vez
         self.carregar_sessao_ativa()
 
+
     # Cria as abas do app
     def setup_ui(self):
-
         self.tabs = ft.Tabs(
-            animation_duration=50,
             tabs=[
-                ft.Tab(text="Inicio", content=ft.Column()),
-                ft.Tab(text="Contador", content=ft.Column()),
-                ft.Tab(text="Histórico", content=ft.Column()),
-                ft.Tab(text="", icon=ft.icons.SETTINGS, content=ft.Column())
+                ft.Tab(text="Inicio", content=ft.Column(width=450, height=900)),  # Substituindo o content por Column
+                ft.Tab(text="Contador", content=ft.Column(width=450, height=900)),
+                ft.Tab(text="Histórico", content=ft.Column(width=450, height=900)),
+                ft.Tab(text="", icon=ft.icons.SETTINGS, content=ft.Column(width=450, height=900))
             ]
         )
-        self.controls.clear() # Garantir que a interface seja reiniciada e evita duplicação
+
+        # Aqui removemos o loop que tentava acessar o atributo controls de Container
+        # e nos concentramos em adicionar os elementos nas abas diretamente usando o Column.
+
+        self.controls.clear()
         self.controls.append(self.tabs)
         self.setup_aba_inicio()
         self.setup_aba_contagem()
         self.setup_aba_historico()
         self.setup_aba_config()
         self.tabs.tabs[1].content.visible = False
-        self.atualizar_borda_contagem()  
+        self.atualizar_borda_contagem()
+
+
 
 
     def setup_aba_inicio(self):
@@ -314,8 +319,10 @@ class ContadorPerplan(ft.Column):
 
         tab.controls.append(self.movimento_tabs)
 
-        # Cabeçalho movido para dentro da função `criar_conteudo_movimento`
+
+        # Cabeçalho movido para dentro da função criar_conteudo_movimento
         self.page.update()
+
 
     def resetar_todas_contagens(self, e):
         try:
@@ -339,31 +346,32 @@ class ContadorPerplan(ft.Column):
     def criar_conteudo_movimento(self, movimento):
         content = ft.Column()
 
-        # Adicionar o cabeçalho para cada movimento
+        # Adicionar o cabeçalho para cada movimento, colocando em um Row com height fixo para evitar sobreposição
         header = ft.Row(
             alignment=ft.MainAxisAlignment.CENTER,
             controls=[
-                ft.Container(content=ft.Text("       Categoria", weight=ft.FontWeight.W_400, size=12), width=150),
-                ft.Container(content=ft.Text("Bind", weight=ft.FontWeight.W_400, size=12), width=50),
-                ft.Container(content=ft.Text("Contagem", weight=ft.FontWeight.W_400, size=12), width=80),
-                ft.Container(content=ft.Text("Ações", weight=ft.FontWeight.W_400, size=12), width=50),
+                ft.Container(content=ft.Text("       Categoria", weight=ft.FontWeight.W_400, size=12), width=150, height=40),
+                ft.Container(content=ft.Text("Bind", weight=ft.FontWeight.W_400, size=12), width=50, height=40),
+                ft.Container(content=ft.Text("Contagem", weight=ft.FontWeight.W_400, size=12), width=80, height=40),
+                ft.Container(content=ft.Text("Ações", weight=ft.FontWeight.W_400, size=12), width=50, height=40),
             ],
+            height=50,  # Define uma altura fixa para evitar que ele suba e cause sobreposição
         )
 
-        # Adicionar o cabeçalho antes de adicionar os controles
         content.controls.append(header)
 
         categorias = [c for c in self.categorias if c.movimento == movimento]
         for categoria in categorias:
             control = self.create_category_control(categoria.veiculo, categoria.bind, movimento)
             content.controls.append(control)
-        
+
         return content
 
+
     def create_category_control(self, veiculo, bind, movimento):
-        label_veiculo = ft.Text(f"{veiculo}", size=15, width=100)
-        label_bind = ft.Text(f"({bind})", color="cyan", size=15, width=50)
-        label_count = ft.Text(f"{self.contagens.get((veiculo, movimento), 0)}", size=15, width=50)
+        label_veiculo = ft.Text(f"{veiculo}", size=15, width=100)  # Removido autofocus
+        label_bind = ft.Text(f"({bind})", color="cyan", size=15, width=50)  # Removido autofocus
+        label_count = ft.Text(f"{self.contagens.get((veiculo, movimento), 0)}", size=15, width=50)  # Removido autofocus
         self.labels[(veiculo, movimento)] = label_count
 
         popup_menu = ft.PopupMenuButton(
@@ -424,6 +432,10 @@ class ContadorPerplan(ft.Column):
             self.save_to_db(veiculo, movimento)
             self.salvar_historico(veiculo, movimento)
             self.update_current_tab()
+
+            # Adiciona uma entrada no feed
+            self.page.update()
+
         except Exception as ex:
             print(f"Erro ao incrementar: {ex}")
 
@@ -434,9 +446,13 @@ class ContadorPerplan(ft.Column):
                 self.update_labels(veiculo, movimento)
                 self.save_to_db(veiculo, movimento)
                 self.salvar_historico(veiculo, movimento)
+
+                # Adiciona uma entrada no feed
+                self.page.update()
+
         except Exception as ex:
             print(f"Erro ao decrementar: {ex}")
-        
+
     def reset(self, veiculo, movimento):
             try:
                 self.contagens[(veiculo, movimento)] = 0
@@ -772,16 +788,28 @@ class ContadorPerplan(ft.Column):
             print(f"Erro ao ajustar opacidade: {ex}")
 
     def on_key_press(self, key):
+        
         if not self.contagem_ativa:
             return
         try:
-            if hasattr(key, 'name') and key.name.startswith('f') and key.name[1:].isdigit(): # Define as teclas de função para alternar as abas
-                index = int(key.name[1:]) - 1
-                if 0 <= index < len(self.movimento_tabs.tabs):
-                    self.movimento_tabs.selected_index = index
-                    self.page.update()
+            if hasattr(key, 'name') and key.name == 'caps_lock':
+                # Controlar navegação apenas entre as abas de contagem (desconsiderando outros controles)
+                self.movimento_tabs.selected_index = (self.movimento_tabs.selected_index + 1) % len(self.movimento_tabs.tabs)
+                self.page.update()
                 return
 
+            # Alternar entre as abas com setas (navegação manual)
+            if hasattr(key, 'name') and key.name == 'up':
+                self.movimento_tabs.selected_index = (self.movimento_tabs.selected_index + 1) % len(self.movimento_tabs.tabs)
+                self.page.update()
+                return
+
+            if hasattr(key, 'name') and key.name == 'down':
+                self.movimento_tabs.selected_index = (self.movimento_tabs.selected_index - 1) % len(self.movimento_tabs.tabs)
+                self.page.update()
+                return
+
+            # Mapeamento para controle do bind
             char = None
             if hasattr(key, 'vk') and key.vk in self.numpad_mappings:
                 char = self.numpad_mappings[key.vk]
@@ -789,15 +817,18 @@ class ContadorPerplan(ft.Column):
                 char = key.char
             else:
                 char = str(key).strip("'")
-            
+
             current_movimento = self.movimento_tabs.tabs[self.movimento_tabs.selected_index].text
             if (char, current_movimento) in self.binds:
                 veiculo, movimento = self.binds[(char, current_movimento)]
                 self.increment(veiculo, movimento)
             else:
                 print(f"Nenhum bind encontrado para a tecla {char} no movimento {current_movimento}")
+
         except Exception as ex:
             print(f"Erro ao pressionar tecla: {ex}")
+
+
 
     def start_listener(self):
         if self.listener is None:
@@ -917,6 +948,7 @@ class ContadorPerplan(ft.Column):
     def update_sessao_status(self):
         self.sessao_status.value = f"Sessão ativa: {self.sessao}" if self.sessao else "Nenhuma sessão ativa"
         self.page.update()
+        
 
 def main(page: ft.Page):
     contador = ContadorPerplan(page)
