@@ -45,6 +45,8 @@ class Historico(Base):
     veiculo = Column(String, ForeignKey('categorias.veiculo'))
     movimento = Column(String)
     timestamp = Column(DateTime, default=datetime.now)
+    acao = Column(String)  # Adicionar a coluna acao
+
 
 Base.metadata.create_all(engine)
 
@@ -166,7 +168,7 @@ class ContadorPerplan(ft.Column):
                 "Data do Ponto": self.data_ponto_input.value,
                 "Movimentos": [mov.controls[0].value for mov in self.movimentos_container.controls]
             }
-            self.sessao = f"Sessao_{self.detalhes['Código']}_{self.detalhes['Ponto']}_{self.detalhes['Data do Ponto']}"
+            self.sessao = f"{self.detalhes['Código']}_{self.detalhes['Ponto']}_{self.detalhes['Data do Ponto']}"
             self.salvar_sessao()
             self.carregar_categorias_padrao('padrao.json')
             self.contagens, self.binds, self.categorias = self.carregar_config()
@@ -335,9 +337,13 @@ class ContadorPerplan(ft.Column):
             self.page.overlay.append(snackbar)
             snackbar.open = True
             self.page.update()
+
+            # Salvar no histórico
+            self.salvar_historico(veiculo="N/A", movimento=current_movimento, acao="reset")
+
         except Exception as ex:
             print(f"Erro ao resetar contagens do movimento '{current_movimento}': {ex}")
-            snackbar = ft.SnackBar(ft.Text(f"Erro ao resetar contagens do movimento '{current_movimento}'."), bgcolor="RED") 
+            snackbar = ft.SnackBar(ft.Text(f"Erro ao resetar contagens do movimento '{current_movimento}'."), bgcolor="RED")
             self.page.overlay.append(snackbar)
             snackbar.open = True
             self.page.update()
@@ -369,17 +375,52 @@ class ContadorPerplan(ft.Column):
 
 
     def create_category_control(self, veiculo, bind, movimento):
-        label_veiculo = ft.Text(f"{veiculo}", size=15, width=100)  # Removido autofocus
-        label_bind = ft.Text(f"({bind})", color="cyan", size=15, width=50)  # Removido autofocus
-        label_count = ft.Text(f"{self.contagens.get((veiculo, movimento), 0)}", size=15, width=50)  # Removido autofocus
+        label_veiculo = ft.Text(f"{veiculo}", size=15, width=100)
+        label_bind = ft.Text(f"({bind})", color="cyan", size=15, width=50)
+        label_count = ft.Text(f"{self.contagens.get((veiculo, movimento), 0)}", size=15, width=50)
         self.labels[(veiculo, movimento)] = label_count
+
+        # Variável para manter o campo escondido até ser necessário
+        campo_visivel = False
+
+        # Função para atualizar a contagem com valor personalizado
+        def atualizar_contagem_digitada(e):
+            try:
+                novo_valor = int(campo_personalizado.value)
+                self.contagens[(veiculo, movimento)] = novo_valor
+                self.update_labels(veiculo, movimento)
+                self.save_to_db(veiculo, movimento)
+                snackbar = ft.SnackBar(ft.Text(f"Contagem de '{veiculo}' no movimento '{movimento}' foi atualizada."), bgcolor="GREEN")
+                self.page.overlay.append(snackbar)
+                snackbar.open = True
+                campo_personalizado.visible = False  # Esconder o campo novamente após a alteração
+                self.page.update()
+            except ValueError:
+                snackbar = ft.SnackBar(ft.Text("Por favor, insira um número válido."), bgcolor="RED")
+                self.page.overlay.append(snackbar)
+                snackbar.open = True
+
+        # Função para mostrar o campo de texto quando clicar em "Editar Contagem"
+        def mostrar_campo(e):
+            campo_personalizado.visible = True
+            campo_personalizado.focus()
+            self.page.update()
+
+        # Campo de entrada para digitar a nova contagem, inicialmente oculto
+        campo_personalizado = ft.TextField(
+            label="Digite a contagem",
+            width=80,
+            visible=False,  # Inicialmente oculto
+            keyboard_type=ft.KeyboardType.NUMBER,
+            on_submit=atualizar_contagem_digitada
+        )
 
         popup_menu = ft.PopupMenuButton(
             icon_color="teal",
             items=[
-                ft.PopupMenuItem(text=" ", icon=ft.icons.ADD, on_click=lambda e, v=veiculo, m=movimento: self.increment(v, m)),
-                ft.PopupMenuItem(text=" ", icon=ft.icons.REMOVE, on_click=lambda e, v=veiculo, m=movimento: self.decrement(v, m)),
-                ft.PopupMenuItem(text=" ", icon=ft.icons.LOOP, on_click=lambda e, v=veiculo, m=movimento: self.reset(v, m)),
+                ft.PopupMenuItem(text="Adicionar", icon=ft.icons.ADD, on_click=lambda e, v=veiculo, m=movimento: self.increment(v, m)),
+                ft.PopupMenuItem(text="Remover", icon=ft.icons.REMOVE, on_click=lambda e, v=veiculo, m=movimento: self.decrement(v, m)),
+                ft.PopupMenuItem(text="Editar Contagem", icon=ft.icons.EDIT, on_click=mostrar_campo),  # Exibe o campo para editar
                 ft.PopupMenuItem(text="Editar Bind", icon=ft.icons.EDIT, on_click=lambda e, v=veiculo, m=movimento: self.editar_bind(v, m))
             ]
         )
@@ -391,9 +432,11 @@ class ContadorPerplan(ft.Column):
                 ft.Container(content=label_veiculo, alignment=ft.alignment.center_left),
                 ft.Container(content=label_bind, alignment=ft.alignment.center),
                 ft.Container(content=label_count, alignment=ft.alignment.center_right),
+                campo_personalizado,  # O campo de entrada está oculto por padrão
                 popup_menu
             ]
         )
+
 
     def toggle_contagem(self, e):
         self.contagem_ativa = e.control.value
@@ -430,7 +473,7 @@ class ContadorPerplan(ft.Column):
             self.contagens[(veiculo, movimento)] = self.contagens.get((veiculo, movimento), 0) + 1
             self.update_labels(veiculo, movimento)
             self.save_to_db(veiculo, movimento)
-            self.salvar_historico(veiculo, movimento)
+            self.salvar_historico(veiculo, movimento, "incremento")
             self.update_current_tab()
 
             # Adiciona uma entrada no feed
@@ -445,7 +488,7 @@ class ContadorPerplan(ft.Column):
                 self.contagens[(veiculo, movimento)] = self.contagens.get((veiculo, movimento), 0) - 1
                 self.update_labels(veiculo, movimento)
                 self.save_to_db(veiculo, movimento)
-                self.salvar_historico(veiculo, movimento)
+                self.salvar_historico(veiculo, movimento, "remoção")
 
                 # Adiciona uma entrada no feed
                 self.page.update()
@@ -454,34 +497,86 @@ class ContadorPerplan(ft.Column):
             print(f"Erro ao decrementar: {ex}")
 
     def reset(self, veiculo, movimento):
+        print(f"Entrou no reset: veiculo={veiculo}, movimento={movimento}")  # Verificação de entrada
+        try:
+            self.contagens[(veiculo, movimento)] = 0
+            self.update_labels(veiculo, movimento)
+            self.save_to_db(veiculo, movimento)
+
+            # Verifica o reset antes de salvar no histórico
+            print(f"Registrando reset: veiculo={veiculo}, movimento={movimento}")
+
+            # Salva no histórico a ação de reset
+            self.salvar_historico(veiculo, movimento, "reset")
+
+            snackbar = ft.SnackBar(ft.Text(f"Contagem de '{veiculo}' no movimento '{movimento}' foi resetada."), bgcolor="BLUE")
+            self.page.overlay.append(snackbar)
+            snackbar.open = True
+            self.page.update()
+
+        except Exception as ex:
+            print(f"Erro ao resetar contagem: {ex}")
+            snackbar = ft.SnackBar(ft.Text(f"Erro ao resetar contagem de '{veiculo}' no movimento '{movimento}'."), bgcolor="RED")
+            self.page.overlay.append(snackbar)
+            snackbar.open = True
+            self.page.update()
+    
+
+    def abrir_edicao_contagem(self, veiculo, movimento):
+        def on_submit(e):
             try:
-                self.contagens[(veiculo, movimento)] = 0
+                # Capturar o valor inserido no campo de contagem
+                nova_contagem = int(input_contagem.value)
+                self.contagens[(veiculo, movimento)] = nova_contagem
                 self.update_labels(veiculo, movimento)
                 self.save_to_db(veiculo, movimento)
-                snackbar = ft.SnackBar(ft.Text(f"Contagem de '{veiculo}' no movimento '{movimento}' foi resetada."), bgcolor="BLUE")
-                self.page.overlay.append(snackbar)
-                snackbar.open = True
-                self.page.update()
-            except Exception as ex:
-                print(f"Erro ao resetar contagem: {ex}")
-                snackbar = ft.SnackBar(ft.Text(f"Erro ao resetar contagem de '{veiculo}' no movimento '{movimento}'."), bgcolor="RED")
-                self.page.overlay.append(snackbar)
-                snackbar.open = True
-                self.page.update()
 
-    def salvar_historico(self, veiculo, movimento):
+                # Verificar se os valores de veículo e movimento estão corretos
+                print(f"Veiculo: {veiculo}, Movimento: {movimento}, Sessao: {self.sessao}")
+
+                # Registro no histórico da edição manual com cor roxa
+                print(f"Registrando edição manual no histórico: veiculo={veiculo}, movimento={movimento}, contagem={nova_contagem}")
+                self.salvar_historico(veiculo, movimento, "edição manual")  # Chamada para salvar no histórico
+
+                # Notificação para o usuário
+                snackbar = ft.SnackBar(ft.Text(f"Contagem de '{veiculo}' no movimento '{movimento}' foi atualizada para {nova_contagem}."), bgcolor="BLUE")
+                self.page.overlay.append(snackbar)
+                snackbar.open = True
+                dialog.open = False
+                self.page.update()
+            except ValueError:
+                print("Erro: Valor de contagem inválido.")
+        
+        # Campo para o usuário inserir a nova contagem
+        input_contagem = ft.TextField(label="Nova Contagem", keyboard_type=ft.KeyboardType.NUMBER, on_submit=on_submit)
+        dialog = ft.AlertDialog(
+            title=ft.Text(f"Editar Contagem: {veiculo}"),
+            content=input_contagem,
+            actions=[ft.TextButton("Salvar", on_click=on_submit)],
+            on_dismiss=lambda e: dialog.open == False,
+        )
+        self.page.overlay.append(dialog)
+        dialog.open = True
+        self.page.update()
+
+    def salvar_historico(self, veiculo, movimento, acao):
         try:
+            # Verificar se a função está sendo chamada
+            print(f"Salvando no histórico: veiculo={veiculo}, movimento={movimento}, acao={acao}")
             novo_registro = Historico(
                 sessao=self.sessao,
                 veiculo=veiculo,
                 movimento=movimento,
-                timestamp=datetime.now()
+                timestamp=datetime.now(),
+                acao=acao  # Salva a ação corretamente
             )
             session.add(novo_registro)
             session.commit()
+            print(f"Ação '{acao}' registrada no histórico para veículo {veiculo} e movimento {movimento}.")
         except SQLAlchemyError as ex:
             print(f"Erro ao salvar histórico: {ex}")
             session.rollback()
+
 
     def update_current_tab(self):
         current_tab = self.movimento_tabs.tabs[self.movimento_tabs.selected_index]
@@ -507,12 +602,15 @@ class ContadorPerplan(ft.Column):
 
             detalhes_df = pd.DataFrame([self.detalhes])
 
-            # Sanitização dos nomes
             nome_pesquisador = re.sub(r'[<>:"/\\|?*]', '', self.detalhes['Pesquisador'])
             codigo = re.sub(r'[<>:"/\\|?*]', '', self.detalhes['Código'])
 
-            # Criação do diretório com o nome do pesquisador e código
-            diretorio_pesquisador_codigo = os.path.join(nome_pesquisador, codigo)
+            diretorio_base = r'Z:\0Pesquisa\_0ContadorDigital\Contagens'
+            
+            if not os.path.exists(diretorio_base):
+                diretorio_base = os.getcwd()
+
+            diretorio_pesquisador_codigo = os.path.join(diretorio_base, nome_pesquisador, codigo)
             if not os.path.exists(diretorio_pesquisador_codigo):
                 os.makedirs(diretorio_pesquisador_codigo)
 
@@ -538,12 +636,19 @@ class ContadorPerplan(ft.Column):
             self.page.overlay.append(snackbar)
             snackbar.open = True
             self.page.update()
+
+            # Registro no histórico que a contagem foi salva
+            self.salvar_historico(veiculo="", movimento="", acao="salvamento")
+
         except Exception as ex:
             print(f"Erro ao salvar contagens: {ex}")
             snackbar = ft.SnackBar(ft.Text("Erro ao salvar contagens."), bgcolor="RED")
             self.page.overlay.append(snackbar)
             snackbar.open = True
             self.page.update()
+
+
+
 
     def confirmar_finalizar_sessao(self, e):
         def close_dialog(e):
@@ -750,12 +855,40 @@ class ContadorPerplan(ft.Column):
                 .limit(self.historico_page_size)\
                 .all()
 
+            # Verificar se registros foram encontrados
+            print(f"Registros encontrados para a sessão {self.sessao}: {len(registros)}")
+            
             self.historico_lista.controls.clear()
             for registro in registros:
-                self.historico_lista.controls.append(
-                    ft.Text(f"{registro.timestamp.strftime('%d/%m/%Y %H:%M:%S')} | Categoria: {registro.veiculo} | Movimento: {registro.movimento}")
+                # Log para verificar o conteúdo de cada registro
+                print(f"Registro: {registro.acao}, Veículo: {registro.veiculo}, Movimento: {registro.movimento}")
+
+                # Condicional para exibir a ação "edição manual" em roxo
+                if registro.acao == "edição manual":
+                    cor = "purple"  # Destacar como roxo para edição manual
+                elif registro.acao == "salvamento":
+                    cor = "blue"
+                elif registro.acao == "reset":
+                    cor = "orange"
+                elif registro.acao == "incremento":
+                    cor = "green"
+                elif registro.acao == "remoção":
+                    cor = "red"
+                else:
+                    cor = "black"
+
+                # Exibir cada registro no histórico
+                linha = ft.Container(
+                    content=ft.Text(
+                        f"{registro.timestamp.strftime('%d/%m/%Y %H:%M:%S')} | Categoria: {registro.veiculo} | Movimento: {registro.movimento} | Ação: {registro.acao}",
+                        color=cor),
+                    padding=10,
+                    border_radius=5
                 )
+                self.historico_lista.controls.append(linha)
+
             self.page.update()
+
         except SQLAlchemyError as ex:
             print(f"Erro ao carregar histórico: {ex}")
 
@@ -792,6 +925,14 @@ class ContadorPerplan(ft.Column):
         if not self.contagem_ativa:
             return
         try:
+            
+            if hasattr(key, 'name') and key.name.startswith('f') and key.name[1:].isdigit():
+                index = int(key.name[1:]) - 1
+                if 0 <= index < len(self.movimento_tabs.tabs):
+                    self.movimento_tabs.selected_index = index
+                    self.page.update()
+                return
+            
             if hasattr(key, 'name') and key.name == 'caps_lock':
                 # Controlar navegação apenas entre as abas de contagem (desconsiderando outros controles)
                 self.movimento_tabs.selected_index = (self.movimento_tabs.selected_index + 1) % len(self.movimento_tabs.tabs)
