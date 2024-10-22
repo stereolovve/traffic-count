@@ -67,42 +67,7 @@ class ContadorPerplan(ft.Column):
 
 
     def validar_campos(self):
-        campos_obrigatorios = [
-            (self.pesquisador_input, "Pesquisador"),
-            (self.codigo_ponto_input, "Código"),
-            (self.nome_ponto_input, "Ponto"),
-            (self.horas_contagem_input, "Periodo"),
-            (self.data_ponto_input, "Data do Ponto")
-        ]
-
-        for campo, nome in campos_obrigatorios:
-            if not campo.value:
-                snackbar = ft.SnackBar(ft.Text(f"{nome} é obrigatório!"), bgcolor="ORANGE")
-                self.page.overlay.append(snackbar)
-                snackbar.open = True
-                self.page.update()
-                return False
-
-        if not self.movimentos_container.controls:
-            snackbar = ft.SnackBar(ft.Text("Adicione pelo menos um movimento!"), bgcolor="ORANGE")
-            self.page.overlay.append(snackbar)
-            snackbar.open = True
-            self.page.update()
-            return False
-
-        try:
-            sessao_existente = self.session.query(Sessao).filter_by(sessao=f"Sessao_{self.codigo_ponto_input.value}_{self.nome_ponto_input.value}_{self.data_ponto_input.value}").first()
-            if sessao_existente:
-                snackbar = ft.SnackBar(ft.Text("Sessão já existe com esses detalhes!"), bgcolor="YELLOW")
-                self.page.overlay.append(snackbar)
-                snackbar.open = True
-                self.page.update()
-                return False
-        except SQLAlchemyError as ex:
-            print(f"Erro ao validar campos: {ex}")
-            return False
-
-        return True
+        aba_inicio.validar_campos(self)
 
 
     def setup_aba_contagem(self):
