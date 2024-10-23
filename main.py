@@ -2,6 +2,7 @@ import flet as ft
 from database import Session, Categoria, Sessao, Contagem, Historico, init_db  # Importar os modelos e sessão do arquivo database.py
 from sqlalchemy.exc import SQLAlchemyError
 import aba_inicio
+import aba_contagem
 from initializer import inicializar_variaveis, configurar_numpad_mappings
 import sessao
 from pynput import keyboard
@@ -67,122 +68,55 @@ class ContadorPerplan(ft.Column):
 
 
     def validar_campos(self):
-        aba_inicio.validar_campos(self)
+        campos_obrigatorios = [
+            (self.pesquisador_input, "Pesquisador"),
+            (self.codigo_ponto_input, "Código"),
+            (self.nome_ponto_input, "Ponto"),
+            (self.horas_contagem_input, "Periodo"),
+            (self.data_ponto_input, "Data do Ponto")
+        ]
 
+        for campo, nome in campos_obrigatorios:
+            if not campo.value:
+                snackbar = ft.SnackBar(ft.Text(f"{nome} é obrigatório!"), bgcolor="ORANGE")
+                self.page.overlay.append(snackbar)
+                snackbar.open = True
+                self.page.update()
+                return False
 
-    def setup_aba_contagem(self):
-        tab = self.tabs.tabs[1].content
-        tab.controls.clear()
-        self.contagem_ativa = False
+        if not self.movimentos_container.controls:
+            snackbar = ft.SnackBar(ft.Text("Adicione pelo menos um movimento!"), bgcolor="ORANGE")
+            self.page.overlay.append(snackbar)
+            snackbar.open = True
+            self.page.update()
+            return False
 
-        self.toggle_button = ft.Switch(
-            tooltip="Ativar contagem",
-            value=False,
-            on_change=self.toggle_contagem
-        )
-
-        save_button = ft.IconButton(
-            icon=ft.icons.SAVE,
-            icon_color="lightblue",
-            tooltip="Salvar contagem",
-            on_click=self.save_contagens
-        )
-
-        end_session_button = ft.IconButton(
-            icon=ft.icons.STOP,
-            tooltip="Finalizar sessão",
-            icon_color="RED",
-            on_click=self.confirmar_finalizar_sessao
-        )
-
-        reset_all_button = ft.IconButton(
-            icon=ft.icons.REFRESH,
-            icon_color="orange",
-            tooltip="Resetar todas as contagens",
-            on_click=self.confirmar_resetar_todas_contagens  # Chama o diálogo de confirmação
-        )
-
-        # Adicionando o indicador de último salvamento
-        self.last_save_label = ft.Text("Último salvamento: ainda não salvo", size=12, color="gray")
-
-        controls_row = ft.Row(
-            alignment=ft.MainAxisAlignment.CENTER,
-            spacing=20,
-            controls=[self.toggle_button, save_button, end_session_button, reset_all_button],
-        )
-
-        tab.controls.append(controls_row)
-        tab.controls.append(self.last_save_label)  # Exibe o texto de salvamento
-
-        # Adicionar cabeçalho dentro de cada aba de contagem
-        self.movimento_tabs = ft.Tabs(
-            selected_index=0,
-            animation_duration=50,
-            tabs=[ft.Tab(text=movimento, content=self.criar_conteudo_movimento(movimento))
-                for movimento in self.detalhes["Movimentos"]],
-            expand=1,
-        )
-
-        tab.controls.append(self.movimento_tabs)
-
-        # Cabeçalho movido para dentro da função criar_conteudo_movimento
-        self.page.update()
-
-
-
-    
-    def resetar_todas_contagens(self, e):
         try:
-            current_movimento = self.movimento_tabs.tabs[self.movimento_tabs.selected_index].text
-            for veiculo in [v for v, m in self.contagens.keys() if m == current_movimento]:
-                self.contagens[(veiculo, current_movimento)] = 0
-                self.update_labels(veiculo, current_movimento)
-                self.save_to_db(veiculo, current_movimento)
-            snackbar = ft.SnackBar(ft.Text(f"Contagens do movimento '{current_movimento}' foram resetadas."), bgcolor="BLUE")
-            self.page.overlay.append(snackbar)
-            snackbar.open = True
-            self.page.update()
+            sessao_existente = self.session.query(Sessao).filter_by(sessao=f"Sessao_{self.codigo_ponto_input.value}_{self.nome_ponto_input.value}_{self.data_ponto_input.value}").first()
+            if sessao_existente:
+                snackbar = ft.SnackBar(ft.Text("Sessão já existe com esses detalhes!"), bgcolor="YELLOW")
+                self.page.overlay.append(snackbar)
+                snackbar.open = True
+                self.page.update()
+                return False
+        except SQLAlchemyError as ex:
+            print(f"Erro ao validar campos: {ex}")
+            return False
 
-            # Salvar no histórico
-            self.salvar_historico(veiculo="N/A", movimento=current_movimento, acao="reset")
+        return True
 
-        except Exception as ex:
-            print(f"Erro ao resetar contagens do movimento '{current_movimento}': {ex}")
-            snackbar = ft.SnackBar(ft.Text(f"Erro ao resetar contagens do movimento '{current_movimento}'."), bgcolor="RED")
-            self.page.overlay.append(snackbar)
-            snackbar.open = True
-            self.page.update()
-
+    # ------------------------ ABA CONTADOR ------------------------
+    def setup_aba_contagem(self):
+        aba_contagem.setup_aba_contagem(self)
+  
+    def resetar_todas_contagens(self, e):
+        aba_contagem.resetar_todas_contagens(self, e)
 
     def confirmar_resetar_todas_contagens(self, e):
-        """Diálogo de confirmação para resetar todas as contagens"""
-        def close_dialog(e):
-            dialog.open = False
-            self.page.update()
-
-        def reset_and_close(e):
-            dialog.open = False
-            self.page.update()
-            self.resetar_todas_contagens(None)  # Chama o método real de resetar as contagens
-
-        dialog = ft.AlertDialog(
-            title=ft.Text("Resetar Todas as Contagens"),
-            content=ft.Text("Você tem certeza que deseja resetar todas as contagens?"),
-            actions=[
-                ft.TextButton("Sim", on_click=reset_and_close),
-                ft.TextButton("Cancelar", on_click=close_dialog),
-            ],
-        )
-        self.page.overlay.append(dialog)
-        dialog.open = True
-        self.page.update()
-
-    # Alterar o botão para chamar a confirmação
-    
+        aba_contagem.confirmar_resetar_todas_contagens(self, e)
 
     def criar_conteudo_movimento(self, movimento):
         content = ft.Column()
-
         # Adicionar o cabeçalho para cada movimento, colocando em um Row com height fixo para evitar sobreposição
         header = ft.Row(
             alignment=ft.MainAxisAlignment.CENTER,
@@ -219,8 +153,7 @@ class ContadorPerplan(ft.Column):
             items=[
                 ft.PopupMenuItem(text="Adicionar", icon=ft.icons.ADD, on_click=lambda e, v=veiculo, m=movimento: self.increment(v, m)),
                 ft.PopupMenuItem(text="Remover", icon=ft.icons.REMOVE, on_click=lambda e, v=veiculo, m=movimento: self.decrement(v, m)),
-                ft.PopupMenuItem(text="Editar Contagem", icon=ft.icons.EDIT, on_click=lambda e: self.abrir_edicao_contagem(veiculo, movimento)  # Corrigir para passar os argumentos
-),  # Exibe o campo para editar
+                ft.PopupMenuItem(text="Editar Contagem", icon=ft.icons.EDIT, on_click=lambda e: self.abrir_edicao_contagem(veiculo, movimento)),
                 ft.PopupMenuItem(text="Editar Bind", icon=ft.icons.EDIT, on_click=lambda e, v=veiculo, m=movimento: self.editar_bind(v, m))
             ]
         )
@@ -243,28 +176,7 @@ class ContadorPerplan(ft.Column):
         self.page.update()
 
     def atualizar_borda_contagem(self):
-        """Atualiza a cor da borda (fundo) da janela com base no status do contador"""
-        if self.contagem_ativa:
-            # Cor verde para indicar que o contador está ativo
-            self.page.window.bgcolor = "green"
-            self.toggle_button.bgcolor = "lightgreen"
-            self.toggle_button.shadow = ft.BoxShadow(blur_radius=15, color="lightgreen")  # Efeito de brilho
-            
-            # Efeito pulsante usando Animation
-            self.toggle_button.scale = 1.1
-            self.toggle_button.animate_scale = ft.Animation(duration=500, curve=ft.AnimationCurve.BOUNCE_OUT)
-        else:
-            # Cor vermelha para indicar que o contador está desativado
-            self.page.window.bgcolor = "red"
-            self.toggle_button.bgcolor = "orange"
-            self.toggle_button.shadow = ft.BoxShadow(blur_radius=15, color="orange")
-            
-            # Remover animação quando o contador está desligado
-            self.toggle_button.scale = 1.1
-            self.toggle_button.animate_scale = ft.Animation(duration=500, curve=ft.AnimationCurve.EASE_IN_OUT)
-        
-        self.page.update()
-
+        aba_contagem.atualizar_borda_contagem(self)
 
 
     def increment(self, veiculo, movimento):
@@ -635,6 +547,7 @@ class ContadorPerplan(ft.Column):
         self.setup_aba_contagem()
         self.page.update()
 
+    #------------------- ABA HISTÓRICO -----------------------------
     def setup_aba_historico(self):
         tab = self.tabs.tabs[2].content
         tab.controls.clear()
@@ -649,7 +562,7 @@ class ContadorPerplan(ft.Column):
         self.historico_lista = ft.ListView(spacing=10, padding=20, auto_scroll=True)
 
         carregar_historico_button = ft.ElevatedButton(
-            text="Carregar próximos 10 registros",
+            text="Carregar próximos 30 registros",
             on_click=self.carregar_historico
         )
 
@@ -705,6 +618,7 @@ class ContadorPerplan(ft.Column):
         except SQLAlchemyError as ex:
             print(f"Erro ao carregar histórico: {ex}")
 
+    #------------------- ABA CONFIGURACOES -----------------------------
     def setup_aba_config(self):
         tab = self.tabs.tabs[3].content
         tab.controls.clear()
@@ -733,6 +647,7 @@ class ContadorPerplan(ft.Column):
         except Exception as ex:
             print(f"Erro ao ajustar opacidade: {ex}")
 
+    #------------------- LISTENER -----------------------------
     def on_key_press(self, key):
         
         if not self.contagem_ativa:

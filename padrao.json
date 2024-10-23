@@ -1,7 +1,7 @@
 [
     {
       "veiculo": "Carro",
-      "bind": "0"
+      "bind": "np1"
     },
     {
       "veiculo": "VUC",
@@ -9,15 +9,15 @@
     },
     {
       "veiculo": "Caminhao2",
-      "bind": "2"
+      "bind": "np2"
     },
     {
       "veiculo": "Caminhao3",
-      "bind": "3"
+      "bind": "np3"
     },
     {
       "veiculo": "Caminhao4",
-      "bind": "4"
+      "bind": "np4"
     },
     {
       "veiculo": "Carreta3",
@@ -29,19 +29,19 @@
     },
     {
       "veiculo": "Carreta5",
-      "bind": "5"
+      "bind": "np5"
     },
     {
       "veiculo": "Carreta6",
-      "bind": "6"
+      "bind": "np6"
     },
     {
       "veiculo": "Carreta7",
-      "bind": "7"
+      "bind": "np7"
     },
     {
       "veiculo": "Carreta9",
-      "bind": "9"
+      "bind": "np9"
     },
     {
       "veiculo": "Carreta10+",
@@ -57,6 +57,6 @@
     },
     {
       "veiculo": "Moto",
-      "bind": "1"
+      "bind": "np0"
     }
   ]
