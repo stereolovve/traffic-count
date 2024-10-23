@@ -1,0 +1,62 @@
+[
+    {
+      "veiculo": "Carro",
+      "bind": "0"
+    },
+    {
+      "veiculo": "VUC",
+      "bind": "v"
+    },
+    {
+      "veiculo": "Caminhao2",
+      "bind": "2"
+    },
+    {
+      "veiculo": "Caminhao3",
+      "bind": "3"
+    },
+    {
+      "veiculo": "Caminhao4",
+      "bind": "4"
+    },
+    {
+      "veiculo": "Carreta3",
+      "bind": "#"
+    },
+    {
+      "veiculo": "Carreta4",
+      "bind": "$"
+    },
+    {
+      "veiculo": "Carreta5",
+      "bind": "5"
+    },
+    {
+      "veiculo": "Carreta6",
+      "bind": "6"
+    },
+    {
+      "veiculo": "Carreta7",
+      "bind": "7"
+    },
+    {
+      "veiculo": "Carreta9",
+      "bind": "9"
+    },
+    {
+      "veiculo": "Carreta10+",
+      "bind": "w"
+    },
+    {
+      "veiculo": "Onibus 2",
+      "bind": "o"
+    },
+    {
+      "veiculo": "Onibus 3",
+      "bind": "p"
+    },
+    {
+      "veiculo": "Moto",
+      "bind": "1"
+    }
+  ]
