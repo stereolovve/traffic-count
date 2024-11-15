@@ -1,0 +1,3 @@
+2024-11-14 23:34:19,870 - ERROR - Erro ao deslogar: 'NoneType' object has no attribute 'controls'
+2024-11-14 23:34:19,870 - ERROR - Página está faltando ao tentar deslogar.
+2024-11-14 23:34:24,240 - ERROR - Erro ao incrementar: 'NoneType' object has no attribute 'update'
