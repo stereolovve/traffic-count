@@ -23,7 +23,7 @@ class LoginPage(ft.Container):  # Tela de login
         self.content = ft.Container(
     content=ft.Column(
         [
-            ft.Text("Login", size=30, weight="bold", color="WHITE"),
+            ft.Text("Login", size=30, weight="bold"),
             self.username_field,
             self.password_field,
             ft.Row(  # Usando Row para alinhar checkbox com os outros componentes

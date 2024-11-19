@@ -1,0 +1,5 @@
+venv
+dados.db
+db.sqlite3
+log.txt
+auth_tokens.json

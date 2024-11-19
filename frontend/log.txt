@@ -1,3 +1,224 @@
 2024-11-14 23:34:19,870 - ERROR - Erro ao deslogar: 'NoneType' object has no attribute 'controls'
 2024-11-14 23:34:19,870 - ERROR - Página está faltando ao tentar deslogar.
 2024-11-14 23:34:24,240 - ERROR - Erro ao incrementar: 'NoneType' object has no attribute 'update'
+2024-11-16 12:39:55,854 - ERROR - Erro ao carregar tokens salvos: type object 'datetime.datetime' has no attribute 'datetime'
+2024-11-16 12:46:42,237 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'ContadorPerplan' object has no attribute 'change_date'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 83, in <lambda>
+    on_change=lambda e: self.change_date(e),  # Corrigida a referência ao método
+                        ^^^^^^^^^^^^^^^^
+AttributeError: 'ContadorPerplan' object has no attribute 'change_date'
+2024-11-16 12:49:22,836 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'ContadorPerplan' object has no attribute 'data_ponto_input'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 135, in criar_sessao
+    sessao.criar_sessao(self, e)
+  File "C:\Users\lucas.melo\traffic-count\frontend\app\sessao.py", line 7, in criar_sessao
+    if not self.validar_campos():
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 149, in validar_campos
+    (self.data_ponto_input, "Data do Ponto")
+     ^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'ContadorPerplan' object has no attribute 'data_ponto_input'. Did you mean: 'nome_ponto_input'?
+2024-11-16 12:50:51,726 - ERROR - Erro ao criar sessão: 'ContadorPerplan' object has no attribute 'data_ponto_input'
+2024-11-16 13:49:47,418 - ERROR - Erro ao salvar contagens: [WinError 183] Não é possível criar um arquivo já existente: 'Z:\\0Pesquisa\\_0ContadorDigital\\Contagens\\teste\\teste'
+2024-11-16 13:49:47,452 - ERROR - Erro ao salvar contagens: [Errno 22] Invalid argument: 'Z:\\0Pesquisa\\_0ContadorDigital\\Contagens\\teste\\teste\\teste_p10_Data selecionada: 2024-11-16 00:00:00.xlsx'
+2024-11-16 13:57:37,198 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'ContadorPerplan' object has no attribute 'data_Formatada'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 135, in criar_sessao
+    sessao.criar_sessao(self, e)
+  File "C:\Users\lucas.melo\traffic-count\frontend\app\sessao.py", line 7, in criar_sessao
+    if not self.validar_campos():
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 178, in validar_campos
+    sessao=f"Sessao_{self.codigo_ponto_input.value}_{self.nome_ponto_input.value}_{self.data_Formatada}"
+                                                                                   ^^^^^^^^^^^^^^^^^^^
+AttributeError: 'ContadorPerplan' object has no attribute 'data_Formatada'
+2024-11-16 14:07:22,806 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'ContadorPerplan' object has no attribute 'data_formatada'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 135, in criar_sessao
+    sessao.criar_sessao(self, e)
+  File "C:\Users\lucas.melo\traffic-count\frontend\app\sessao.py", line 7, in criar_sessao
+    if not self.validar_campos():
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 176, in validar_campos
+    sessao=f"Sessao_{self.codigo_ponto_input.value}_{self.nome_ponto_input.value}_{self.data_formatada}"  # Usa o atributo correto
+                                                                                   ^^^^^^^^^^^^^^^^^^^
+AttributeError: 'ContadorPerplan' object has no attribute 'data_formatada'
+2024-11-16 14:08:38,668 - ERROR - Future exception was never retrieved
+future: <Future finished exception=TypeError('strptime() argument 1 must be str, not datetime.datetime')>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 95, in <lambda>
+    on_change=lambda e: self.change_date(e),  # Corrigida a referência ao método
+                        ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 58, in change_date
+    self.data_formatada = datetime.strptime(data_original, "%Y-%m-%d").strftime("%d-%m-%Y")
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: strptime() argument 1 must be str, not datetime.datetime
+2024-11-16 14:08:46,636 - ERROR - Future exception was never retrieved
+future: <Future finished exception=TypeError('strptime() argument 1 must be str, not datetime.datetime')>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 95, in <lambda>
+    on_change=lambda e: self.change_date(e),  # Corrigida a referência ao método
+                        ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 58, in change_date
+    self.data_formatada = datetime.strptime(data_original, "%Y-%m-%d").strftime("%d-%m-%Y")
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: strptime() argument 1 must be str, not datetime.datetime
+2024-11-16 14:08:51,056 - ERROR - Future exception was never retrieved
+future: <Future finished exception=TypeError('strptime() argument 1 must be str, not datetime.datetime')>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 95, in <lambda>
+    on_change=lambda e: self.change_date(e),  # Corrigida a referência ao método
+                        ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 58, in change_date
+    self.data_formatada = datetime.strptime(data_original, "%Y-%m-%d").strftime("%d-%m-%Y")
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: strptime() argument 1 must be str, not datetime.datetime
+2024-11-16 14:10:11,053 - ERROR - Erro ao criar sessão: name 'datetime' is not defined
+2024-11-16 14:10:46,397 - ERROR - Erro ao criar sessão: name 'datetime' is not defined
+2024-11-16 14:11:27,711 - ERROR - Erro ao criar sessão: name 'datetime' is not defined
+2024-11-16 14:13:12,456 - ERROR - Erro ao criar sessão: time data '16-11-2024' does not match format '%Y-%m-%d %H:%M:%S'
+2024-11-16 14:15:16,536 - ERROR - Erro ao criar sessão: name 'os' is not defined
+2024-11-17 13:08:34,356 - ERROR - Erro ao criar sessão: [WinError 53] O caminho da rede não foi encontrado: 'Z:\\'
+2024-11-17 13:08:34,357 - ERROR - Erro ao criar sessão: [WinError 53] O caminho da rede não foi encontrado: 'Z:\\'
+2024-11-17 13:08:34,363 - ERROR - Erro ao criar sessão: [WinError 53] O caminho da rede não foi encontrado: 'Z:\\'
+2024-11-17 13:08:34,371 - ERROR - Erro ao criar sessão: [WinError 53] O caminho da rede não foi encontrado: 'Z:\\'
+2024-11-17 13:08:34,373 - ERROR - Erro ao criar sessão: [WinError 53] O caminho da rede não foi encontrado: 'Z:\\'
+2024-11-17 13:08:34,382 - ERROR - Erro ao criar sessão: [WinError 53] O caminho da rede não foi encontrado: 'Z:\\'
+2024-11-17 13:08:39,117 - ERROR - Erro ao criar sessão: [WinError 53] O caminho da rede não foi encontrado: 'Z:\\'
+2024-11-17 13:08:39,519 - ERROR - Erro ao criar sessão: [WinError 53] O caminho da rede não foi encontrado: 'Z:\\'
+2024-11-17 13:08:39,686 - ERROR - Erro ao criar sessão: [WinError 53] O caminho da rede não foi encontrado: 'Z:\\'
+2024-11-17 13:08:39,855 - ERROR - Erro ao criar sessão: [WinError 53] O caminho da rede não foi encontrado: 'Z:\\'
+2024-11-17 13:08:40,005 - ERROR - Erro ao criar sessão: [WinError 53] O caminho da rede não foi encontrado: 'Z:\\'
+2024-11-17 13:08:40,172 - ERROR - Erro ao criar sessão: [WinError 53] O caminho da rede não foi encontrado: 'Z:\\'
+2024-11-17 13:08:40,330 - ERROR - Erro ao criar sessão: [WinError 53] O caminho da rede não foi encontrado: 'Z:\\'
+2024-11-17 13:08:40,488 - ERROR - Erro ao criar sessão: [WinError 53] O caminho da rede não foi encontrado: 'Z:\\'
+2024-11-17 13:08:40,644 - ERROR - Erro ao criar sessão: [WinError 53] O caminho da rede não foi encontrado: 'Z:\\'
+2024-11-17 13:08:40,768 - ERROR - Erro ao criar sessão: [WinError 53] O caminho da rede não foi encontrado: 'Z:\\'
+2024-11-17 13:08:41,059 - ERROR - Erro ao criar sessão: [WinError 53] O caminho da rede não foi encontrado: 'Z:\\'
+2024-11-17 13:08:41,405 - ERROR - Erro ao criar sessão: [WinError 53] O caminho da rede não foi encontrado: 'Z:\\'
+2024-11-17 13:08:41,957 - ERROR - Erro ao criar sessão: [WinError 53] O caminho da rede não foi encontrado: 'Z:\\'
+2024-11-18 14:53:46,378 - ERROR - Erro ao carregar tokens salvos: 'ContadorPerplan' object has no attribute 'carregar_padroes_selecionados'
+2024-11-18 14:55:42,474 - ERROR - Erro ao carregar tokens salvos: 'ContadorPerplan' object has no attribute 'carregar_padroes_selecionados'
+2024-11-18 14:56:21,630 - ERROR - Erro ao carregar tokens salvos: 'ContadorPerplan' object has no attribute 'carregar_padroes_selecionados'
+2024-11-18 14:58:12,395 - ERROR - Erro ao deslogar: 'NoneType' object has no attribute 'controls'
+2024-11-18 14:58:12,395 - ERROR - Página está faltando ao tentar deslogar.
+2024-11-18 14:58:43,844 - ERROR - Future exception was never retrieved
+future: <Future finished exception=NameError("name 'os' is not defined")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 700, in carregar_padroes_selecionados
+    carregar_padroes_selecionados(self, e)
+  File "C:\Users\lucas.melo\traffic-count\frontend\utils\padrao_contagem.py", line 39, in carregar_padroes_selecionados
+    base_path = os.path.join(os.getcwd(), "frontend", "utils")
+                ^^
+NameError: name 'os' is not defined. Did you forget to import 'os'
+2024-11-18 14:59:34,413 - ERROR - Future exception was never retrieved
+future: <Future finished exception=TypeError('ContadorPerplan.carregar_categorias_padrao() takes 2 positional arguments but 3 were given')>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 700, in carregar_padroes_selecionados
+    carregar_padroes_selecionados(self, e)
+  File "C:\Users\lucas.melo\traffic-count\frontend\utils\padrao_contagem.py", line 58, in carregar_padroes_selecionados
+    self.carregar_categorias_padrao(self, caminho_json)
+TypeError: ContadorPerplan.carregar_categorias_padrao() takes 2 positional arguments but 3 were given
+2024-11-18 15:00:40,869 - ERROR - Arquivo JSON não encontrado: C:\Users\lucas.melo\traffic-count\frontend\frontend\utils\padrao_perci.json
+2024-11-18 15:00:40,870 - ERROR - Future exception was never retrieved
+future: <Future finished exception=Exception('Arquivo JSON não encontrado.')>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\traffic-count\frontend\utils\padrao_contagem.py", line 11, in carregar_categorias_padrao
+    with open(caminho_json, 'r') as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\lucas.melo\\traffic-count\\frontend\\frontend\\utils\\padrao_perci.json'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 700, in carregar_padroes_selecionados
+    carregar_padroes_selecionados(self, e)
+  File "C:\Users\lucas.melo\traffic-count\frontend\utils\padrao_contagem.py", line 58, in carregar_padroes_selecionados
+    carregar_categorias_padrao(self, caminho_json)
+  File "C:\Users\lucas.melo\traffic-count\frontend\utils\padrao_contagem.py", line 28, in carregar_categorias_padrao
+    raise Exception("Arquivo JSON não encontrado.")
+Exception: Arquivo JSON não encontrado.
+2024-11-18 15:01:42,804 - ERROR - Future exception was never retrieved
+future: <Future finished exception=NameError("name 'ft' is not defined")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 700, in carregar_padroes_selecionados
+    carregar_padroes_selecionados(self, e)
+  File "C:\Users\lucas.melo\traffic-count\frontend\utils\padrao_contagem.py", line 59, in carregar_padroes_selecionados
+    snackbar = ft.SnackBar(ft.Text("Categorias padrao carregadas!"), bgcolor="GREEN")
+               ^^
+NameError: name 'ft' is not defined
+2024-11-18 15:02:41,438 - ERROR - Arquivo JSON não encontrado: padrao.json
+2024-11-18 15:02:41,439 - ERROR - Erro ao criar sessão: Arquivo JSON não encontrado.
+2024-11-18 15:03:36,705 - ERROR - Arquivo JSON não encontrado: padrao.json
+2024-11-18 15:03:36,705 - ERROR - Erro ao criar sessão: Arquivo JSON não encontrado.
+2024-11-18 15:06:21,716 - ERROR - Arquivo JSON não encontrado: padrao.json
+2024-11-18 15:06:21,717 - ERROR - Erro ao criar sessão: Arquivo JSON não encontrado.
+2024-11-18 15:06:24,842 - ERROR - Arquivo JSON não encontrado: padrao.json
+2024-11-18 15:06:24,842 - ERROR - Erro ao criar sessão: Arquivo JSON não encontrado.
+2024-11-18 15:06:49,777 - ERROR - Arquivo JSON não encontrado: padrao.json
+2024-11-18 15:06:49,777 - ERROR - Erro ao criar sessão: Arquivo JSON não encontrado.
+2024-11-18 15:14:54,890 - ERROR - Erro ao deslogar: 'NoneType' object has no attribute 'controls'
+2024-11-18 15:14:54,891 - ERROR - Página está faltando ao tentar deslogar.
+2024-11-18 15:53:51,643 - ERROR - Erro ao deslogar: 'NoneType' object has no attribute 'update'
+2024-11-18 15:56:18,347 - ERROR - Erro ao deslogar: 'NoneType' object has no attribute 'update'
+2024-11-18 15:58:35,705 - ERROR - Erro ao deslogar: 'NoneType' object has no attribute 'update'

@@ -3,6 +3,9 @@ from database.models import Session, Categoria, Sessao, Contagem, Historico, ini
 from sqlalchemy.exc import SQLAlchemyError
 import json
 import logging
+from datetime import datetime
+import os
+from utils.padrao_contagem import carregar_categorias_padrao, carregar_padroes_selecionados
 def criar_sessao(self, e):
     if not self.validar_campos():
         return
@@ -11,17 +14,32 @@ def criar_sessao(self, e):
         self.session.query(Sessao).delete()  # Deletar todas as sessões anteriores
         self.session.commit()
 
+        # Remover o prefixo "Data selecionada: " e converter o formato da data
+        data_original = self.data_ponto_label.value.replace("Data selecionada: ", "")
+        self.data_formatada = datetime.strptime(data_original, "%d-%m-%Y").strftime("%d-%m-%Y")
+
         self.detalhes = {
             "Pesquisador": self.username,
             "Código": self.codigo_ponto_input.value,
             "Ponto": self.nome_ponto_input.value,
             "Periodo": self.horas_contagem_input.value,
-            "Data do Ponto": self.data_ponto_input.value,
+            "Data do Ponto": self.data_formatada,
             "Movimentos": [mov.controls[0].value for mov in self.movimentos_container.controls]
         }
-        self.sessao = f"{self.detalhes['Código']}_{self.detalhes['Ponto']}_{self.detalhes['Data do Ponto']}"
+
+        self.sessao = f"{self.detalhes['Código']}_{self.detalhes['Ponto']}_{self.data_formatada}"
+
+        # Criar o diretório e o caminho do arquivo
+        diretorio_base = r'Z:\0Pesquisa\_0ContadorDigital\Contagens'
+        diretorio_pesquisador_codigo = os.path.join(diretorio_base, self.username, self.detalhes["Código"])
+        if not os.path.exists(diretorio_pesquisador_codigo):
+            os.makedirs(diretorio_pesquisador_codigo)
+
+        arquivo_sessao = os.path.join(diretorio_pesquisador_codigo, f"{self.sessao}.xlsx")
+        print(f"Arquivo gerado: {arquivo_sessao}")
+
         self.salvar_sessao()
-        self.carregar_categorias_padrao('padrao.json')
+        self.carregar_padroes_selecionados(e)
         self.contagens, self.binds, self.categorias = self.carregar_config()
         self.setup_aba_contagem()
 
@@ -35,7 +53,8 @@ def criar_sessao(self, e):
         self.update_sessao_status()
     except Exception as ex:
         logging.error(f"Erro ao criar sessão: {ex}")
-        
+
+
             
 def confirmar_finalizar_sessao(self, e):
     """Diálogo de confirmação para finalizar a sessão"""

@@ -6,7 +6,7 @@ from utils.initializer import inicializar_variaveis, configurar_numpad_mappings
 from auth.login import LoginPage
 from auth.register import RegisterPage
 from pynput import keyboard
-from utils.padrao_contagem import carregar_categorias_padrao
+from utils.padrao_contagem import carregar_categorias_padrao, carregar_padroes_selecionados
 import pandas as pd
 from datetime import datetime
 import os
@@ -41,6 +41,27 @@ class ContadorPerplan(ft.Column):
         self.setup_ui()
         self.carregar_sessao_ativa()
 
+    #------------------------ SETUP DATE PICKER ------------------------
+    def open_date_picker(self, e):
+        # Abre o DatePicker usando o Page.open()
+        if hasattr(self, "datepicker"):
+            self.page.open(self.datepicker)  # Mostra o DatePicker como um diálogo
+        else:
+            print("DatePicker não está inicializado.")
+    
+    def change_date(self, e):
+        # self.datepicker.value retorna um objeto datetime.datetime
+        data_original = self.datepicker.value
+
+        # Formatar diretamente para dd-mm-yyyy
+        self.data_formatada = data_original.strftime("%d-%m-%Y")
+
+        # Atualiza o rótulo com a data formatada
+        self.data_ponto_label.value = f"Data selecionada: {self.data_formatada}"
+        self.page.update()
+
+
+
 
     #------------------------ SETUP UI ------------------------
     def setup_ui(self):
@@ -64,7 +85,60 @@ class ContadorPerplan(ft.Column):
 
     #------------------------ ABA INICIO ------------------------
     def setup_aba_inicio(self):
-        aba_inicio.setup_aba_inicio(self)
+        tab = self.tabs.tabs[0].content
+        tab.controls.clear()
+
+        self.codigo_ponto_input = ft.TextField(label="Código (ex: ER2403. Tudo junto)")
+        self.nome_ponto_input = ft.TextField(label="Ponto (ex: P10N)")
+        self.horas_contagem_input = ft.TextField(label="Periodo (ex: 6h-18h)")
+        self.datepicker = ft.DatePicker(
+
+            on_change=lambda e: self.change_date(e),
+        )
+        self.data_ponto_button = ft.ElevatedButton(
+            "Selecionar Data",
+            icon=ft.icons.CALENDAR_MONTH,
+            on_click=self.open_date_picker,
+        )
+
+        self.data_ponto_label = ft.Text("Nenhuma data selecionada")
+
+        self.padrao_dropdown = ft.Dropdown(
+            label="Selecione o padrão",
+            options=[
+                ft.dropdown.Option("Padrão Perplan"),
+                ft.dropdown.Option("Padrão Perci"),
+                ft.dropdown.Option("Padrão Simplificado"),
+            ],
+            on_change=self.carregar_padroes_selecionados,
+        )
+
+        self.movimentos_container = ft.Column()
+        adicionar_movimento_button = ft.ElevatedButton(
+            text="Adicionar Movimento",
+            on_click=self.adicionar_campo_movimento
+        )
+
+        criar_sessao_button = ft.ElevatedButton(text="Criar Sessão", on_click=self.criar_sessao)
+
+        tab.controls.extend([
+            ft.Text(""),
+            self.codigo_ponto_input,
+            self.nome_ponto_input,
+            self.horas_contagem_input,
+            self.data_ponto_button,
+            self.data_ponto_label,
+            self.padrao_dropdown,
+            self.movimentos_container,
+            adicionar_movimento_button,
+            criar_sessao_button
+        ])
+
+        self.sessao_status = ft.Text("", weight=ft.FontWeight.BOLD)
+        tab.controls.append(self.sessao_status)
+
+        self.page.overlay.append(self.datepicker)
+        self.update_sessao_status()
         
     def adicionar_campo_movimento(self, e):
         aba_inicio.adicionar_campo_movimento(self, e)
@@ -87,11 +161,18 @@ class ContadorPerplan(ft.Column):
             (self.codigo_ponto_input, "Código"),
             (self.nome_ponto_input, "Ponto"),
             (self.horas_contagem_input, "Periodo"),
-            (self.data_ponto_input, "Data do Ponto")
+            (self.data_ponto_label, "Data do Ponto")
         ]
 
         for campo, nome in campos_obrigatorios:
-            if not campo.value:
+            if campo == self.data_ponto_label:
+                if not hasattr(self, "data_formatada") or not self.data_formatada:
+                    snackbar = ft.SnackBar(ft.Text(f"{nome} é obrigatório!"), bgcolor="ORANGE")
+                    self.page.overlay.append(snackbar)
+                    snackbar.open = True
+                    self.page.update()
+                    return False
+            elif not campo.value:
                 snackbar = ft.SnackBar(ft.Text(f"{nome} é obrigatório!"), bgcolor="ORANGE")
                 self.page.overlay.append(snackbar)
                 snackbar.open = True
@@ -106,7 +187,9 @@ class ContadorPerplan(ft.Column):
             return False
 
         try:
-            sessao_existente = self.session.query(Sessao).filter_by(sessao=f"Sessao_{self.codigo_ponto_input.value}_{self.nome_ponto_input.value}_{self.data_ponto_input.value}").first()
+            sessao_existente = self.session.query(Sessao).filter_by(
+                sessao=f"Sessao_{self.codigo_ponto_input.value}_{self.nome_ponto_input.value}_{self.data_formatada}"
+            ).first()
             if sessao_existente:
                 snackbar = ft.SnackBar(ft.Text("Sessão já existe com esses detalhes!"), bgcolor="YELLOW")
                 self.page.overlay.append(snackbar)
@@ -118,6 +201,9 @@ class ContadorPerplan(ft.Column):
             return False
 
         return True
+
+
+
 
     # ------------------------ ABA CONTADOR ------------------------
     def setup_aba_contagem(self):
@@ -159,7 +245,6 @@ class ContadorPerplan(ft.Column):
         label_count = ft.Text(f"{self.contagens.get((veiculo, movimento), 0)}", size=15, width=50)
         self.labels[(veiculo, movimento)] = label_count
 
-        # Variável para manter o campo escondido até ser necessário
         campo_visivel = False
 
         popup_menu = ft.PopupMenuButton(
@@ -185,7 +270,7 @@ class ContadorPerplan(ft.Column):
 
     def toggle_contagem(self, e):
         self.contagem_ativa = e.control.value
-        self.atualizar_borda_contagem()  # Atualiza a borda ao alternar o estado do contador
+        self.atualizar_borda_contagem()
         self.page.update()
 
     def atualizar_borda_contagem(self):
@@ -199,8 +284,6 @@ class ContadorPerplan(ft.Column):
             self.save_to_db(veiculo, movimento)
             self.salvar_historico(veiculo, movimento, "incremento")
             self.update_current_tab()
-
-            # Adiciona uma entrada no feed
             self.page.update()
 
         except Exception as ex:
@@ -213,8 +296,6 @@ class ContadorPerplan(ft.Column):
                 self.update_labels(veiculo, movimento)
                 self.save_to_db(veiculo, movimento)
                 self.salvar_historico(veiculo, movimento, "remoção")
-
-                # Adiciona uma entrada no feed
                 self.page.update()
 
         except Exception as ex:
@@ -227,28 +308,23 @@ class ContadorPerplan(ft.Column):
         self.page.update()
         def on_submit(e):
             try:
-                # Capturar o valor inserido no campo de contagem
                 nova_contagem = int(input_contagem.value)
                 self.contagens[(veiculo, movimento)] = nova_contagem
                 self.update_labels(veiculo, movimento)
                 self.save_to_db(veiculo, movimento)
 
-                # Registro no histórico da edição manual
-                self.salvar_historico(veiculo, movimento, "edição manual")  # Chamada para salvar no histórico
-
-                # Notificação para o usuário
+                self.salvar_historico(veiculo, movimento, "edição manual")
                 snackbar = ft.SnackBar(ft.Text(f"Contagem de '{veiculo}' no movimento '{movimento}' foi atualizada para {nova_contagem}."), bgcolor="BLUE")
                 self.page.overlay.append(snackbar)
                 snackbar.open = True
 
-                # Fechar o diálogo
                 dialog.open = False
                 self.contagem_ativa = True
 
                 self.page.update()
 
             except ValueError:
-                logging.error("[ERROR] Valor de contagem inválido.")  # Debug
+                logging.error("[ERROR] Valor de contagem inválido.")
 
         input_contagem = ft.TextField(label="Nova Contagem", keyboard_type=ft.KeyboardType.NUMBER, on_submit=on_submit)
         dialog = ft.AlertDialog(
@@ -264,13 +340,12 @@ class ContadorPerplan(ft.Column):
 
     def salvar_historico(self, veiculo, movimento, acao):
         try:
-            # Verificar se a função está sendo chamada
             novo_registro = Historico(
                 sessao=self.sessao,
                 veiculo=veiculo,
                 movimento=movimento,
                 timestamp=datetime.now(),
-                acao=acao  # Salva a ação corretamente
+                acao=acao
             )
             self.session.add(novo_registro)
             self.session.commit()
@@ -306,7 +381,7 @@ class ContadorPerplan(ft.Column):
             nome_pesquisador = re.sub(r'[<>:"/\\|?*]', '', self.username)
             codigo = re.sub(r'[<>:"/\\|?*]', '', self.detalhes['Código'])
 
-            diretorio_base = r'Z:\0Pesquisa\_0ContadorDigital\Contagens'
+            diretorio_base = r'Z:\\0Pesquisa\\_0ContadorDigital\\Contagens'
             
             if not os.path.exists(diretorio_base):
                 diretorio_base = os.getcwd()
@@ -380,26 +455,22 @@ class ContadorPerplan(ft.Column):
 
     def end_session(self):
         try:
-            self.finalizar_sessao()  # Marca a sessão como finalizada no banco de dados
+            self.finalizar_sessao()
             
-            # Reseta as contagens atuais para 0
             for veiculo, movimento in list(self.contagens.keys()):
                 self.contagens[(veiculo, movimento)] = 0
                 self.update_labels(veiculo, movimento)
                 self.save_to_db(veiculo, movimento)
             
-            # Limpa a sessão ativa
             self.sessao = None
             self.detalhes = {"Movimentos": []}
             self.contagens = {}
             self.binds = {}
             self.labels = {}
 
-            # Notifica o usuário
             self.page.overlay.append(ft.SnackBar(ft.Text("Sessão finalizada!")))
             self.page.update()
 
-            # Reinicia o aplicativo
             self.restart_app()
         except Exception as ex:
             logging.error(f"Erro ao finalizar sessão: {ex}")
@@ -410,7 +481,7 @@ class ContadorPerplan(ft.Column):
     def restart_app(self):
         self.stop_listener()
         self.sessao = None
-        self.detalhes = {"Movimentos": []}  # Reset Movimentos ao reiniciar
+        self.detalhes = {"Movimentos": []}
         self.contagens = {}
         self.binds = {}
         self.labels = {}
@@ -559,14 +630,11 @@ class ContadorPerplan(ft.Column):
         tab = self.tabs.tabs[3].content
         tab.controls.clear()
         
-        # Controle de modo claro/escuro
         self.page.theme_mode = ft.ThemeMode.SYSTEM
         self.modo_claro_escuro = ft.Switch(label="Modo claro", on_change=self.theme_changed)
         
-        # Slider para opacidade
         opacity = ft.Slider(value=100, min=20, max=100, divisions=80, label="Opacidade", on_change=self.ajustar_opacidade)
         
-        # Botão para configurar binds
         config_button = ft.ElevatedButton(text="Configurar Binds", on_click=lambda e: change_binds(self.page, self))
         self.page.update()
         
@@ -577,10 +645,9 @@ class ContadorPerplan(ft.Column):
         on_click=self.logout_user
         )
         
-        # Adicionando controles à aba de configurações
         tab.controls.append(self.modo_claro_escuro)
         tab.controls.append(opacity)
-        tab.controls.append(config_button)  # Adiciona o botão de configuração de binds
+        tab.controls.append(config_button)
         tab.controls.append(logout_button)
         self.page.update()
 
@@ -602,6 +669,7 @@ class ContadorPerplan(ft.Column):
             self.page.update()
         except Exception as ex:
             logging.error(f"Erro ao ajustar opacidade: {ex}")
+
     #------------------- LISTENER -----------------------------
     def on_key_press(self, key):
         listener.on_key_press(self, key)
@@ -628,6 +696,9 @@ class ContadorPerplan(ft.Column):
     def carregar_categorias_padrao(self, caminho_json):
         carregar_categorias_padrao(self, caminho_json)
 
+    def carregar_padroes_selecionados(self, e):
+        carregar_padroes_selecionados(self, e)
+
     def carregar_config(self):
         try:
             data = self.session.query(Categoria).order_by(Categoria.criado_em).all()
@@ -649,29 +720,31 @@ class ContadorPerplan(ft.Column):
         
     def logout_user(self, e):
         try:
-            # Limpar os tokens e dados do usuário
             self.tokens = None
             self.username = None
 
-            # Remove o arquivo de tokens local (se existir)
+            # Verifica se o arquivo de tokens existe e remove
             if os.path.exists("auth_tokens.json"):
                 os.remove("auth_tokens.json")
 
-            self.app.reset_app()
+            # Verifica se a página está disponível
+            if not self.page:
+                logging.error("Página está faltando ao tentar deslogar.")
+                return
+
+            # Limpa os controles e redireciona para a página de login
             self.page.controls.clear()
-            self.page.add(LoginPage(self))  # Mostra a página de login
-            self.page.update()
+            self.page.add(LoginPage(self))
+            if not self.page:
+                self.page.update()
 
             logging.info("Usuário desconectado com sucesso.")
         except AttributeError as ex:
             logging.error(f"Erro ao deslogar: {ex}")
-            if not self.page:
-                logging.error("Página está faltando ao tentar deslogar.")
         
 
 #------------------- MAIN -----------------------------
 def main(page: ft.Page):
-    print("A função main foi chamada.")
     page.title = "Contador Perplan"
     page.window.width = 800
     page.window.height = 600
@@ -681,41 +754,44 @@ def main(page: ft.Page):
             self.page = page
             self.tokens = None
             self.username = None
+
+            if not self.page:
+                logging.error("Página não está configurada ao iniciar o app.")
+                return
         
         def switch_to_main_app(self):
-            
+            if not self.page:
+                logging.error("Página não está disponível ao alternar para o aplicativo principal.")
+                return
             self.page.controls.clear()
             contador = ContadorPerplan(page, username=self.username, app=self)
             self.page.add(contador)
 
-            # Configuração da janela
             self.page.window.width = 450
             self.page.window.height = 1080
             self.page.window.always_on_top = True
 
-            # Iniciar o listener
             contador.start_listener()
 
-            # Configurar fechamento
             self.page.on_close = lambda e: contador.stop_listener()
             self.page.update()
 
         def show_login_page(self):
-            """Mostra a tela de login."""
             self.page.controls.clear()
             self.page.add(LoginPage(self))
             self.page.update()
 
         def show_register_page(self):
-            """Mostra a tela de registro."""
             self.page.controls.clear()
             self.page.add(RegisterPage(self))
             self.page.update()
 
         def reset_app(self):
-            """Reinicia a aplicação para o estado inicial."""
             self.tokens = None
             self.username = None
+            if not self.page:
+                logging.error("Página não está configurada ao tentar resetar o app.")
+                return
             self.page.controls.clear()
             self.show_login_page()
     app = MyApp(page)
@@ -733,8 +809,5 @@ def main(page: ft.Page):
     else:
         app.show_login_page()
         
-
-
-# Inicia o aplicativo Flet
 ft.app(target=main)
 

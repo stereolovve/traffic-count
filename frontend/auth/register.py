@@ -95,11 +95,25 @@ class RegisterPage(ft.Container):
                 self.error_text.color = "green"
                 self.error_text.visible = True
                 self.update()
-            else:
-                self.error_text.value = response.json().get("detail", "Erro ao registrar!")
+            
+            elif response.status_code == 400:
+                error_data = response.json()
+                if "username" in error_data:
+                    self.error_text.value = error_data["username"][0]  # Mensagem do backend
+                else:
+                    self.error_text.value = "Erro ao registrar! Seu usuario deve estar no formato: nome.sobrenome."
                 self.error_text.color = "red"
                 self.error_text.visible = True
                 self.update()
+            else:
+                self.error_text.value = "Erro ao registrar! Seu usuario deve estar no formato: nome.sobrenome."
+                self.error_text.color = "red"
+                self.error_text.visible = True
+                self.update()
+        except Exception as ex:
+            self.error_text.value = f"Erro ao conectar: {str(ex)}"
+            self.error_text.visible = True
+            self.update()
         except Exception as ex:
             self.error_text.value = f"Erro ao conectar: {str(ex)}"
             self.error_text.visible = True
