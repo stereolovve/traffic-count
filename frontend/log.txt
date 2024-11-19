@@ -222,3 +222,12 @@ NameError: name 'ft' is not defined
 2024-11-18 15:53:51,643 - ERROR - Erro ao deslogar: 'NoneType' object has no attribute 'update'
 2024-11-18 15:56:18,347 - ERROR - Erro ao deslogar: 'NoneType' object has no attribute 'update'
 2024-11-18 15:58:35,705 - ERROR - Erro ao deslogar: 'NoneType' object has no attribute 'update'
+2024-11-19 15:28:58,587 - ERROR - Erro ao carregar padrões: 'ContadorPerplan' object has no attribute 'obter_caminho_json'
+2024-11-19 15:29:02,674 - ERROR - Erro ao carregar padrões: 'ContadorPerplan' object has no attribute 'obter_caminho_json'
+2024-11-19 15:29:38,518 - ERROR - Erro ao carregar padrões: 'ContadorPerplan' object has no attribute 'obter_caminho_json'
+2024-11-19 15:30:53,807 - ERROR - Erro ao carregar padrões: 'ContadorPerplan' object has no attribute 'obter_caminho_json'
+2024-11-19 15:46:10,086 - ERROR - Erro ao carregar padrões: 'padrao' is an invalid keyword argument for Categoria
+2024-11-19 15:47:57,097 - ERROR - Erro ao salvar padrões no banco de dados: Instance '<Categoria at 0x23d41b553d0>' has been deleted, or its row is otherwise not present.
+2024-11-19 15:47:57,097 - ERROR - Erro ao carregar padrões: Erro ao salvar no banco de dados.
+2024-11-19 15:51:05,591 - ERROR - Erro ao salvar padrões no banco de dados: Instance '<Categoria at 0x23eea8e4f20>' has been deleted, or its row is otherwise not present.
+2024-11-19 15:51:05,593 - ERROR - Erro ao carregar padrões: Erro ao salvar no banco de dados.

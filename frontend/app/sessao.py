@@ -11,7 +11,8 @@ def criar_sessao(self, e):
         return
 
     try:
-        self.session.query(Sessao).delete()  # Deletar todas as sessões anteriores
+        # Limpar as categorias existentes no banco de dados
+        self.session.query(Categoria).delete()
         self.session.commit()
 
         # Remover o prefixo "Data selecionada: " e converter o formato da data
@@ -38,8 +39,10 @@ def criar_sessao(self, e):
         arquivo_sessao = os.path.join(diretorio_pesquisador_codigo, f"{self.sessao}.xlsx")
         print(f"Arquivo gerado: {arquivo_sessao}")
 
-        self.salvar_sessao()
+        # Carregar o novo padrão de contagem
         self.carregar_padroes_selecionados(e)
+
+        # Recarregar as configurações atualizadas
         self.contagens, self.binds, self.categorias = self.carregar_config()
         self.setup_aba_contagem()
 
@@ -53,6 +56,7 @@ def criar_sessao(self, e):
         self.update_sessao_status()
     except Exception as ex:
         logging.error(f"Erro ao criar sessão: {ex}")
+
 
 
             
@@ -143,31 +147,28 @@ def salvar_sessao(self):
         
 def finalizar_sessao(self):
     try:
-        # Primeiro, remover todas as contagens associadas à sessão
-        contagens_a_remover = self.session.query(Contagem).filter_by(sessao=self.sessao).all()
-        for contagem in contagens_a_remover:
-            self.session.delete(contagem)
-
-        # Em seguida, remover a própria sessão
+        # Finalizar a sessão atual no banco de dados
         sessao_a_remover = self.session.query(Sessao).filter_by(sessao=self.sessao).first()
         if sessao_a_remover:
             self.session.delete(sessao_a_remover)
 
+        # Limpar contagens associadas à sessão
+        self.session.query(Contagem).filter_by(sessao=self.sessao).delete()
         self.session.commit()
-        logging.info(f"Sessão '{self.sessao}' e seus dados foram removidos com sucesso.")
 
-        # Resetar contagens locais e atualizar a interface
-        self.contagens.clear()
-        self.binds.clear()
-        self.labels.clear()
+        # Resetar variáveis locais
         self.sessao = None
-        self.page.overlay.append(ft.SnackBar(ft.Text("Sessão finalizada e removida!")))
-        self.page.update()
+        self.detalhes = {"Movimentos": []}
+        self.contagens = {}
+        self.binds = {}
+        self.labels = {}
+
+        # Notificação visual
+        snackbar = ft.SnackBar(ft.Text("Sessão finalizada e removida!"), bgcolor="BLUE")
+        self.page.overlay.append(snackbar)
+        snackbar.open = True
 
         self.restart_app()
-
     except Exception as ex:
-        logging.error(f"Erro ao finalizar e remover sessão: {ex}")
-        self.page.overlay.append(ft.SnackBar(ft.Text(f"Erro ao finalizar sessão: {ex}")))
+        logging.error(f"Erro ao finalizar sessão: {ex}")
         self.session.rollback()
-        self.page.update()

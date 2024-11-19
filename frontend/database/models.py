@@ -14,6 +14,7 @@ Session = sessionmaker(bind=engine)
 # Definição das tabelas do banco de dados
 class Categoria(Base):
     __tablename__ = 'categorias'
+    padrao = Column(String, nullable=True)
     veiculo = Column(String)
     movimento = Column(String)
     bind = Column(String)

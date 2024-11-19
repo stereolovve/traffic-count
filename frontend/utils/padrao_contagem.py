@@ -8,7 +8,7 @@ import flet as ft
 
 
 
-def carregar_categorias_padrao(self, caminho_json):
+def carregar_categorias_padrao(self, caminho_json, padrao):
     try:
         with open(caminho_json, 'r') as f:
             categorias_padrao = json.load(f)
@@ -18,6 +18,7 @@ def carregar_categorias_padrao(self, caminho_json):
                 if veiculo and bind:
                     for movimento in self.detalhes["Movimentos"]:
                         nova_categoria = Categoria(
+                            padrao=padrao,  # Certifique-se de passar o valor correto aqui
                             veiculo=veiculo,
                             movimento=movimento,
                             bind=bind,
@@ -38,34 +39,42 @@ def carregar_categorias_padrao(self, caminho_json):
 
 
 def carregar_padroes_selecionados(self, e):
-    padrao_selecionado = self.padrao_dropdown.value
-    base_path = os.path.join(os.getcwd(), "utils")
-    caminho_json = None
-
-    if padrao_selecionado == "Padrão Perplan":
-        caminho_json = os.path.join(base_path, "padrao_perplan.json")
-    elif padrao_selecionado == "Padrão Perci":
-        caminho_json = os.path.join(base_path, "padrao_perci.json")
-    elif padrao_selecionado == "Padrão Simplificado":
-        caminho_json = os.path.join(base_path, "padrao_simplificado.json")
-
-    else:
-        snackbar = ft.SnackBar(ft.Text("Selecione um padrão!"), bgcolor="ORANGE")
-        self.page.overlay.append(snackbar)
-        snackbar.open = True
-        self.page.update()
-        return
-
     try:
-        carregar_categorias_padrao(self, caminho_json)
-        snackbar = ft.SnackBar(ft.Text("Categorias padrao carregadas!"), bgcolor="GREEN")
-        self.page.overlay.append(snackbar)
-        snackbar.open = True
-        self.page.update()
+        padrao_selecionado = self.padrao_dropdown.value
+        if not padrao_selecionado:
+            snackbar = ft.SnackBar(ft.Text("Selecione um padrão!"), bgcolor="ORANGE")
+            self.page.overlay.append(snackbar)
+            snackbar.open = True
+            self.page.update()
+            return
 
-    except (FileNotFoundError, json.JSONDecodeError, SQLAlchemyError) as ex:
-        logging.error(f"Erro ao carregar categorias padrão: {ex}")
-        snackbar = ft.SnackBar(ft.Text(f"Erro ao carregar categorias padrão: {ex}"), bgcolor="RED")
+        caminho_json = self.obter_caminho_json(padrao_selecionado)
+        if not caminho_json:
+            snackbar = ft.SnackBar(ft.Text(f"Padrão '{padrao_selecionado}' não encontrado!"), bgcolor="RED")
+            self.page.overlay.append(snackbar)
+            snackbar.open = True
+            return
+
+        # Carregar as categorias do JSON
+        carregar_categorias_padrao(self, caminho_json)
+        snackbar = ft.SnackBar(ft.Text(f"Padrão '{padrao_selecionado}' carregado com sucesso!"), bgcolor="GREEN")
         self.page.overlay.append(snackbar)
         snackbar.open = True
         self.page.update()
+    except Exception as ex:
+        logging.error(f"Erro ao carregar padrões: {ex}")
+        snackbar = ft.SnackBar(ft.Text(f"Erro ao carregar padrões: {ex}"), bgcolor="RED")
+        self.page.overlay.append(snackbar)
+        snackbar.open = True
+
+
+
+def obter_caminho_json(self, padrao_selecionado):
+    base_path = os.path.join(os.getcwd(), "utils")
+    if padrao_selecionado == "Padrão Perplan":
+        return os.path.join(base_path, "padrao_perplan.json")
+    elif padrao_selecionado == "Padrão Perci":
+        return os.path.join(base_path, "padrao_perci.json")
+    elif padrao_selecionado == "Padrão Simplificado":
+        return os.path.join(base_path, "padrao_simplificado.json")
+    return None
