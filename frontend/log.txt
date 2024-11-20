@@ -233,3 +233,476 @@ NameError: name 'ft' is not defined
 2024-11-19 15:51:05,593 - ERROR - Erro ao carregar padrões: Erro ao salvar no banco de dados.
 2024-11-20 11:00:02,583 - ERROR - Erro ao salvar padrões no banco de dados: Instance '<Categoria at 0x23de2df0f80>' has been deleted, or its row is otherwise not present.
 2024-11-20 11:00:02,585 - ERROR - Erro ao carregar padrões: Erro ao salvar no banco de dados.
+2024-11-20 13:33:51,223 - ERROR - Erro ao salvar padrões no banco de dados: (sqlite3.IntegrityError) NOT NULL constraint failed: categorias.usuario
+[SQL: INSERT INTO categorias (padrao, usuario, veiculo, movimento, bind, count, criado_em) VALUES (?, ?, ?, ?, ?, ?, ?)]
+[parameters: [('Padrão Simplificado', None, 'Leve', 'A', 'np1', 0, '2024-11-20 13:33:51.220955'), ('Padrão Simplificado', None, 'Caminhao2', 'A', 'np2', 0, '2024-11-20 13:33:51.220955'), ('Padrão Simplificado', None, 'Carreta6', 'A', 'np6', 0, '2024-11-20 13:33:51.220955'), ('Padrão Simplificado', None, 'Onibus 2', 'A', 'o', 0, '2024-11-20 13:33:51.220955'), ('Padrão Simplificado', None, 'Moto', 'A', 'np0', 0, '2024-11-20 13:33:51.220955')]]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2024-11-20 13:33:51,226 - ERROR - Erro ao carregar padrões: Erro ao salvar no banco de dados.
+2024-11-20 13:34:13,395 - ERROR - Erro ao salvar padrões no banco de dados: (sqlite3.IntegrityError) NOT NULL constraint failed: categorias.usuario
+[SQL: INSERT INTO categorias (padrao, usuario, veiculo, movimento, bind, count, criado_em) VALUES (?, ?, ?, ?, ?, ?, ?)]
+[parameters: [('Padrão Simplificado', None, 'Leve', 'A', 'np1', 0, '2024-11-20 13:34:13.392302'), ('Padrão Simplificado', None, 'Caminhao2', 'A', 'np2', 0, '2024-11-20 13:34:13.392302'), ('Padrão Simplificado', None, 'Carreta6', 'A', 'np6', 0, '2024-11-20 13:34:13.392302'), ('Padrão Simplificado', None, 'Onibus 2', 'A', 'o', 0, '2024-11-20 13:34:13.392302'), ('Padrão Simplificado', None, 'Moto', 'A', 'np0', 0, '2024-11-20 13:34:13.392302')]]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2024-11-20 13:34:13,396 - ERROR - Erro ao carregar padrões: Erro ao salvar no banco de dados.
+2024-11-20 13:34:51,449 - ERROR - Erro ao salvar padrões no banco de dados: (sqlite3.IntegrityError) NOT NULL constraint failed: categorias.usuario
+[SQL: INSERT INTO categorias (padrao, usuario, veiculo, movimento, bind, count, criado_em) VALUES (?, ?, ?, ?, ?, ?, ?)]
+[parameters: [('Padrão Simplificado', None, 'Leve', 'A', 'np1', 0, '2024-11-20 13:34:51.444659'), ('Padrão Simplificado', None, 'Caminhao2', 'A', 'np2', 0, '2024-11-20 13:34:51.445260'), ('Padrão Simplificado', None, 'Carreta6', 'A', 'np6', 0, '2024-11-20 13:34:51.445260'), ('Padrão Simplificado', None, 'Onibus 2', 'A', 'o', 0, '2024-11-20 13:34:51.445260'), ('Padrão Simplificado', None, 'Moto', 'A', 'np0', 0, '2024-11-20 13:34:51.445260')]]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2024-11-20 13:34:51,449 - ERROR - Erro ao carregar padrões: Erro ao salvar no banco de dados.
+2024-11-20 13:35:17,126 - ERROR - Erro ao salvar padrões no banco de dados: (sqlite3.IntegrityError) NOT NULL constraint failed: categorias.usuario
+[SQL: INSERT INTO categorias (padrao, usuario, veiculo, movimento, bind, count, criado_em) VALUES (?, ?, ?, ?, ?, ?, ?)]
+[parameters: [('Padrão Perplan', None, 'Leves', 'SA', 'np1', 0, '2024-11-20 13:35:17.120275'), ('Padrão Perplan', None, 'VUC', 'SA', 'v', 0, '2024-11-20 13:35:17.120275'), ('Padrão Perplan', None, 'Caminhao2', 'SA', 'np2', 0, '2024-11-20 13:35:17.120275'), ('Padrão Perplan', None, 'Caminhao3', 'SA', 'np3', 0, '2024-11-20 13:35:17.120275'), ('Padrão Perplan', None, 'Caminhao4', 'SA', 'np4', 0, '2024-11-20 13:35:17.120275'), ('Padrão Perplan', None, 'Carreta3', 'SA', '#', 0, '2024-11-20 13:35:17.120275'), ('Padrão Perplan', None, 'Carreta4', 'SA', '$', 0, '2024-11-20 13:35:17.120275'), ('Padrão Perplan', None, 'Carreta5', 'SA', 'np5', 0, '2024-11-20 13:35:17.120275')  ... displaying 10 of 15 total bound parameter sets ...  ('Padrão Perplan', None, 'Onibus 3', 'SA', 'p', 0, '2024-11-20 13:35:17.121275'), ('Padrão Perplan', None, 'Moto', 'SA', 'np0', 0, '2024-11-20 13:35:17.121275')]]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2024-11-20 13:35:17,127 - ERROR - Erro ao carregar padrões: Erro ao salvar no banco de dados.
+2024-11-20 13:35:52,155 - ERROR - Erro ao salvar padrões no banco de dados: (sqlite3.IntegrityError) NOT NULL constraint failed: categorias.usuario
+[SQL: INSERT INTO categorias (padrao, usuario, veiculo, movimento, bind, count, criado_em) VALUES (?, ?, ?, ?, ?, ?, ?)]
+[parameters: [('Padrão Perplan', None, 'Leves', 'A', 'np1', 0, '2024-11-20 13:35:52.150572'), ('Padrão Perplan', None, 'VUC', 'A', 'v', 0, '2024-11-20 13:35:52.150572'), ('Padrão Perplan', None, 'Caminhao2', 'A', 'np2', 0, '2024-11-20 13:35:52.150572'), ('Padrão Perplan', None, 'Caminhao3', 'A', 'np3', 0, '2024-11-20 13:35:52.150572'), ('Padrão Perplan', None, 'Caminhao4', 'A', 'np4', 0, '2024-11-20 13:35:52.150572'), ('Padrão Perplan', None, 'Carreta3', 'A', '#', 0, '2024-11-20 13:35:52.150572'), ('Padrão Perplan', None, 'Carreta4', 'A', '$', 0, '2024-11-20 13:35:52.150572'), ('Padrão Perplan', None, 'Carreta5', 'A', 'np5', 0, '2024-11-20 13:35:52.150572')  ... displaying 10 of 15 total bound parameter sets ...  ('Padrão Perplan', None, 'Onibus 3', 'A', 'p', 0, '2024-11-20 13:35:52.151567'), ('Padrão Perplan', None, 'Moto', 'A', 'np0', 0, '2024-11-20 13:35:52.151567')]]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2024-11-20 13:35:52,156 - ERROR - Erro ao carregar padrões: Erro ao salvar no banco de dados.
+2024-11-20 13:38:26,092 - ERROR - Erro ao salvar padrões no banco de dados: (sqlite3.IntegrityError) NOT NULL constraint failed: categorias.usuario
+[SQL: INSERT INTO categorias (padrao, usuario, veiculo, movimento, bind, count, criado_em) VALUES (?, ?, ?, ?, ?, ?, ?)]
+[parameters: [('Padrão Simplificado', None, 'Leve', 'A', 'np1', 0, '2024-11-20 13:38:26.086054'), ('Padrão Simplificado', None, 'Caminhao2', 'A', 'np2', 0, '2024-11-20 13:38:26.086054'), ('Padrão Simplificado', None, 'Carreta6', 'A', 'np6', 0, '2024-11-20 13:38:26.086054'), ('Padrão Simplificado', None, 'Onibus 2', 'A', 'o', 0, '2024-11-20 13:38:26.086054'), ('Padrão Simplificado', None, 'Moto', 'A', 'np0', 0, '2024-11-20 13:38:26.086945')]]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2024-11-20 13:38:26,094 - ERROR - Erro ao carregar padrões: Erro ao salvar no banco de dados.
+2024-11-20 13:49:45,128 - ERROR - Erro inesperado ao carregar sessão ativa: type object 'Sessao' has no attribute 'id'
+2024-11-20 13:49:45,130 - ERROR - Erro inesperado ao carregar sessão ativa: type object 'Sessao' has no attribute 'id'
+2024-11-20 13:49:57,243 - ERROR - Erro inesperado ao carregar sessão ativa: type object 'Sessao' has no attribute 'id'
+2024-11-20 13:49:57,244 - ERROR - Erro inesperado ao carregar sessão ativa: type object 'Sessao' has no attribute 'id'
+2024-11-20 13:51:40,208 - ERROR - Erro inesperado ao carregar sessão ativa: type object 'Sessao' has no attribute 'id'
+2024-11-20 13:51:40,209 - ERROR - Erro inesperado ao carregar sessão ativa: type object 'Sessao' has no attribute 'id'
+2024-11-20 13:51:57,719 - ERROR - Erro inesperado ao carregar sessão ativa: type object 'Sessao' has no attribute 'id'
+2024-11-20 13:51:57,721 - ERROR - Erro inesperado ao carregar sessão ativa: type object 'Sessao' has no attribute 'id'
+2024-11-20 14:14:11,998 - ERROR - Erro ao criar sessão: time data 'Nenhuma data selecionada' does not match format '%d-%m-%Y'
+2024-11-20 14:52:19,032 - ERROR - Erro ao carregar tokens salvos: ('Leves', 'A')
+2024-11-20 14:55:37,931 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AssertionError('LoginPage Control must be added to the page first')>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\traffic-count\frontend\auth\login.py", line 80, in login
+    self.app.switch_to_main_app()  # Alterna para a interface principal
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 848, in switch_to_main_app
+    contador = ContadorPerplan(page, username=self.username, app=self)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 42, in __init__
+    self.carregar_sessao_ativa()
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 690, in carregar_sessao_ativa
+    sessao.carregar_sessao_ativa(self)
+  File "C:\Users\lucas.melo\traffic-count\frontend\app\sessao.py", line 128, in carregar_sessao_ativa
+    self.recuperar_contagens()
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 515, in recuperar_contagens
+    self.update_labels(contagem.veiculo, contagem.movimento)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 363, in update_labels
+    self.labels[(veiculo, movimento)].value = str(self.contagens.get((veiculo, movimento), 0))
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+KeyError: ('Leves', 'A')
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\auth\login.py", line 94, in login
+    self.update()
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\control.py", line 308, in update
+    self.__page
+AssertionError: LoginPage Control must be added to the page first
+2024-11-20 14:57:42,921 - ERROR - Erro ao deslogar: 'NoneType' object has no attribute 'update'
+2024-11-20 14:58:41,590 - ERROR - Erro ao deslogar: 'NoneType' object has no attribute 'update'
+2024-11-20 14:58:44,690 - ERROR - Erro ao incrementar: 'NoneType' object has no attribute 'update'
+2024-11-20 15:02:25,604 - ERROR - Erro ao deslogar: 'NoneType' object has no attribute 'update'
+2024-11-20 15:07:54,995 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AssertionError('LoginPage Control must be added to the page first')>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\traffic-count\frontend\auth\login.py", line 80, in login
+    self.app.switch_to_main_app()  # Alterna para a interface principal
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 872, in switch_to_main_app
+    contador = ContadorPerplan(page, username=self.username, app=self)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 42, in __init__
+    self.carregar_sessao_ativa()
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 709, in carregar_sessao_ativa
+    sessao.carregar_sessao_ativa(self)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'app.sessao' has no attribute 'carregar_sessao_ativa'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\auth\login.py", line 94, in login
+    self.update()
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\control.py", line 308, in update
+    self.__page
+AssertionError: LoginPage Control must be added to the page first
+2024-11-20 15:08:10,960 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AssertionError('LoginPage Control must be added to the page first')>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\traffic-count\frontend\auth\login.py", line 80, in login
+    self.app.switch_to_main_app()  # Alterna para a interface principal
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 872, in switch_to_main_app
+    contador = ContadorPerplan(page, username=self.username, app=self)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 42, in __init__
+    self.carregar_sessao_ativa()
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 709, in carregar_sessao_ativa
+    sessao.carregar_sessao_ativa(self)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'app.sessao' has no attribute 'carregar_sessao_ativa'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\auth\login.py", line 94, in login
+    self.update()
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\control.py", line 308, in update
+    self.__page
+AssertionError: LoginPage Control must be added to the page first
+2024-11-20 15:18:40,743 - ERROR - Erro ao alternar para o aplicativo principal: 'ContadorPerplan' object has no attribute 'toggle_button'
+2024-11-20 15:21:00,671 - ERROR - Erro ao alternar para o aplicativo principal: 'ContadorPerplan' object has no attribute 'toggle_button'
+2024-11-20 15:36:25,941 - ERROR - Erro ao carregar sessão ativa: (sqlite3.OperationalError) no such column: sessoes.padrao
+[SQL: SELECT sessoes.sessao AS sessoes_sessao, sessoes.detalhes AS sessoes_detalhes, sessoes.padrao AS sessoes_padrao, sessoes.criada_em AS sessoes_criada_em, sessoes.ativa AS sessoes_ativa 
+FROM sessoes 
+WHERE sessoes.ativa = 1
+ LIMIT ? OFFSET ?]
+[parameters: (1, 0)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2024-11-20 15:36:33,602 - ERROR - Erro ao validar campos: (sqlite3.OperationalError) no such column: sessoes.padrao
+[SQL: SELECT sessoes.sessao AS sessoes_sessao, sessoes.detalhes AS sessoes_detalhes, sessoes.padrao AS sessoes_padrao, sessoes.criada_em AS sessoes_criada_em, sessoes.ativa AS sessoes_ativa 
+FROM sessoes 
+WHERE sessoes.sessao = ?
+ LIMIT ? OFFSET ?]
+[parameters: ('Sessao_Testeteet_tette_20-11-2024', 1, 0)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2024-11-20 15:52:25,150 - ERROR - Erro ao salvar padrões no banco de dados: (sqlite3.IntegrityError) UNIQUE constraint failed: categorias.veiculo, categorias.movimento
+[SQL: INSERT INTO categorias (padrao, veiculo, movimento, bind, count, criado_em) VALUES (?, ?, ?, ?, ?, ?)]
+[parameters: [('Padrão Perplan', 'Leves', 'A', 'np1', 0, '2024-11-20 15:52:25.148868'), ('Padrão Perplan', 'VUC', 'A', 'v', 0, '2024-11-20 15:52:25.148868'), ('Padrão Perplan', 'Caminhao2', 'A', 'np2', 0, '2024-11-20 15:52:25.148868'), ('Padrão Perplan', 'Caminhao3', 'A', 'np3', 0, '2024-11-20 15:52:25.148868'), ('Padrão Perplan', 'Caminhao4', 'A', 'np4', 0, '2024-11-20 15:52:25.148868'), ('Padrão Perplan', 'Carreta3', 'A', '#', 0, '2024-11-20 15:52:25.148868'), ('Padrão Perplan', 'Carreta4', 'A', '$', 0, '2024-11-20 15:52:25.148868'), ('Padrão Perplan', 'Carreta5', 'A', 'np5', 0, '2024-11-20 15:52:25.148868')  ... displaying 10 of 15 total bound parameter sets ...  ('Padrão Perplan', 'Onibus 3', 'A', 'p', 0, '2024-11-20 15:52:25.148868'), ('Padrão Perplan', 'Moto', 'A', 'np0', 0, '2024-11-20 15:52:25.148868')]]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2024-11-20 15:52:25,151 - ERROR - Erro ao carregar tokens salvos: Erro ao salvar no banco de dados.
+2024-11-20 15:57:18,837 - ERROR - Erro ao salvar padrões no banco de dados: (sqlite3.IntegrityError) UNIQUE constraint failed: categorias.veiculo, categorias.movimento
+[SQL: INSERT INTO categorias (padrao, veiculo, movimento, bind, count, criado_em) VALUES (?, ?, ?, ?, ?, ?)]
+[parameters: [('Padrão Perplan', 'Leves', 'A', 'np1', 0, '2024-11-20 15:57:18.834232'), ('Padrão Perplan', 'VUC', 'A', 'v', 0, '2024-11-20 15:57:18.835220'), ('Padrão Perplan', 'Caminhao2', 'A', 'np2', 0, '2024-11-20 15:57:18.835220'), ('Padrão Perplan', 'Caminhao3', 'A', 'np3', 0, '2024-11-20 15:57:18.835220'), ('Padrão Perplan', 'Caminhao4', 'A', 'np4', 0, '2024-11-20 15:57:18.835220'), ('Padrão Perplan', 'Carreta3', 'A', '#', 0, '2024-11-20 15:57:18.835220'), ('Padrão Perplan', 'Carreta4', 'A', '$', 0, '2024-11-20 15:57:18.835220'), ('Padrão Perplan', 'Carreta5', 'A', 'np5', 0, '2024-11-20 15:57:18.835220')  ... displaying 10 of 15 total bound parameter sets ...  ('Padrão Perplan', 'Onibus 3', 'A', 'p', 0, '2024-11-20 15:57:18.835220'), ('Padrão Perplan', 'Moto', 'A', 'np0', 0, '2024-11-20 15:57:18.835220')]]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2024-11-20 15:57:18,838 - ERROR - Erro ao carregar tokens salvos: Erro ao salvar no banco de dados.
+2024-11-20 15:57:29,400 - ERROR - Erro ao salvar padrões no banco de dados: (sqlite3.IntegrityError) UNIQUE constraint failed: categorias.veiculo, categorias.movimento
+[SQL: INSERT INTO categorias (padrao, veiculo, movimento, bind, count, criado_em) VALUES (?, ?, ?, ?, ?, ?)]
+[parameters: [('Padrão Perplan', 'Leves', 'A', 'np1', 0, '2024-11-20 15:57:29.397763'), ('Padrão Perplan', 'VUC', 'A', 'v', 0, '2024-11-20 15:57:29.397763'), ('Padrão Perplan', 'Caminhao2', 'A', 'np2', 0, '2024-11-20 15:57:29.397763'), ('Padrão Perplan', 'Caminhao3', 'A', 'np3', 0, '2024-11-20 15:57:29.397763'), ('Padrão Perplan', 'Caminhao4', 'A', 'np4', 0, '2024-11-20 15:57:29.397763'), ('Padrão Perplan', 'Carreta3', 'A', '#', 0, '2024-11-20 15:57:29.397763'), ('Padrão Perplan', 'Carreta4', 'A', '$', 0, '2024-11-20 15:57:29.397763'), ('Padrão Perplan', 'Carreta5', 'A', 'np5', 0, '2024-11-20 15:57:29.397763')  ... displaying 10 of 15 total bound parameter sets ...  ('Padrão Perplan', 'Onibus 3', 'A', 'p', 0, '2024-11-20 15:57:29.397763'), ('Padrão Perplan', 'Moto', 'A', 'np0', 0, '2024-11-20 15:57:29.397763')]]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2024-11-20 15:57:29,400 - ERROR - Erro ao carregar tokens salvos: Erro ao salvar no banco de dados.
+2024-11-20 15:57:43,143 - ERROR - Erro ao salvar padrões no banco de dados: (sqlite3.IntegrityError) UNIQUE constraint failed: categorias.veiculo, categorias.movimento
+[SQL: INSERT INTO categorias (padrao, veiculo, movimento, bind, count, criado_em) VALUES (?, ?, ?, ?, ?, ?)]
+[parameters: [('Padrão Perplan', 'Leves', 'A', 'np1', 0, '2024-11-20 15:57:43.140833'), ('Padrão Perplan', 'VUC', 'A', 'v', 0, '2024-11-20 15:57:43.140833'), ('Padrão Perplan', 'Caminhao2', 'A', 'np2', 0, '2024-11-20 15:57:43.140833'), ('Padrão Perplan', 'Caminhao3', 'A', 'np3', 0, '2024-11-20 15:57:43.140833'), ('Padrão Perplan', 'Caminhao4', 'A', 'np4', 0, '2024-11-20 15:57:43.140833'), ('Padrão Perplan', 'Carreta3', 'A', '#', 0, '2024-11-20 15:57:43.140833'), ('Padrão Perplan', 'Carreta4', 'A', '$', 0, '2024-11-20 15:57:43.140833'), ('Padrão Perplan', 'Carreta5', 'A', 'np5', 0, '2024-11-20 15:57:43.140833')  ... displaying 10 of 15 total bound parameter sets ...  ('Padrão Perplan', 'Onibus 3', 'A', 'p', 0, '2024-11-20 15:57:43.140833'), ('Padrão Perplan', 'Moto', 'A', 'np0', 0, '2024-11-20 15:57:43.140833')]]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2024-11-20 15:57:43,144 - ERROR - Erro ao carregar tokens salvos: Erro ao salvar no banco de dados.
+2024-11-20 15:58:43,029 - ERROR - Erro ao salvar padrões no banco de dados: (sqlite3.IntegrityError) UNIQUE constraint failed: categorias.veiculo, categorias.movimento
+[SQL: INSERT INTO categorias (padrao, veiculo, movimento, bind, count, criado_em) VALUES (?, ?, ?, ?, ?, ?)]
+[parameters: [('Padrão Perplan', 'Leves', 'A', 'np1', 0, '2024-11-20 15:58:43.025807'), ('Padrão Perplan', 'VUC', 'A', 'v', 0, '2024-11-20 15:58:43.025807'), ('Padrão Perplan', 'Caminhao2', 'A', 'np2', 0, '2024-11-20 15:58:43.025807'), ('Padrão Perplan', 'Caminhao3', 'A', 'np3', 0, '2024-11-20 15:58:43.026811'), ('Padrão Perplan', 'Caminhao4', 'A', 'np4', 0, '2024-11-20 15:58:43.026811'), ('Padrão Perplan', 'Carreta3', 'A', '#', 0, '2024-11-20 15:58:43.026811'), ('Padrão Perplan', 'Carreta4', 'A', '$', 0, '2024-11-20 15:58:43.026811'), ('Padrão Perplan', 'Carreta5', 'A', 'np5', 0, '2024-11-20 15:58:43.026811')  ... displaying 10 of 15 total bound parameter sets ...  ('Padrão Perplan', 'Onibus 3', 'A', 'p', 0, '2024-11-20 15:58:43.026811'), ('Padrão Perplan', 'Moto', 'A', 'np0', 0, '2024-11-20 15:58:43.026811')]]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2024-11-20 15:58:43,031 - ERROR - Erro ao carregar tokens salvos: Erro ao salvar no banco de dados.
+2024-11-20 15:59:20,977 - ERROR - Erro ao salvar padrões no banco de dados: (sqlite3.IntegrityError) UNIQUE constraint failed: categorias.veiculo, categorias.movimento
+[SQL: INSERT INTO categorias (padrao, veiculo, movimento, bind, count, criado_em) VALUES (?, ?, ?, ?, ?, ?)]
+[parameters: [('Padrão Perplan', 'Leves', 'A', 'np1', 0, '2024-11-20 15:59:20.974965'), ('Padrão Perplan', 'VUC', 'A', 'v', 0, '2024-11-20 15:59:20.974965'), ('Padrão Perplan', 'Caminhao2', 'A', 'np2', 0, '2024-11-20 15:59:20.974965'), ('Padrão Perplan', 'Caminhao3', 'A', 'np3', 0, '2024-11-20 15:59:20.974965'), ('Padrão Perplan', 'Caminhao4', 'A', 'np4', 0, '2024-11-20 15:59:20.974965'), ('Padrão Perplan', 'Carreta3', 'A', '#', 0, '2024-11-20 15:59:20.974965'), ('Padrão Perplan', 'Carreta4', 'A', '$', 0, '2024-11-20 15:59:20.974965'), ('Padrão Perplan', 'Carreta5', 'A', 'np5', 0, '2024-11-20 15:59:20.974965')  ... displaying 10 of 15 total bound parameter sets ...  ('Padrão Perplan', 'Onibus 3', 'A', 'p', 0, '2024-11-20 15:59:20.974965'), ('Padrão Perplan', 'Moto', 'A', 'np0', 0, '2024-11-20 15:59:20.974965')]]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2024-11-20 15:59:20,978 - ERROR - Erro ao carregar tokens salvos: Erro ao salvar no banco de dados.
+2024-11-20 15:59:51,409 - ERROR - Erro ao salvar padrões no banco de dados: (sqlite3.IntegrityError) UNIQUE constraint failed: categorias.veiculo, categorias.movimento
+[SQL: INSERT INTO categorias (padrao, veiculo, movimento, bind, count, criado_em) VALUES (?, ?, ?, ?, ?, ?)]
+[parameters: [('Padrão Perplan', 'Leves', 'A', 'np1', 0, '2024-11-20 15:59:51.406500'), ('Padrão Perplan', 'VUC', 'A', 'v', 0, '2024-11-20 15:59:51.406500'), ('Padrão Perplan', 'Caminhao2', 'A', 'np2', 0, '2024-11-20 15:59:51.406500'), ('Padrão Perplan', 'Caminhao3', 'A', 'np3', 0, '2024-11-20 15:59:51.406500'), ('Padrão Perplan', 'Caminhao4', 'A', 'np4', 0, '2024-11-20 15:59:51.406500'), ('Padrão Perplan', 'Carreta3', 'A', '#', 0, '2024-11-20 15:59:51.406500'), ('Padrão Perplan', 'Carreta4', 'A', '$', 0, '2024-11-20 15:59:51.406500'), ('Padrão Perplan', 'Carreta5', 'A', 'np5', 0, '2024-11-20 15:59:51.406500')  ... displaying 10 of 15 total bound parameter sets ...  ('Padrão Perplan', 'Onibus 3', 'A', 'p', 0, '2024-11-20 15:59:51.406500'), ('Padrão Perplan', 'Moto', 'A', 'np0', 0, '2024-11-20 15:59:51.406500')]]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2024-11-20 15:59:51,410 - ERROR - Erro ao carregar tokens salvos: Erro ao salvar no banco de dados.
+2024-11-20 15:59:56,808 - ERROR - Erro ao salvar padrões no banco de dados: (sqlite3.IntegrityError) UNIQUE constraint failed: categorias.veiculo, categorias.movimento
+[SQL: INSERT INTO categorias (padrao, veiculo, movimento, bind, count, criado_em) VALUES (?, ?, ?, ?, ?, ?)]
+[parameters: [('Padrão Perplan', 'Leves', 'A', 'np1', 0, '2024-11-20 15:59:56.804565'), ('Padrão Perplan', 'VUC', 'A', 'v', 0, '2024-11-20 15:59:56.804565'), ('Padrão Perplan', 'Caminhao2', 'A', 'np2', 0, '2024-11-20 15:59:56.805566'), ('Padrão Perplan', 'Caminhao3', 'A', 'np3', 0, '2024-11-20 15:59:56.805566'), ('Padrão Perplan', 'Caminhao4', 'A', 'np4', 0, '2024-11-20 15:59:56.805566'), ('Padrão Perplan', 'Carreta3', 'A', '#', 0, '2024-11-20 15:59:56.805566'), ('Padrão Perplan', 'Carreta4', 'A', '$', 0, '2024-11-20 15:59:56.805566'), ('Padrão Perplan', 'Carreta5', 'A', 'np5', 0, '2024-11-20 15:59:56.805566')  ... displaying 10 of 15 total bound parameter sets ...  ('Padrão Perplan', 'Onibus 3', 'A', 'p', 0, '2024-11-20 15:59:56.805566'), ('Padrão Perplan', 'Moto', 'A', 'np0', 0, '2024-11-20 15:59:56.805566')]]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2024-11-20 15:59:56,809 - ERROR - Erro ao carregar tokens salvos: Erro ao salvar no banco de dados.
+2024-11-20 16:00:09,608 - ERROR - Erro ao salvar padrões no banco de dados: (sqlite3.IntegrityError) UNIQUE constraint failed: categorias.veiculo, categorias.movimento
+[SQL: INSERT INTO categorias (padrao, veiculo, movimento, bind, count, criado_em) VALUES (?, ?, ?, ?, ?, ?)]
+[parameters: [('Padrão Perplan', 'Leves', 'A', 'np1', 0, '2024-11-20 16:00:09.607575'), ('Padrão Perplan', 'VUC', 'A', 'v', 0, '2024-11-20 16:00:09.607575'), ('Padrão Perplan', 'Caminhao2', 'A', 'np2', 0, '2024-11-20 16:00:09.607575'), ('Padrão Perplan', 'Caminhao3', 'A', 'np3', 0, '2024-11-20 16:00:09.607575'), ('Padrão Perplan', 'Caminhao4', 'A', 'np4', 0, '2024-11-20 16:00:09.607575'), ('Padrão Perplan', 'Carreta3', 'A', '#', 0, '2024-11-20 16:00:09.607575'), ('Padrão Perplan', 'Carreta4', 'A', '$', 0, '2024-11-20 16:00:09.607575'), ('Padrão Perplan', 'Carreta5', 'A', 'np5', 0, '2024-11-20 16:00:09.607575')  ... displaying 10 of 15 total bound parameter sets ...  ('Padrão Perplan', 'Onibus 3', 'A', 'p', 0, '2024-11-20 16:00:09.607575'), ('Padrão Perplan', 'Moto', 'A', 'np0', 0, '2024-11-20 16:00:09.607575')]]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2024-11-20 16:00:09,609 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AssertionError('LoginPage Control must be added to the page first')>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1936, in _exec_single_context
+    self.dialect.do_executemany(
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\engine\default.py", line 938, in do_executemany
+    cursor.executemany(statement, parameters)
+sqlite3.IntegrityError: UNIQUE constraint failed: categorias.veiculo, categorias.movimento
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 715, in carregar_categorias_padrao
+    self.session.commit()
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2028, in commit
+    trans.commit(_to_root=True)
+  File "<string>", line 2, in commit
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\orm\state_changes.py", line 139, in _go
+    ret_value = fn(self, *arg, **kw)
+                ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 1313, in commit
+    self._prepare_impl()
+  File "<string>", line 2, in _prepare_impl
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\orm\state_changes.py", line 139, in _go
+    ret_value = fn(self, *arg, **kw)
+                ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 1288, in _prepare_impl
+    self.session.flush()
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 4352, in flush
+    self._flush(objects)
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 4487, in _flush
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 146, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 4448, in _flush
+    flush_context.execute()
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\orm\unitofwork.py", line 466, in execute
+    rec.execute(self)
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\orm\unitofwork.py", line 642, in execute
+    util.preloaded.orm_persistence.save_obj(
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\orm\persistence.py", line 93, in save_obj
+    _emit_insert_statements(
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\orm\persistence.py", line 1048, in _emit_insert_statements
+    result = connection.execute(
+             ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1418, in execute
+    return meth(
+           ^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\sql\elements.py", line 515, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1640, in _execute_clauseelement
+    ret = self._execute_context(
+          ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 2355, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1936, in _exec_single_context
+    self.dialect.do_executemany(
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\engine\default.py", line 938, in do_executemany
+    cursor.executemany(statement, parameters)
+sqlalchemy.exc.IntegrityError: (sqlite3.IntegrityError) UNIQUE constraint failed: categorias.veiculo, categorias.movimento
+[SQL: INSERT INTO categorias (padrao, veiculo, movimento, bind, count, criado_em) VALUES (?, ?, ?, ?, ?, ?)]
+[parameters: [('Padrão Perplan', 'Leves', 'A', 'np1', 0, '2024-11-20 16:00:09.607575'), ('Padrão Perplan', 'VUC', 'A', 'v', 0, '2024-11-20 16:00:09.607575'), ('Padrão Perplan', 'Caminhao2', 'A', 'np2', 0, '2024-11-20 16:00:09.607575'), ('Padrão Perplan', 'Caminhao3', 'A', 'np3', 0, '2024-11-20 16:00:09.607575'), ('Padrão Perplan', 'Caminhao4', 'A', 'np4', 0, '2024-11-20 16:00:09.607575'), ('Padrão Perplan', 'Carreta3', 'A', '#', 0, '2024-11-20 16:00:09.607575'), ('Padrão Perplan', 'Carreta4', 'A', '$', 0, '2024-11-20 16:00:09.607575'), ('Padrão Perplan', 'Carreta5', 'A', 'np5', 0, '2024-11-20 16:00:09.607575')  ... displaying 10 of 15 total bound parameter sets ...  ('Padrão Perplan', 'Onibus 3', 'A', 'p', 0, '2024-11-20 16:00:09.607575'), ('Padrão Perplan', 'Moto', 'A', 'np0', 0, '2024-11-20 16:00:09.607575')]]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\traffic-count\frontend\auth\login.py", line 80, in login
+    self.app.switch_to_main_app()  # Alterna para a interface principal
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 848, in switch_to_main_app
+    contador = ContadorPerplan(page, username=self.username, app=self)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 42, in __init__
+    self.carregar_sessao_ativa()
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 690, in carregar_sessao_ativa
+    sessao.carregar_sessao_ativa(self)
+  File "C:\Users\lucas.melo\traffic-count\frontend\app\sessao.py", line 143, in carregar_sessao_ativa
+    self.carregar_categorias_padrao(caminho_json, padrao)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 725, in carregar_categorias_padrao
+    raise Exception("Erro ao salvar no banco de dados.")
+Exception: Erro ao salvar no banco de dados.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\auth\login.py", line 94, in login
+    self.update()
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\control.py", line 308, in update
+    self.__page
+AssertionError: LoginPage Control must be added to the page first
+2024-11-20 16:01:59,044 - ERROR - Erro ao salvar padrões no banco de dados: (sqlite3.IntegrityError) UNIQUE constraint failed: categorias.veiculo, categorias.movimento
+[SQL: INSERT INTO categorias (padrao, veiculo, movimento, bind, count, criado_em) VALUES (?, ?, ?, ?, ?, ?)]
+[parameters: [('Padrão Perplan', 'Leves', 'A', 'np1', 0, '2024-11-20 16:01:59.041651'), ('Padrão Perplan', 'VUC', 'A', 'v', 0, '2024-11-20 16:01:59.041651'), ('Padrão Perplan', 'Caminhao2', 'A', 'np2', 0, '2024-11-20 16:01:59.041651'), ('Padrão Perplan', 'Caminhao3', 'A', 'np3', 0, '2024-11-20 16:01:59.041651'), ('Padrão Perplan', 'Caminhao4', 'A', 'np4', 0, '2024-11-20 16:01:59.041651'), ('Padrão Perplan', 'Carreta3', 'A', '#', 0, '2024-11-20 16:01:59.041651'), ('Padrão Perplan', 'Carreta4', 'A', '$', 0, '2024-11-20 16:01:59.041651'), ('Padrão Perplan', 'Carreta5', 'A', 'np5', 0, '2024-11-20 16:01:59.041651')  ... displaying 10 of 15 total bound parameter sets ...  ('Padrão Perplan', 'Onibus 3', 'A', 'p', 0, '2024-11-20 16:01:59.041651'), ('Padrão Perplan', 'Moto', 'A', 'np0', 0, '2024-11-20 16:01:59.041651')]]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2024-11-20 16:01:59,045 - ERROR - Erro ao carregar tokens salvos: Erro ao salvar no banco de dados.
+2024-11-20 16:04:26,752 - ERROR - Erro ao salvar padrões no banco de dados: (sqlite3.IntegrityError) UNIQUE constraint failed: categorias.veiculo, categorias.movimento
+[SQL: INSERT INTO categorias (padrao, veiculo, movimento, bind, count, criado_em) VALUES (?, ?, ?, ?, ?, ?)]
+[parameters: [('Padrão Perplan', 'Leves', 'A', 'np1', 0, '2024-11-20 16:04:26.749304'), ('Padrão Perplan', 'VUC', 'A', 'v', 0, '2024-11-20 16:04:26.749304'), ('Padrão Perplan', 'Caminhao2', 'A', 'np2', 0, '2024-11-20 16:04:26.749304'), ('Padrão Perplan', 'Caminhao3', 'A', 'np3', 0, '2024-11-20 16:04:26.749304'), ('Padrão Perplan', 'Caminhao4', 'A', 'np4', 0, '2024-11-20 16:04:26.749304'), ('Padrão Perplan', 'Carreta3', 'A', '#', 0, '2024-11-20 16:04:26.749304'), ('Padrão Perplan', 'Carreta4', 'A', '$', 0, '2024-11-20 16:04:26.750306'), ('Padrão Perplan', 'Carreta5', 'A', 'np5', 0, '2024-11-20 16:04:26.750306')  ... displaying 10 of 15 total bound parameter sets ...  ('Padrão Perplan', 'Onibus 3', 'A', 'p', 0, '2024-11-20 16:04:26.750306'), ('Padrão Perplan', 'Moto', 'A', 'np0', 0, '2024-11-20 16:04:26.750306')]]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2024-11-20 16:04:26,753 - ERROR - Erro ao carregar tokens salvos: Erro ao salvar no banco de dados.
+2024-11-20 16:04:32,732 - ERROR - Erro ao salvar padrões no banco de dados: (sqlite3.IntegrityError) UNIQUE constraint failed: categorias.veiculo, categorias.movimento
+[SQL: INSERT INTO categorias (padrao, veiculo, movimento, bind, count, criado_em) VALUES (?, ?, ?, ?, ?, ?)]
+[parameters: [('Padrão Perplan', 'Leves', 'A', 'np1', 0, '2024-11-20 16:04:32.731249'), ('Padrão Perplan', 'VUC', 'A', 'v', 0, '2024-11-20 16:04:32.731249'), ('Padrão Perplan', 'Caminhao2', 'A', 'np2', 0, '2024-11-20 16:04:32.731249'), ('Padrão Perplan', 'Caminhao3', 'A', 'np3', 0, '2024-11-20 16:04:32.731249'), ('Padrão Perplan', 'Caminhao4', 'A', 'np4', 0, '2024-11-20 16:04:32.731249'), ('Padrão Perplan', 'Carreta3', 'A', '#', 0, '2024-11-20 16:04:32.731249'), ('Padrão Perplan', 'Carreta4', 'A', '$', 0, '2024-11-20 16:04:32.731249'), ('Padrão Perplan', 'Carreta5', 'A', 'np5', 0, '2024-11-20 16:04:32.731249')  ... displaying 10 of 15 total bound parameter sets ...  ('Padrão Perplan', 'Onibus 3', 'A', 'p', 0, '2024-11-20 16:04:32.731249'), ('Padrão Perplan', 'Moto', 'A', 'np0', 0, '2024-11-20 16:04:32.731249')]]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2024-11-20 16:04:32,735 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AssertionError('LoginPage Control must be added to the page first')>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1936, in _exec_single_context
+    self.dialect.do_executemany(
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\engine\default.py", line 938, in do_executemany
+    cursor.executemany(statement, parameters)
+sqlite3.IntegrityError: UNIQUE constraint failed: categorias.veiculo, categorias.movimento
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 715, in carregar_categorias_padrao
+    self.session.commit()
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2028, in commit
+    trans.commit(_to_root=True)
+  File "<string>", line 2, in commit
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\orm\state_changes.py", line 139, in _go
+    ret_value = fn(self, *arg, **kw)
+                ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 1313, in commit
+    self._prepare_impl()
+  File "<string>", line 2, in _prepare_impl
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\orm\state_changes.py", line 139, in _go
+    ret_value = fn(self, *arg, **kw)
+                ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 1288, in _prepare_impl
+    self.session.flush()
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 4352, in flush
+    self._flush(objects)
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 4487, in _flush
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 146, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 4448, in _flush
+    flush_context.execute()
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\orm\unitofwork.py", line 466, in execute
+    rec.execute(self)
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\orm\unitofwork.py", line 642, in execute
+    util.preloaded.orm_persistence.save_obj(
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\orm\persistence.py", line 93, in save_obj
+    _emit_insert_statements(
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\orm\persistence.py", line 1048, in _emit_insert_statements
+    result = connection.execute(
+             ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1418, in execute
+    return meth(
+           ^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\sql\elements.py", line 515, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1640, in _execute_clauseelement
+    ret = self._execute_context(
+          ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 2355, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1936, in _exec_single_context
+    self.dialect.do_executemany(
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\engine\default.py", line 938, in do_executemany
+    cursor.executemany(statement, parameters)
+sqlalchemy.exc.IntegrityError: (sqlite3.IntegrityError) UNIQUE constraint failed: categorias.veiculo, categorias.movimento
+[SQL: INSERT INTO categorias (padrao, veiculo, movimento, bind, count, criado_em) VALUES (?, ?, ?, ?, ?, ?)]
+[parameters: [('Padrão Perplan', 'Leves', 'A', 'np1', 0, '2024-11-20 16:04:32.731249'), ('Padrão Perplan', 'VUC', 'A', 'v', 0, '2024-11-20 16:04:32.731249'), ('Padrão Perplan', 'Caminhao2', 'A', 'np2', 0, '2024-11-20 16:04:32.731249'), ('Padrão Perplan', 'Caminhao3', 'A', 'np3', 0, '2024-11-20 16:04:32.731249'), ('Padrão Perplan', 'Caminhao4', 'A', 'np4', 0, '2024-11-20 16:04:32.731249'), ('Padrão Perplan', 'Carreta3', 'A', '#', 0, '2024-11-20 16:04:32.731249'), ('Padrão Perplan', 'Carreta4', 'A', '$', 0, '2024-11-20 16:04:32.731249'), ('Padrão Perplan', 'Carreta5', 'A', 'np5', 0, '2024-11-20 16:04:32.731249')  ... displaying 10 of 15 total bound parameter sets ...  ('Padrão Perplan', 'Onibus 3', 'A', 'p', 0, '2024-11-20 16:04:32.731249'), ('Padrão Perplan', 'Moto', 'A', 'np0', 0, '2024-11-20 16:04:32.731249')]]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\traffic-count\frontend\auth\login.py", line 80, in login
+    self.app.switch_to_main_app()  # Alterna para a interface principal
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 848, in switch_to_main_app
+    contador = ContadorPerplan(page, username=self.username, app=self)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 42, in __init__
+    self.carregar_sessao_ativa()
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 690, in carregar_sessao_ativa
+    sessao.carregar_sessao_ativa(self)
+  File "C:\Users\lucas.melo\traffic-count\frontend\app\sessao.py", line 154, in carregar_sessao_ativa
+    self.carregar_categorias_padrao(caminho_json, padrao)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 725, in carregar_categorias_padrao
+    raise Exception("Erro ao salvar no banco de dados.")
+Exception: Erro ao salvar no banco de dados.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\auth\login.py", line 94, in login
+    self.update()
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\control.py", line 308, in update
+    self.__page
+AssertionError: LoginPage Control must be added to the page first
+2024-11-20 16:07:06,825 - ERROR - Erro ao salvar padrões no banco de dados: (sqlite3.IntegrityError) UNIQUE constraint failed: categorias.veiculo, categorias.movimento
+[SQL: INSERT INTO categorias (padrao, veiculo, movimento, bind, count, criado_em) VALUES (?, ?, ?, ?, ?, ?)]
+[parameters: [('Padrão Perplan', 'Leves', 'A', 'np1', 0, '2024-11-20 16:07:06.822381'), ('Padrão Perplan', 'VUC', 'A', 'v', 0, '2024-11-20 16:07:06.823889'), ('Padrão Perplan', 'Caminhao2', 'A', 'np2', 0, '2024-11-20 16:07:06.823889'), ('Padrão Perplan', 'Caminhao3', 'A', 'np3', 0, '2024-11-20 16:07:06.823889'), ('Padrão Perplan', 'Caminhao4', 'A', 'np4', 0, '2024-11-20 16:07:06.823889'), ('Padrão Perplan', 'Carreta3', 'A', '#', 0, '2024-11-20 16:07:06.823889'), ('Padrão Perplan', 'Carreta4', 'A', '$', 0, '2024-11-20 16:07:06.823889'), ('Padrão Perplan', 'Carreta5', 'A', 'np5', 0, '2024-11-20 16:07:06.823889')  ... displaying 10 of 15 total bound parameter sets ...  ('Padrão Perplan', 'Onibus 3', 'A', 'p', 0, '2024-11-20 16:07:06.823889'), ('Padrão Perplan', 'Moto', 'A', 'np0', 0, '2024-11-20 16:07:06.823889')]]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2024-11-20 16:07:06,826 - ERROR - Erro ao carregar tokens salvos: Erro ao salvar no banco de dados.
+2024-11-20 16:08:35,260 - ERROR - Erro ao salvar padrões no banco de dados: (sqlite3.IntegrityError) UNIQUE constraint failed: categorias.veiculo, categorias.movimento
+[SQL: INSERT INTO categorias (padrao, veiculo, movimento, bind, count, criado_em) VALUES (?, ?, ?, ?, ?, ?)]
+[parameters: [('Padrão Perplan', 'Leves', 'A', 'np1', 0, '2024-11-20 16:08:35.258130'), ('Padrão Perplan', 'VUC', 'A', 'v', 0, '2024-11-20 16:08:35.258130'), ('Padrão Perplan', 'Caminhao2', 'A', 'np2', 0, '2024-11-20 16:08:35.258130'), ('Padrão Perplan', 'Caminhao3', 'A', 'np3', 0, '2024-11-20 16:08:35.258130'), ('Padrão Perplan', 'Caminhao4', 'A', 'np4', 0, '2024-11-20 16:08:35.258130'), ('Padrão Perplan', 'Carreta3', 'A', '#', 0, '2024-11-20 16:08:35.258130'), ('Padrão Perplan', 'Carreta4', 'A', '$', 0, '2024-11-20 16:08:35.258130'), ('Padrão Perplan', 'Carreta5', 'A', 'np5', 0, '2024-11-20 16:08:35.258130')  ... displaying 10 of 15 total bound parameter sets ...  ('Padrão Perplan', 'Onibus 3', 'A', 'p', 0, '2024-11-20 16:08:35.258130'), ('Padrão Perplan', 'Moto', 'A', 'np0', 0, '2024-11-20 16:08:35.258130')]]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2024-11-20 16:08:35,261 - ERROR - Erro ao carregar tokens salvos: Erro ao salvar no banco de dados.
+2024-11-20 16:12:21,238 - ERROR - Erro ao salvar histórico: Method 'commit()' can't be called here; method 'commit()' is already in progress and this would cause an unexpected state change to <SessionTransactionState.CLOSED: 5> (Background on this error at: https://sqlalche.me/e/20/isce)
+2024-11-20 16:12:21,239 - ERROR - Erro ao salvar contagens: Method 'rollback()' can't be called here; method 'commit()' is already in progress and this would cause an unexpected state change to <SessionTransactionState.CLOSED: 5> (Background on this error at: https://sqlalche.me/e/20/isce)
+2024-11-20 16:12:28,808 - ERROR - Erro ao salvar contagens: File is not a zip file
+2024-11-20 16:41:17,406 - ERROR - Erro ao carregar sessão ativa: ContadorPerplan.carregar_padroes_selecionados() missing 1 required positional argument: 'e'
+2024-11-20 16:41:29,059 - ERROR - Erro ao salvar padrões no banco de dados: (sqlite3.IntegrityError) UNIQUE constraint failed: categorias.veiculo, categorias.movimento
+[SQL: INSERT INTO categorias (padrao, veiculo, movimento, bind, count, criado_em) VALUES (?, ?, ?, ?, ?, ?)]
+[parameters: [('Padrão Perci', 'Leve', 'A', 'np1', 0, '2024-11-20 16:41:29.045357'), ('Padrão Perci', 'Cam2+Vuc', 'A', 'np2', 0, '2024-11-20 16:41:29.046188'), ('Padrão Perci', 'Caminhao3', 'A', 'np3', 0, '2024-11-20 16:41:29.046188'), ('Padrão Perci', 'Caminhao4', 'A', 'np4', 0, '2024-11-20 16:41:29.046188'), ('Padrão Perci', 'Carreta5', 'A', 'np5', 0, '2024-11-20 16:41:29.046188'), ('Padrão Perci', 'Carreta6', 'A', 'np6', 0, '2024-11-20 16:41:29.046188'), ('Padrão Perci', 'Carreta7', 'A', 'np7', 0, '2024-11-20 16:41:29.046188'), ('Padrão Perci', 'Carreta9', 'A', 'np9', 0, '2024-11-20 16:41:29.046188')  ... displaying 10 of 12 total bound parameter sets ...  ('Padrão Perci', 'Onibus 3', 'A', 'p', 0, '2024-11-20 16:41:29.046188'), ('Padrão Perci', 'Moto', 'A', 'np0', 0, '2024-11-20 16:41:29.046188')]]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2024-11-20 16:41:29,060 - ERROR - Erro ao carregar padrões: Erro ao salvar no banco de dados.
+2024-11-20 16:41:32,164 - ERROR - Erro ao salvar padrões no banco de dados: (sqlite3.IntegrityError) UNIQUE constraint failed: categorias.veiculo, categorias.movimento
+[SQL: INSERT INTO categorias (padrao, veiculo, movimento, bind, count, criado_em) VALUES (?, ?, ?, ?, ?, ?)]
+[parameters: [('Padrão Perci', 'Leve', 'A', 'np1', 0, '2024-11-20 16:41:32.153067'), ('Padrão Perci', 'Cam2+Vuc', 'A', 'np2', 0, '2024-11-20 16:41:32.153067'), ('Padrão Perci', 'Caminhao3', 'A', 'np3', 0, '2024-11-20 16:41:32.153067'), ('Padrão Perci', 'Caminhao4', 'A', 'np4', 0, '2024-11-20 16:41:32.153067'), ('Padrão Perci', 'Carreta5', 'A', 'np5', 0, '2024-11-20 16:41:32.153067'), ('Padrão Perci', 'Carreta6', 'A', 'np6', 0, '2024-11-20 16:41:32.153067'), ('Padrão Perci', 'Carreta7', 'A', 'np7', 0, '2024-11-20 16:41:32.153067'), ('Padrão Perci', 'Carreta9', 'A', 'np9', 0, '2024-11-20 16:41:32.153067')  ... displaying 10 of 12 total bound parameter sets ...  ('Padrão Perci', 'Onibus 3', 'A', 'p', 0, '2024-11-20 16:41:32.153067'), ('Padrão Perci', 'Moto', 'A', 'np0', 0, '2024-11-20 16:41:32.153067')]]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2024-11-20 16:41:32,165 - ERROR - Erro ao carregar padrões: Erro ao salvar no banco de dados.
+2024-11-20 16:41:44,230 - ERROR - Erro ao carregar sessão ativa: ContadorPerplan.carregar_padroes_selecionados() missing 1 required positional argument: 'e'
+2024-11-20 16:44:49,706 - ERROR - Erro ao carregar sessão ativa: ContadorPerplan.carregar_padroes_selecionados() missing 1 required positional argument: 'e'
+2024-11-20 16:48:01,731 - ERROR - Erro ao carregar sessão ativa: ContadorPerplan.carregar_padroes_selecionados() missing 1 required positional argument: 'e'
+2024-11-20 16:49:55,814 - ERROR - Erro ao carregar sessão ativa: name 'utils' is not defined
+2024-11-20 16:51:08,588 - ERROR - Future exception was never retrieved
+future: <Future finished exception=NameError("name 'utils' is not defined")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 703, in carregar_padroes_selecionados
+    utils.padrao_contagem.carregar_padroes_selecionados(self, e)
+    ^^^^^
+NameError: name 'utils' is not defined
+2024-11-20 16:56:06,751 - ERROR - Future exception was never retrieved
+future: <Future finished exception=NameError("name 'utils' is not defined")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 703, in carregar_padroes_selecionados
+    utils.padrao_contagem.carregar_padroes_selecionados(self, e)
+    ^^^^^
+NameError: name 'utils' is not defined
+2024-11-20 16:56:09,356 - ERROR - Erro ao criar sessão: name 'utils' is not defined
+2024-11-20 16:56:28,644 - ERROR - Erro ao carregar sessão ativa: name 'padrao_contagem' is not defined
+2024-11-20 16:57:17,126 - ERROR - Erro ao carregar sessão ativa: name 'padrao_contagem' is not defined
+2024-11-20 16:57:38,704 - ERROR - Erro ao carregar sessão ativa: name 'padrao_contagem' is not defined

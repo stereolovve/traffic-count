@@ -14,7 +14,7 @@ Session = sessionmaker(bind=engine)
 # Definição das tabelas do banco de dados
 class Categoria(Base):
     __tablename__ = 'categorias'
-    padrao = Column(String, nullable=True)
+    padrao = Column(String, nullable=False)
     veiculo = Column(String)
     movimento = Column(String)
     bind = Column(String)
@@ -26,6 +26,7 @@ class Sessao(Base):
     __tablename__ = 'sessoes'
     sessao = Column(String, primary_key=True)
     detalhes = Column(String)
+    padrao = Column(String)
     criada_em = Column(DateTime, default=datetime.now)
     ativa = Column(Boolean)
 

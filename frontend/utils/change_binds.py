@@ -3,32 +3,55 @@ from sqlalchemy.exc import SQLAlchemyError
 from database.models import Session, Categoria
 
 def change_binds(page, contador):
-    try:
-        categorias = contador.session.query(Categoria).distinct(Categoria.veiculo).all()
-    except SQLAlchemyError as ex:
-        logging.error(f"Erro ao carregar categorias: {ex}")
-        page.snack_bar = ft.SnackBar(ft.Text(f"Erro ao carregar categorias: {ex}"), bgcolor="RED")
+    padrao_atual = contador.padrao_dropdown.value
+    if not padrao_atual:
+        sessao_ativa = contador.session.query(Sessao).filter_by(sessao=contador.sessao).first()
+        if sessao_ativa:
+            padrao_atual = sessao_ativa.padrao
+        else:
+            padrao_atual = None
+
+    if not padrao_atual:
+        page.snack_bar = ft.SnackBar(ft.Text("Nenhum padrão selecionado!"), bgcolor="RED")
         page.snack_bar.open = True
+        page.update()
+        return
+
+    try:
+        categorias = contador.session.query(Categoria).filter_by(padrao=padrao_atual).all()
+
+        if not categorias:
+            page.snack_bar = ft.SnackBar(ft.Text("Nenhuma categoria encontrada para o padrão selecionado!"), bgcolor="RED")
+            page.snack_bar.open = True
+            page.update()
+            return
+    except SQLAlchemyError as ex:
+        page.snack_bar = ft.SnackBar(ft.Text(f"Erro ao buscar categorias: {ex}"), bgcolor="RED")
+        page.snack_bar.open = True
+        page.update()
         return
     # Função para salvar o bind atualizado no banco de dados
     def salvar_bind_no_banco(veiculo, bind_atualizado):
         if bind_atualizado:
             try:
-                # Atualizar o banco de dados
-                categoria = contador.session.query(Categoria).filter_by(veiculo=veiculo).first()
-                if categoria:
+                # Update the database
+                categorias = contador.session.query(Categoria).filter_by(veiculo=veiculo).all()
+                for categoria in categorias:
                     categoria.bind = bind_atualizado
-                    contador.session.commit()
-                    
-                    # Atualizar o dicionário de binds do sistema
-                    contador.update_binds()
+                contador.session.commit()
+                
+                # Update the system's binds dictionary
+                contador.update_binds()
 
-                    # Atualizar a aba de contagem
-                    contador.setup_aba_contagem()
+                # Update the counting tab
+                contador.setup_aba_contagem()
 
-                    # Exibir mensagem de sucesso
-                    page.snack_bar = ft.SnackBar(ft.Text(f"Bind de '{veiculo}' atualizado com sucesso!"), bgcolor="GREEN")
-                    page.snack_bar.open = True
+                # Update labels or UI if necessary
+                contador.page.update()
+
+                # Display success message
+                page.snack_bar = ft.SnackBar(ft.Text(f"Bind de '{veiculo}' atualizado com sucesso!"), bgcolor="GREEN")
+                page.snack_bar.open = True
             except SQLAlchemyError as ex:
                 contador.session.rollback()
                 logging.error(f"Erro ao salvar bind: {ex}")

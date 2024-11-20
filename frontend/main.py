@@ -6,7 +6,7 @@ from utils.initializer import inicializar_variaveis, configurar_numpad_mappings
 from auth.login import LoginPage
 from auth.register import RegisterPage
 from pynput import keyboard
-from utils.padrao_contagem import carregar_categorias_padrao, carregar_padroes_selecionados
+from utils.padrao_contagem import carregar_categorias_padrao, carregar_padroes_selecionados, obter_caminho_json
 import pandas as pd
 from datetime import datetime
 import os
@@ -699,11 +699,29 @@ class ContadorPerplan(ft.Column):
         try:
             with open(caminho_json, 'r') as f:
                 categorias_padrao = json.load(f)
-                for categoria in categorias_padrao:
-                    veiculo = categoria.get('veiculo')
-                    bind = categoria.get('bind')
-                    if veiculo and bind:
-                        for movimento in self.detalhes["Movimentos"]:
+
+            if not categorias_padrao:
+                raise Exception(f"Nenhuma categoria encontrada no arquivo JSON: {caminho_json}")
+
+            for categoria in categorias_padrao:
+                veiculo = categoria.get('veiculo')
+                bind = categoria.get('bind')
+
+                if veiculo and bind:
+                    for movimento in self.detalhes.get("Movimentos", []):  # Ensure that movimentos exist
+                        # Check if the category already exists in the database
+                        categoria_existente = self.session.query(Categoria).filter_by(
+                            veiculo=veiculo,
+                            movimento=movimento
+                        ).first()
+
+                        if categoria_existente:
+                            # Update the existing category
+                            categoria_existente.bind = bind
+                            categoria_existente.padrao = padrao
+                            logging.info(f"Categoria atualizada: {veiculo} - {movimento} ({bind})")
+                        else:
+                            # Create a new category
                             nova_categoria = Categoria(
                                 padrao=padrao,
                                 veiculo=veiculo,
@@ -711,8 +729,12 @@ class ContadorPerplan(ft.Column):
                                 bind=bind,
                                 criado_em=datetime.now()
                             )
-                            self.session.add(nova_categoria)  # Adiciona novas categorias
-                self.session.commit()
+                            self.session.add(nova_categoria)
+                            logging.info(f"Categoria adicionada: {veiculo} - {movimento} ({bind})")
+
+            self.session.commit()
+            logging.info(f"Categorias do padrão '{padrao}' carregadas com sucesso.")
+
         except FileNotFoundError:
             logging.error(f"Arquivo JSON não encontrado: {caminho_json}")
             raise Exception("Arquivo JSON não encontrado.")
@@ -723,10 +745,12 @@ class ContadorPerplan(ft.Column):
             logging.error(f"Erro ao salvar padrões no banco de dados: {ex}")
             self.session.rollback()
             raise Exception("Erro ao salvar no banco de dados.")
+        except Exception as ex:
+            logging.error(f"Erro inesperado ao carregar categorias: {ex}")
+            raise Exception(f"Erro ao carregar categorias: {ex}")
 
-
-
-    def carregar_padroes_selecionados(self, e):
+    def carregar_padroes_selecionados(self, e=None):
+    # Corrected code to accept e=None
         try:
             padrao_selecionado = self.padrao_dropdown.value
             if not padrao_selecionado:
@@ -736,10 +760,8 @@ class ContadorPerplan(ft.Column):
                 self.page.update()
                 return
 
-            # Limpa as categorias existentes do banco de dados
-            categorias_atuais = self.session.query(Categoria).filter_by(padrao=padrao_selecionado).all()
-            for categoria in categorias_atuais:
-                self.session.delete(categoria)
+            # Delete all existing categories
+            self.session.query(Categoria).delete()
             self.session.commit()
 
             caminho_json = self.obter_caminho_json(padrao_selecionado)
@@ -749,7 +771,7 @@ class ContadorPerplan(ft.Column):
                 snackbar.open = True
                 return
 
-            # Carregar categorias do novo padrão
+            # Load categories from the new pattern
             self.carregar_categorias_padrao(caminho_json, padrao=padrao_selecionado)
 
             snackbar = ft.SnackBar(ft.Text(f"Padrão '{padrao_selecionado}' carregado com sucesso!"), bgcolor="GREEN")
@@ -768,8 +790,6 @@ class ContadorPerplan(ft.Column):
             self.page.overlay.append(snackbar)
             snackbar.open = True
 
-
-
     def obter_caminho_json(self, padrao_selecionado):
         base_path = os.path.join(os.getcwd(), "utils")
         if padrao_selecionado == "Padrão Perplan":
@@ -782,14 +802,21 @@ class ContadorPerplan(ft.Column):
 
     def carregar_config(self):
         try:
-            data = self.session.query(Categoria).order_by(Categoria.criado_em).all()
-            contagens = {}
+            categorias = self.session.query(Categoria).order_by(Categoria.criado_em).all()
             binds = {}
-            for categoria in data:
-                contagens[(categoria.veiculo, categoria.movimento)] = 0
+            for categoria in categorias:
                 binds[(categoria.bind, categoria.movimento)] = (categoria.veiculo, categoria.movimento)
             
-            return contagens, binds, data
+            # Carregar contagens do banco de dados para a sessão atual
+            contagens = {}
+            if self.sessao:
+                contagens_db = self.session.query(Contagem).filter_by(sessao=self.sessao).all()
+                for contagem in contagens_db:
+                    contagens[(contagem.veiculo, contagem.movimento)] = contagem.count
+            else:
+                logging.warning("Nenhuma sessão ativa para carregar contagens.")
+            
+            return contagens, binds, categorias
         except SQLAlchemyError as ex:
             logging.error(f"Erro ao carregar config: {ex}")
             return {}, {}, []
