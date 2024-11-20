@@ -1,56 +1,73 @@
 import flet as ft
-import json
 from sqlalchemy.exc import SQLAlchemyError
 from database.models import Session, Categoria
 
 def change_binds(page, contador):
-    # Carregar o arquivo JSON com as binds
     try:
-        with open('padrao.json', 'r') as f:
-            config = json.load(f)
-    except FileNotFoundError:
-        config = []
-
+        categorias = contador.session.query(Categoria).distinct(Categoria.veiculo).all()
+    except SQLAlchemyError as ex:
+        logging.error(f"Erro ao carregar categorias: {ex}")
+        page.snack_bar = ft.SnackBar(ft.Text(f"Erro ao carregar categorias: {ex}"), bgcolor="RED")
+        page.snack_bar.open = True
+        return
     # Função para salvar o bind atualizado no banco de dados
     def salvar_bind_no_banco(veiculo, bind_atualizado):
         if bind_atualizado:
-            contador.update_bind(veiculo, bind_atualizado, movimento="")  # Utilize a função existente para atualizar o banco de dados
-
-            # Atualizando o arquivo padrao.json
             try:
-                with open('padrao.json', 'r') as f:
-                    config = json.load(f)
+                # Atualizar o banco de dados
+                categoria = contador.session.query(Categoria).filter_by(veiculo=veiculo).first()
+                if categoria:
+                    categoria.bind = bind_atualizado
+                    contador.session.commit()
+                    
+                    # Atualizar o dicionário de binds do sistema
+                    contador.update_binds()
 
-                for c in config:
-                    if c['veiculo'] == veiculo:
-                        c['bind'] = bind_atualizado  # Atualiza o bind no arquivo JSON
+                    # Atualizar a aba de contagem
+                    contador.setup_aba_contagem()
 
-                with open('padrao.json', 'w') as f:
-                    json.dump(config, f, indent=4)
-
-                page.snack_bar = ft.SnackBar(ft.Text(f"Bind de {veiculo} atualizado com sucesso!"), bgcolor="GREEN")
+                    # Exibir mensagem de sucesso
+                    page.snack_bar = ft.SnackBar(ft.Text(f"Bind de '{veiculo}' atualizado com sucesso!"), bgcolor="GREEN")
+                    page.snack_bar.open = True
+            except SQLAlchemyError as ex:
+                contador.session.rollback()
+                logging.error(f"Erro ao salvar bind: {ex}")
+                page.snack_bar = ft.SnackBar(ft.Text(f"Erro ao salvar bind: {ex}"), bgcolor="RED")
                 page.snack_bar.open = True
-
-            except FileNotFoundError:
-                page.snack_bar = ft.SnackBar(ft.Text("Arquivo padrao.json não encontrado!"), bgcolor="RED")
-                page.snack_bar.open = True
-
-            page.update()
-
+            finally:
+                page.update()
     # Função para fechar o diálogo
     def fechar_dialogo(e):
         page.dialog.open = False
         page.update()
 
-    # Gerar os campos de veículos e binds dentro do conteúdo do diálogo
-    content = ft.ListView(expand=True, spacing=10)  # ListView para suportar scrolling
+    # Buscar todas as categorias do banco de dados vinculadas ao padrão atual
+    try:
+        categorias = contador.session.query(Categoria).filter_by(padrao=contador.padrao_dropdown.value).all()
 
-    for c in config:
-        veiculo = c['veiculo']
-        bind_field = ft.TextField(value=c['bind'])
-        salvar_button = ft.ElevatedButton(text="Salvar", on_click=lambda e, veiculo=veiculo, bind_field=bind_field: salvar_bind_no_banco(veiculo, bind_field.value))
-        
-        content.controls.append(ft.Text(f"Veículo: {veiculo}"))
+        if not categorias:
+            page.snack_bar = ft.SnackBar(ft.Text("Nenhuma categoria encontrada para o padrão selecionado!"), bgcolor="RED")
+            page.snack_bar.open = True
+            page.update()
+            return
+    except SQLAlchemyError as ex:
+        page.snack_bar = ft.SnackBar(ft.Text(f"Erro ao buscar categorias: {ex}"), bgcolor="RED")
+        page.snack_bar.open = True
+        page.update()
+        return
+
+    # Criar os campos de edição de binds
+    content = ft.Column(spacing=10, scroll="adaptive")
+
+    for categoria in categorias:
+        veiculo = categoria.veiculo
+        bind_field = ft.TextField(value=categoria.bind)
+        salvar_button = ft.ElevatedButton(
+            text="Salvar",
+            on_click=lambda e, veiculo=veiculo, bind_field=bind_field: salvar_bind_no_banco(veiculo, bind_field.value)
+        )
+
+        content.controls.append(ft.Text(f"Atalho de {veiculo}"))
         content.controls.append(bind_field)
         content.controls.append(salvar_button)
 
@@ -65,3 +82,4 @@ def change_binds(page, contador):
     page.dialog = dialog
     page.dialog.open = True
     page.update()
+

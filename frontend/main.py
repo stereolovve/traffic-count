@@ -587,8 +587,10 @@ class ContadorPerplan(ft.Column):
 
     def update_binds(self):
         try:
-            self.binds = {(categoria.bind, categoria.movimento): (categoria.veiculo, categoria.movimento) 
+            # Recarregar todos os binds do banco de dados
+            self.binds = {(categoria.bind, categoria.movimento): (categoria.veiculo, categoria.movimento)
                         for categoria in self.session.query(Categoria).all()}
+            logging.info("Binds atualizados com sucesso.")
         except SQLAlchemyError as ex:
             logging.error(f"Erro ao atualizar binds: {ex}")
 
@@ -735,7 +737,9 @@ class ContadorPerplan(ft.Column):
                 return
 
             # Limpa as categorias existentes do banco de dados
-            self.session.query(Categoria).delete()
+            categorias_atuais = self.session.query(Categoria).filter_by(padrao=padrao_selecionado).all()
+            for categoria in categorias_atuais:
+                self.session.delete(categoria)
             self.session.commit()
 
             caminho_json = self.obter_caminho_json(padrao_selecionado)
@@ -746,15 +750,15 @@ class ContadorPerplan(ft.Column):
                 return
 
             # Carregar categorias do novo padrão
-            carregar_categorias_padrao(self, caminho_json, padrao=padrao_selecionado)
+            self.carregar_categorias_padrao(caminho_json, padrao=padrao_selecionado)
 
             snackbar = ft.SnackBar(ft.Text(f"Padrão '{padrao_selecionado}' carregado com sucesso!"), bgcolor="GREEN")
             self.page.overlay.append(snackbar)
             snackbar.open = True
             self.page.update()
         except SQLAlchemyError as ex:
-            logging.error(f"Erro ao carregar padrões no banco de dados: {ex}")
             self.session.rollback()
+            logging.error(f"Erro ao carregar padrões no banco de dados: {ex}")
             snackbar = ft.SnackBar(ft.Text(f"Erro ao carregar padrões: {ex}"), bgcolor="RED")
             self.page.overlay.append(snackbar)
             snackbar.open = True

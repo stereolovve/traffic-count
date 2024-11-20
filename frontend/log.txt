@@ -231,3 +231,5 @@ NameError: name 'ft' is not defined
 2024-11-19 15:47:57,097 - ERROR - Erro ao carregar padrões: Erro ao salvar no banco de dados.
 2024-11-19 15:51:05,591 - ERROR - Erro ao salvar padrões no banco de dados: Instance '<Categoria at 0x23eea8e4f20>' has been deleted, or its row is otherwise not present.
 2024-11-19 15:51:05,593 - ERROR - Erro ao carregar padrões: Erro ao salvar no banco de dados.
+2024-11-20 11:00:02,583 - ERROR - Erro ao salvar padrões no banco de dados: Instance '<Categoria at 0x23de2df0f80>' has been deleted, or its row is otherwise not present.
+2024-11-20 11:00:02,585 - ERROR - Erro ao carregar padrões: Erro ao salvar no banco de dados.
