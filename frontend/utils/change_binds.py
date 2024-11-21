@@ -3,6 +3,10 @@ from sqlalchemy.exc import SQLAlchemyError
 from database.models import Session, Categoria
 
 def change_binds(page, contador):
+    if hasattr(page, 'dialog') and page.dialog is not None:
+        page.dialog.open = False
+        page.dialog = None
+        
     padrao_atual = contador.padrao_dropdown.value
     if not padrao_atual:
         sessao_ativa = contador.session.query(Sessao).filter_by(sessao=contador.sessao).first()
