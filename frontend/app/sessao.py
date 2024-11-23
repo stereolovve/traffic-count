@@ -13,6 +13,8 @@ def criar_sessao(self, e):
         return
 
     try:
+        self.horarios_df = self.gerar_coluna_horarios(self.horas_contagem_input.value)
+
         data_original = self.data_ponto_label.value.replace("Data selecionada: ", "")
         self.data_formatada = datetime.strptime(data_original, "%d-%m-%Y").strftime("%d-%m-%Y")
 
@@ -136,32 +138,33 @@ def carregar_sessao_ativa(self):
             logging.info(f"Sessão ativa encontrada: {sessao_ativa.sessao}")
             self.sessao = sessao_ativa.sessao
             self.detalhes = json.loads(sessao_ativa.detalhes)
-
-            # Define o valor do padrao_dropdown
+            
+            # Inicializar horários
+            if 'Periodo' in self.detalhes:
+                self.horarios_df = self.gerar_coluna_horarios(self.detalhes['Periodo'])
+                self.ultima_linha_horarios = 0
+            else:
+                logging.error("Erro: Período não encontrado nos detalhes da sessão.")
+            
             self.padrao_dropdown.value = sessao_ativa.padrao
+            self.carregar_padroes_selecionados()
 
-            # Carrega as categorias para o padrão selecionado
-            self.carregar_padroes_selecionados()  # No 'e' argument
-
-            # Atualiza os binds do banco de dados
             self.update_binds()
 
-            # Carrega as configurações (contagens e binds)
             self.contagens, self.binds, self.categorias = self.carregar_config()
 
-            # Configura a aba de contagem
             self.setup_aba_contagem()
 
-            # Atualiza as labels com as contagens
             for (veiculo, movimento), count in self.contagens.items():
                 if (veiculo, movimento) in self.labels:
                     self.labels[(veiculo, movimento)].value = str(count)
             self.page.update()
 
-            # Ativa a aba "Contagem"
             self.tabs.tabs[1].content.visible = True
-            self.tabs.selected_index = 1  # Vai para a aba de contagem
+            self.tabs.selected_index = 1
             self.page.update()
+
+            self.update_sessao_status()
 
             logging.info("Sessão ativa carregada com sucesso.")
             return True
@@ -171,7 +174,6 @@ def carregar_sessao_ativa(self):
     except Exception as ex:
         logging.error(f"Erro ao carregar sessão ativa: {ex}")
         return False
-
 
 
         

@@ -8,7 +8,7 @@ from auth.register import RegisterPage
 from pynput import keyboard
 from utils.padrao_contagem import carregar_categorias_padrao, carregar_padroes_selecionados, obter_caminho_json
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 import re
 from utils.change_binds import change_binds
@@ -40,6 +40,7 @@ class ContadorPerplan(ft.Column):
         configurar_numpad_mappings(self) 
         self.setup_ui()
         self.carregar_sessao_ativa()
+        self.pressed_keys = set()
 
     #------------------------ SETUP DATE PICKER ------------------------
     def open_date_picker(self, e):
@@ -60,7 +61,29 @@ class ContadorPerplan(ft.Column):
         self.data_ponto_label.value = f"Data selecionada: {self.data_formatada}"
         self.page.update()
 
+    #------------------------ GERA COLUNA DE HORÁRIOS ------------------------
+    def gerar_coluna_horarios(self, periodo):
+        try:
+            if not re.match(r'^\d{2}h-\d{2}h$', periodo):
+                raise ValueError("Período inválido. Use o formato HHh-HHh (ex: 06h-16h).")
 
+            # Converte o período em horas
+            hora_inicio, hora_fim = [int(h.split('h')[0]) for h in periodo.split('-')]
+            inicio = datetime.strptime(f"{hora_inicio:02d}:00", "%H:%M")
+            fim = datetime.strptime(f"{hora_fim:02d}:00", "%H:%M")
+
+            # Gera a lista de horários
+            horarios = []
+            while inicio < fim:
+                proximo_horario = inicio + timedelta(minutes=15)
+                horarios.append({"das": inicio.strftime("%H:%M"), "às": proximo_horario.strftime("%H:%M")})
+                inicio = proximo_horario
+
+            return pd.DataFrame(horarios)
+
+        except Exception as ex:
+            logging.error(f"Erro ao gerar coluna de horários: {ex}")
+            return pd.DataFrame()
 
 
     #------------------------ SETUP UI ------------------------
@@ -369,20 +392,61 @@ class ContadorPerplan(ft.Column):
 
     def save_contagens(self, e):
         try:
-            contagens_dfs = {}
-            for movimento in self.detalhes["Movimentos"]:
-                contagens_movimento = {veiculo: count for (veiculo, mov), count in self.contagens.items() if mov == movimento}
-                contagens_df = pd.DataFrame([contagens_movimento])
-                contagens_df.fillna(0, inplace=True)
-                contagens_dfs[movimento] = contagens_df
+            # Validate if horarios_df is set
+            if not hasattr(self, 'horarios_df') or self.horarios_df.empty:
+                logging.error("Erro: `horarios_df` não está inicializado ou está vazio.")
+                snackbar = ft.SnackBar(ft.Text("Erro: Horários não definidos. Crie uma sessão primeiro."), bgcolor="RED")
+                self.page.overlay.append(snackbar)
+                snackbar.open = True
+                return
 
-            detalhes_df = pd.DataFrame([self.detalhes])
+            # Validate if there are any changes in contagens
+            if not self.contagens:
+                logging.error("Nenhuma mudança nas contagens desde o último salvamento.")
+                snackbar = ft.SnackBar(ft.Text("Erro: Nenhuma mudança nas contagens para salvar."), bgcolor="RED")
+                self.page.overlay.append(snackbar)
+                snackbar.open = True
+                return
 
+            # Get all categories sorted by the pattern
+            todas_categorias = [categoria.veiculo for categoria in sorted(self.categorias, key=lambda x: x.criado_em)]
+
+            # Create a line of counts with all categories (default 0)
+            linha_contagem = {categoria: 0 for categoria in todas_categorias}
+
+            # Update counts for existing values
+            for (categoria, _), count in self.contagens.items():
+                if categoria in linha_contagem:
+                    linha_contagem[categoria] = count
+
+            # Add the current timestamp to the record
+            registro_atual = datetime.now().strftime('%H:%M:%S')
+            linha_contagem["registro"] = registro_atual
+
+            # Create a DataFrame for the new line
+            nova_linha_df = pd.DataFrame([linha_contagem])
+
+            # Add timings to the new line
+            if not hasattr(self, "ultima_linha_horarios"):
+                self.ultima_linha_horarios = 0
+
+            if self.ultima_linha_horarios < len(self.horarios_df):
+                horarios_linha = self.horarios_df.iloc[self.ultima_linha_horarios]
+                nova_linha_df.insert(0, "às", horarios_linha["às"])
+                nova_linha_df.insert(0, "das", horarios_linha["das"])
+                self.ultima_linha_horarios += 1
+            else:
+                logging.error("Erro: Não há horários disponíveis para salvar.")
+                snackbar = ft.SnackBar(ft.Text("Erro: Todos os horários já foram preenchidos."), bgcolor="RED")
+                self.page.overlay.append(snackbar)
+                snackbar.open = True
+                return
+
+            # Directory setup
             nome_pesquisador = re.sub(r'[<>:"/\\|?*]', '', self.username)
             codigo = re.sub(r'[<>:"/\\|?*]', '', self.detalhes['Código'])
-
             diretorio_base = r'Z:\\0Pesquisa\\_0ContadorDigital\\Contagens'
-            
+
             if not os.path.exists(diretorio_base):
                 diretorio_base = os.getcwd()
 
@@ -392,31 +456,41 @@ class ContadorPerplan(ft.Column):
 
             arquivo_sessao = os.path.join(diretorio_pesquisador_codigo, f'{self.sessao}.xlsx')
 
+            # Attempt to load existing data
             try:
-                existing_df = pd.read_excel(arquivo_sessao, sheet_name=None)
-                for movimento in self.detalhes["Movimentos"]:
-                    if movimento in existing_df:
-                        contagens_dfs[movimento] = pd.concat([existing_df[movimento], contagens_dfs[movimento]])
-                if 'Detalhes' in existing_df:
-                    detalhes_df = pd.concat([existing_df['Detalhes'], detalhes_df])
+                existing_contagens = pd.read_excel(arquivo_sessao, sheet_name="Contagens")
             except FileNotFoundError:
-                pass
+                existing_contagens = pd.DataFrame(columns=nova_linha_df.columns)
 
+            # Concatenate the new row to the existing data
+            resultado_contagens = pd.concat([existing_contagens, nova_linha_df], ignore_index=True)
+
+            # Prepare the "Detalhes" DataFrame
+            detalhes_data = {
+                "Pesquisador": [self.username],
+                "Código": [self.detalhes["Código"]],
+                "Ponto": [self.detalhes["Ponto"]],
+                "Período": [self.detalhes["Periodo"]],
+                "Data do Ponto": [self.detalhes["Data do Ponto"]]
+            }
+            detalhes_df = pd.DataFrame(detalhes_data)
+
+            # Write to Excel
             with pd.ExcelWriter(arquivo_sessao, engine='xlsxwriter') as writer:
-                for movimento, df in contagens_dfs.items():
-                    df.to_excel(writer, sheet_name=movimento, index=False)
-                detalhes_df.to_excel(writer, sheet_name='Detalhes', index=False)
+                resultado_contagens.to_excel(writer, sheet_name="Contagens", index=False)
+                detalhes_df.to_excel(writer, sheet_name="Detalhes", index=False)
 
+            # Log success
             logging.info(f"Contagem salva em {arquivo_sessao}")
             snackbar = ft.SnackBar(ft.Text("Contagens salvas com sucesso!"), bgcolor="GREEN")
             self.page.overlay.append(snackbar)
             snackbar.open = True
 
-            # Atualizando o texto do último salvamento
+            # Update the last save label
             self.last_save_label.value = f"Último salvamento: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}"
             self.page.update()
 
-            # Registro no histórico que a contagem foi salva
+            # Save to history
             self.salvar_historico(veiculo="", movimento="", acao="salvamento")
 
         except Exception as ex:
@@ -425,6 +499,9 @@ class ContadorPerplan(ft.Column):
             self.page.overlay.append(snackbar)
             snackbar.open = True
             self.page.update()
+
+
+
 
 
 
@@ -676,15 +753,22 @@ class ContadorPerplan(ft.Column):
     def on_key_press(self, key):
         listener.on_key_press(self, key)
 
+    def on_key_release(self, key):
+        try:
+            self.pressed_keys.discard(key)
+        except Exception as ex:
+            logging.error(f"Erro no on_key_release: {ex}")
+
     def start_listener(self):
         if self.listener is None:
-            self.listener = keyboard.Listener(on_press=self.on_key_press)
+            self.listener = keyboard.Listener(on_press=self.on_key_press, on_release=self.on_key_release)
             self.listener.start()
 
     def stop_listener(self):
         if self.listener is not None:
             self.listener.stop()
             self.listener = None
+            self.pressed_keys.clear()
 
     def carregar_sessao_ativa(self):
         sessao.carregar_sessao_ativa(self)
@@ -708,20 +792,17 @@ class ContadorPerplan(ft.Column):
                 bind = categoria.get('bind')
 
                 if veiculo and bind:
-                    for movimento in self.detalhes.get("Movimentos", []):  # Ensure that movimentos exist
-                        # Check if the category already exists in the database
+                    for movimento in self.detalhes.get("Movimentos", []):
                         categoria_existente = self.session.query(Categoria).filter_by(
                             veiculo=veiculo,
                             movimento=movimento
                         ).first()
 
                         if categoria_existente:
-                            # Update the existing category
                             categoria_existente.bind = bind
                             categoria_existente.padrao = padrao
                             logging.info(f"Categoria atualizada: {veiculo} - {movimento} ({bind})")
                         else:
-                            # Create a new category
                             nova_categoria = Categoria(
                                 padrao=padrao,
                                 veiculo=veiculo,
@@ -750,7 +831,6 @@ class ContadorPerplan(ft.Column):
             raise Exception(f"Erro ao carregar categorias: {ex}")
 
     def carregar_padroes_selecionados(self, e=None):
-    # Corrected code to accept e=None
         try:
             padrao_selecionado = self.padrao_dropdown.value
             if not padrao_selecionado:
@@ -760,7 +840,6 @@ class ContadorPerplan(ft.Column):
                 self.page.update()
                 return
 
-            # Delete all existing categories
             self.session.query(Categoria).delete()
             self.session.commit()
 
@@ -771,7 +850,6 @@ class ContadorPerplan(ft.Column):
                 snackbar.open = True
                 return
 
-            # Load categories from the new pattern
             self.carregar_categorias_padrao(caminho_json, padrao=padrao_selecionado)
 
             snackbar = ft.SnackBar(ft.Text(f"Padrão '{padrao_selecionado}' carregado com sucesso!"), bgcolor="GREEN")
@@ -828,10 +906,7 @@ class ContadorPerplan(ft.Column):
         
     def logout_user(self, e):
         try:
-            self.tokens = None
-            self.username = None
-
-            # Verifica se o arquivo de tokens existe e remove
+            # Remove o arquivo de tokens se existir
             if os.path.exists("auth_tokens.json"):
                 os.remove("auth_tokens.json")
 
@@ -840,13 +915,8 @@ class ContadorPerplan(ft.Column):
                 logging.error("Página está faltando ao tentar deslogar.")
                 return
 
-            # Limpa os controles e redireciona para a página de login
-            self.page.controls.clear()
-            self.page.add(LoginPage(self))
-            if not self.page:
-                self.page.update()
-
-            logging.info("Usuário desconectado com sucesso.")
+            # Chama o método de reset do aplicativo principal
+            self.app.reset_app()
         except AttributeError as ex:
             logging.error(f"Erro ao deslogar: {ex}")
         

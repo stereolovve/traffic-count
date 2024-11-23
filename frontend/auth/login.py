@@ -6,6 +6,8 @@ class LoginPage(ft.Container):  # Tela de login
     def __init__(self, app):
         self.app = app
         super().__init__()
+        self.app = app
+        self.page = app.page
 
         self.username_field = ft.TextField(label="Usuário", width=300)
         self.password_field = ft.TextField(

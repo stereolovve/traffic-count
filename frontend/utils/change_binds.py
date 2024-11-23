@@ -3,10 +3,11 @@ from sqlalchemy.exc import SQLAlchemyError
 from database.models import Session, Categoria
 
 def change_binds(page, contador):
+    # evitar duplicidade ao abrir o modal de binds
     if hasattr(page, 'dialog') and page.dialog is not None:
         page.dialog.open = False
         page.dialog = None
-        
+
     padrao_atual = contador.padrao_dropdown.value
     if not padrao_atual:
         sessao_ativa = contador.session.query(Sessao).filter_by(sessao=contador.sessao).first()
@@ -43,17 +44,9 @@ def change_binds(page, contador):
                 for categoria in categorias:
                     categoria.bind = bind_atualizado
                 contador.session.commit()
-                
-                # Update the system's binds dictionary
                 contador.update_binds()
-
-                # Update the counting tab
                 contador.setup_aba_contagem()
-
-                # Update labels or UI if necessary
                 contador.page.update()
-
-                # Display success message
                 page.snack_bar = ft.SnackBar(ft.Text(f"Bind de '{veiculo}' atualizado com sucesso!"), bgcolor="GREEN")
                 page.snack_bar.open = True
             except SQLAlchemyError as ex:
@@ -63,12 +56,10 @@ def change_binds(page, contador):
                 page.snack_bar.open = True
             finally:
                 page.update()
-    # Função para fechar o diálogo
     def fechar_dialogo(e):
         page.dialog.open = False
         page.update()
 
-    # Buscar todas as categorias do banco de dados vinculadas ao padrão atual
     try:
         categorias = contador.session.query(Categoria).filter_by(padrao=contador.padrao_dropdown.value).all()
 
@@ -83,7 +74,6 @@ def change_binds(page, contador):
         page.update()
         return
 
-    # Criar os campos de edição de binds
     content = ft.Column(spacing=10, scroll="adaptive")
 
     for categoria in categorias:
@@ -98,14 +88,12 @@ def change_binds(page, contador):
         content.controls.append(bind_field)
         content.controls.append(salvar_button)
 
-    # Criar o diálogo para configuração de binds
     dialog = ft.AlertDialog(
         title=ft.Text("Configurar Atalhos"),
         content=ft.Container(content=content, width=400, height=600),  # Define uma altura fixa para suportar o scrolling
         actions=[ft.TextButton("Fechar", on_click=fechar_dialogo)]
     )
 
-    # Atribuir e abrir o diálogo
     page.dialog = dialog
     page.dialog.open = True
     page.update()

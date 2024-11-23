@@ -10,6 +10,9 @@ def on_key_press(self, key):
     if not self.contagem_ativa:
         return
     try:
+        if hasattr(key, 'name') and key.name == 'ctrl_s':
+            self.save_contagens()
+            return
         if hasattr(key, 'name') and key.name.startswith('f') and key.name[1:].isdigit():
             index = int(key.name[1:]) - 1
             if 0 <= index < len(self.movimento_tabs.tabs):
@@ -18,12 +21,10 @@ def on_key_press(self, key):
             return
 
         if hasattr(key, 'name') and key.name == 'caps_lock':
-            # Controlar navegação apenas entre as abas de contagem (desconsiderando outros controles)
             self.movimento_tabs.selected_index = (self.movimento_tabs.selected_index + 1) % len(self.movimento_tabs.tabs)
             self.page.update()
             return
 
-        # Alternar entre as abas com setas (navegação manual)
         if hasattr(key, 'name') and key.name == 'up':
             self.movimento_tabs.selected_index = (self.movimento_tabs.selected_index + 1) % len(self.movimento_tabs.tabs)
             self.page.update()
@@ -34,7 +35,6 @@ def on_key_press(self, key):
             self.page.update()
             return
 
-        # Mapeamento para controle do bind
         char = None
         if hasattr(key, 'vk') and key.vk in self.numpad_mappings:
             char = self.numpad_mappings[key.vk]
@@ -52,22 +52,18 @@ def on_key_press(self, key):
         logging.error(f"Erro ao pressionar tecla: {ex}")
 
         
-        
 def finalizar_sessao(self):
     try:
-        # Primeiro, remover todas as contagens associadas à sessão
         contagens_a_remover = self.session.query(Contagem).filter_by(sessao=self.sessao).all()
         for contagem in contagens_a_remover:
             self.session.delete(contagem)
 
-        # Em seguida, remover a própria sessão
         sessao_a_remover = self.session.query(Sessao).filter_by(sessao=self.sessao).first()
         if sessao_a_remover:
             self.session.delete(sessao_a_remover)
 
         self.session.commit()
 
-        # Resetar contagens locais e atualizar a interface
         self.contagens.clear()
         self.binds.clear()
         self.labels.clear()
