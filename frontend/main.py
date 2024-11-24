@@ -390,23 +390,66 @@ class ContadorPerplan(ft.Column):
         self.sessao_status.value = f"Sessão ativa: {self.sessao}" if self.sessao else "Nenhuma sessão ativa"
         self.page.update()
 
-    def save_contagens(self, e):
-        try:
-            # Validate if horarios_df is set
-            if not hasattr(self, 'horarios_df') or self.horarios_df.empty:
-                logging.error("Erro: `horarios_df` não está inicializado ou está vazio.")
-                snackbar = ft.SnackBar(ft.Text("Erro: Horários não definidos. Crie uma sessão primeiro."), bgcolor="RED")
-                self.page.overlay.append(snackbar)
-                snackbar.open = True
-                return
 
-            # Validate if there are any changes in contagens
-            if not self.contagens:
-                logging.error("Nenhuma mudança nas contagens desde o último salvamento.")
-                snackbar = ft.SnackBar(ft.Text("Erro: Nenhuma mudança nas contagens para salvar."), bgcolor="RED")
+    def save_contagens(self, e):
+            try:
+                # Validate if `horarios_df` is set
+                if not hasattr(self, 'horarios_df') or self.horarios_df.empty:
+                    logging.error("Erro: `horarios_df` não está inicializado ou está vazio.")
+                    snackbar = ft.SnackBar(ft.Text("Erro: Horários não definidos. Crie uma sessão primeiro."), bgcolor="RED")
+                    self.page.overlay.append(snackbar)
+                    snackbar.open = True
+                    return
+
+                # Validate if there are any changes in `contagens`
+                if not self.contagens:
+                    logging.error("Nenhuma mudança nas contagens desde o último salvamento.")
+                    snackbar = ft.SnackBar(ft.Text("Erro: Nenhuma mudança nas contagens para salvar."), bgcolor="RED")
+                    self.page.overlay.append(snackbar)
+                    snackbar.open = True
+                    return
+
+                # Check the time of the last save
+                now = datetime.now()
+                if hasattr(self, 'last_save_time'):
+                    time_since_last_save = now - self.last_save_time
+                    if time_since_last_save < timedelta(minutes=5):
+                        # Show confirmation dialog
+                        def on_confirm_save(e):
+                            dialog.open = False
+                            self.page.update()
+                            self._perform_save(now)  # Perform save
+                        def on_cancel_save(e):
+                            dialog.open = False
+                            self.page.update()
+
+                        dialog = ft.AlertDialog(
+                            title=ft.Text("Confirmar Salvamento"),
+                            content=ft.Text("Você salvou recentemente. Deseja salvar novamente?"),
+                            actions=[
+                                ft.TextButton("Sim", on_click=on_confirm_save),
+                                ft.TextButton("Cancelar", on_click=on_cancel_save),
+                            ],
+                        )
+                        self.page.overlay.append(dialog)
+                        dialog.open = True
+                        self.page.update()
+                        return  # Exit function until the user confirms or cancels
+
+                # Perform the save if no recent saves or no dialog is needed
+                self._perform_save(now)
+
+            except Exception as ex:
+                logging.error(f"Erro ao salvar contagens: {ex}")
+                snackbar = ft.SnackBar(ft.Text("Erro ao salvar contagens."), bgcolor="RED")
                 self.page.overlay.append(snackbar)
                 snackbar.open = True
-                return
+                self.page.update()
+
+    def _perform_save(self, now):
+        try:
+            # Update last save time
+            self.last_save_time = now
 
             # Get all categories sorted by the pattern
             todas_categorias = [categoria.veiculo for categoria in sorted(self.categorias, key=lambda x: x.criado_em)]
@@ -499,10 +542,6 @@ class ContadorPerplan(ft.Column):
             self.page.overlay.append(snackbar)
             snackbar.open = True
             self.page.update()
-
-
-
-
 
 
     def confirmar_finalizar_sessao(self, e):

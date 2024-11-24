@@ -36,3 +36,7 @@
 2024-11-23 16:51:58,900 - ERROR - Erro: Não há horários disponíveis para salvar.
 2024-11-23 17:00:51,741 - ERROR - Erro: Não há horários disponíveis para salvar.
 2024-11-23 17:00:51,880 - ERROR - Erro: Não há horários disponíveis para salvar.
+2024-11-23 17:07:44,947 - ERROR - Erro ao carregar tokens salvos: 'ContadorPerplan' object has no attribute 'carregar_padroes_selecionados'
+2024-11-23 17:08:00,753 - ERROR - Erro ao carregar tokens salvos: 'ContadorPerplan' object has no attribute 'carregar_padroes_selecionados'
+2024-11-23 17:10:13,312 - ERROR - Erro ao carregar tokens salvos: 'ContadorPerplan' object has no attribute 'carregar_padroes_selecionados'
+2024-11-23 17:13:25,878 - ERROR - Erro: Não há horários disponíveis para salvar.
