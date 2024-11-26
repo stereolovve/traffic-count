@@ -5,6 +5,11 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status
 from .serializers import RegistroSerializer
 from .models import User
+import logging
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
 
 
 from django.contrib.auth import authenticate
@@ -37,12 +42,11 @@ class LoginView(APIView):
         )
     
 class RegisterView(APIView):
+    
     permission_classes = [AllowAny]
 
     def post(self, request):
-        # Logs para monitorar os dados recebidos
-
-        # Capturar os campos
+        logger.info(f"Payload recebido: {request.data}")
         username = request.data.get("username")
         password = request.data.get("password")
         name = request.data.get("name")
@@ -50,15 +54,12 @@ class RegisterView(APIView):
         email = request.data.get("email")
         setor = request.data.get("setor")
 
-        # Validação de campos obrigatórios
         if not username or not password or not name or not last_name or not email or not setor:
             return Response({"detail": "Todos os campos são obrigatórios!"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Verificar se o usuário já existe
         if User.objects.filter(username=username).exists():
             return Response({"detail": "Usuário já existe!"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Criar usuário
         user = User.objects.create_user(
             username=username,
             password=password,
@@ -66,10 +67,11 @@ class RegisterView(APIView):
             last_name=last_name,
             email=email
         )
-        user.setor = setor  # Setar o setor se necessário
+        user.setor = setor  # Se "setor" for uma coluna em outro modelo, ajuste isso
         user.save()
 
         return Response({"detail": "Usuário registrado com sucesso!"}, status=status.HTTP_201_CREATED)
+
 
 
 

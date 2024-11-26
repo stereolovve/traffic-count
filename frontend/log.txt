@@ -100,3 +100,42 @@ Traceback (most recent call last):
     sessao_ativa = contador.session.query(Sessao).filter_by(sessao=contador.sessao).first()
                                           ^^^^^^
 NameError: name 'Sessao' is not defined. Did you mean: 'Session'?
+2024-11-26 18:12:38,606 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AssertionError('RegisterPage Control must be added to the page first')>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\traffic-count\frontend\auth\register.py", line 103, in register
+    self.update()
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\control.py", line 308, in update
+    self.__page
+AssertionError: RegisterPage Control must be added to the page first
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\auth\register.py", line 130, in register
+    self.update()
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\control.py", line 308, in update
+    self.__page
+AssertionError: RegisterPage Control must be added to the page first
+2024-11-26 18:14:23,414 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'RegisterPage' object has no attribute 'register'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\auth\login.py", line 101, in show_register
+    self.app.show_register_page()
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 1003, in show_register_page
+    self.page.add(RegisterPage(self))
+                  ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\frontend\auth\register.py", line 31, in __init__
+    self.register_button = ft.ElevatedButton("Registrar", on_click=self.register)
+                                                                   ^^^^^^^^^^^^^
+AttributeError: 'RegisterPage' object has no attribute 'register'

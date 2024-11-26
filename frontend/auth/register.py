@@ -1,3 +1,4 @@
+
 import flet as ft
 import httpx
 
@@ -9,7 +10,7 @@ class RegisterPage(ft.Container):
         # Campos de entrada
         self.name_field = ft.TextField(label="Primeiro nome", width=300)
         self.last_name_field = ft.TextField(label="Ultimo nome", width=300)
-        self.username_field = ft.TextField(label="Usuário", width=300)
+        self.username_field = ft.TextField(label="Usuário (Coloque seunome.seunobrenome)", width=300)
         self.email_field = ft.TextField(label="E-mail", width=300)
         self.password_field = ft.TextField(label="Senha", password=True, width=300)
         self.confirm_password_field = ft.TextField(label="Confirme a Senha", password=True, width=300)
@@ -57,7 +58,7 @@ class RegisterPage(ft.Container):
             )
 
     def register(self, e):
-    # Capturar valores dos campos
+        # Capturar valores dos campos
         name = self.name_field.value
         last_name = self.last_name_field.value
         username = self.username_field.value
@@ -65,18 +66,20 @@ class RegisterPage(ft.Container):
         password = self.password_field.value
         confirm_password = self.confirm_password_field.value
         setor = self.setor_field.value
-        
+
         # Validar os campos
         if not all([name, last_name, username, email, password, confirm_password, setor]):
             self.error_text.value = "Todos os campos são obrigatórios!"
             self.error_text.visible = True
-            self.update()
+            if self.page:  # Verifique se o controle foi adicionado à página
+                self.update()
             return
 
         if password != confirm_password:
             self.error_text.value = "As senhas não correspondem!"
             self.error_text.visible = True
-            self.update()
+            if self.page:
+                self.update()
             return
 
         # Fazer requisição para o backend
@@ -98,22 +101,38 @@ class RegisterPage(ft.Container):
                 self.error_text.value = "Registro bem-sucedido! Faça login."
                 self.error_text.color = "green"
                 self.error_text.visible = True
-                self.update()
+                if self.page:
+                    self.update()
+                self.app.switch_to_main_app()
             elif response.status_code == 400:
                 error_data = response.json()
-                self.error_text.value = error_data.get("detail", "Erro ao registrar!")
+                self.error_text.value = (
+                    error_data.get("detail") or
+                    ", ".join(f"{key}: {', '.join(value)}" for key, value in error_data.items()) or
+                    "Erro ao registrar!"
+                )
                 self.error_text.color = "red"
                 self.error_text.visible = True
-                self.update()
+                if self.page:
+                    self.update()
             else:
-                self.error_text.value = "Erro ao registrar! Tente novamente."
+                self.error_text.value = f"Erro {response.status_code}: {response.text}"
                 self.error_text.color = "red"
                 self.error_text.visible = True
+                if self.page:
+                    self.update()
+        except httpx.RequestError as req_err:
+            self.error_text.value = f"Erro de conexão: {req_err}"
+            self.error_text.visible = True
+            if self.page:
                 self.update()
         except Exception as ex:
-            self.error_text.value = f"Erro ao conectar: {str(ex)}"
+            self.error_text.value = f"Erro inesperado: {str(ex)}"
             self.error_text.visible = True
-            self.update()
+            if self.page:
+                self.update()
+
+
 
 
     def back_to_login(self, e):
