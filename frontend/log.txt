@@ -40,3 +40,63 @@
 2024-11-23 17:08:00,753 - ERROR - Erro ao carregar tokens salvos: 'ContadorPerplan' object has no attribute 'carregar_padroes_selecionados'
 2024-11-23 17:10:13,312 - ERROR - Erro ao carregar tokens salvos: 'ContadorPerplan' object has no attribute 'carregar_padroes_selecionados'
 2024-11-23 17:13:25,878 - ERROR - Erro: Não há horários disponíveis para salvar.
+2024-11-26 15:18:24,973 - ERROR - Future exception was never retrieved
+future: <Future finished exception=NameError("name 'Sessao' is not defined")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 756, in <lambda>
+    config_button = ft.ElevatedButton(text="Configurar Binds", on_click=lambda e: change_binds(self.page, self))
+                                                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\frontend\utils\change_binds.py", line 13, in change_binds
+    sessao_ativa = contador.session.query(Sessao).filter_by(sessao=contador.sessao).first()
+                                          ^^^^^^
+NameError: name 'Sessao' is not defined. Did you mean: 'Session'?
+2024-11-26 15:18:30,000 - ERROR - Future exception was never retrieved
+future: <Future finished exception=NameError("name 'Sessao' is not defined")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 756, in <lambda>
+    config_button = ft.ElevatedButton(text="Configurar Binds", on_click=lambda e: change_binds(self.page, self))
+                                                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\frontend\utils\change_binds.py", line 13, in change_binds
+    sessao_ativa = contador.session.query(Sessao).filter_by(sessao=contador.sessao).first()
+                                          ^^^^^^
+NameError: name 'Sessao' is not defined. Did you mean: 'Session'?
+2024-11-26 15:18:31,925 - ERROR - Future exception was never retrieved
+future: <Future finished exception=NameError("name 'Sessao' is not defined")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 756, in <lambda>
+    config_button = ft.ElevatedButton(text="Configurar Binds", on_click=lambda e: change_binds(self.page, self))
+                                                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\frontend\utils\change_binds.py", line 13, in change_binds
+    sessao_ativa = contador.session.query(Sessao).filter_by(sessao=contador.sessao).first()
+                                          ^^^^^^
+NameError: name 'Sessao' is not defined. Did you mean: 'Session'?
+2024-11-26 15:18:32,112 - ERROR - Future exception was never retrieved
+future: <Future finished exception=NameError("name 'Sessao' is not defined")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 756, in <lambda>
+    config_button = ft.ElevatedButton(text="Configurar Binds", on_click=lambda e: change_binds(self.page, self))
+                                                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\frontend\utils\change_binds.py", line 13, in change_binds
+    sessao_ativa = contador.session.query(Sessao).filter_by(sessao=contador.sessao).first()
+                                          ^^^^^^
+NameError: name 'Sessao' is not defined. Did you mean: 'Session'?

@@ -4,7 +4,8 @@ from django.core.exceptions import ValidationError
 # Create your models here.
 
 class User(AbstractUser):
-    nome_completo = models.CharField(max_length=255)
+    name = models.CharField(max_length=255)
+    last_name = models.CharField(max_length=255)
     email = models.EmailField(unique=True)
     setor_opcoes = [
         ('CON', 'Contagem'),

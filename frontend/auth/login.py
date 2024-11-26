@@ -62,7 +62,7 @@ class LoginPage(ft.Container):  # Tela de login
             # Enviando os dados para o backend para autenticação
             with httpx.Client() as client:
                 response = client.post(
-                    "http://3.91.159.225:8000/api/login/",
+                    "http://3.91.159.225/api/login/",
                     json={"username": username, "password": password},
                 )
 

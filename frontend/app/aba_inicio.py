@@ -8,9 +8,9 @@ def setup_aba_inicio(self):
     tab = self.tabs.tabs[0].content
     tab.controls.clear()
 
-    self.codigo_ponto_input = ft.TextField(label="Código")
+    self.codigo_ponto_input = ft.TextField(label="Código, digite desse modo: ER2403")
     self.nome_ponto_input = ft.TextField(label="Ponto (ex: P10N)")
-    self.horas_contagem_input = ft.TextField(label="Periodo (ex: 6h-18h)")
+    self.horas_contagem_input = ft.TextField(label="Periodo, digite desse modo: 06h-07h")
 
     # DatePicker integrado
     self.datepicker = ft.DatePicker(

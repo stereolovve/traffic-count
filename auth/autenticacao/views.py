@@ -40,29 +40,37 @@ class RegisterView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
+        # Logs para monitorar os dados recebidos
+
+        # Capturar os campos
         username = request.data.get("username")
         password = request.data.get("password")
-        nome_completo = request.data.get("nome_completo")
+        name = request.data.get("name")
+        last_name = request.data.get("last_name")
         email = request.data.get("email")
         setor = request.data.get("setor")
 
-        if not username or not password or not nome_completo or not email or not setor:
+        # Validação de campos obrigatórios
+        if not username or not password or not name or not last_name or not email or not setor:
             return Response({"detail": "Todos os campos são obrigatórios!"}, status=status.HTTP_400_BAD_REQUEST)
 
+        # Verificar se o usuário já existe
         if User.objects.filter(username=username).exists():
             return Response({"detail": "Usuário já existe!"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Criação do usuário
+        # Criar usuário
         user = User.objects.create_user(
             username=username,
             password=password,
-            nome_completo=nome_completo,
-            email=email,
-            setor=setor,
+            first_name=name,
+            last_name=last_name,
+            email=email
         )
+        user.setor = setor  # Setar o setor se necessário
         user.save()
 
         return Response({"detail": "Usuário registrado com sucesso!"}, status=status.HTTP_201_CREATED)
+
 
 
 class LogoutView(APIView):

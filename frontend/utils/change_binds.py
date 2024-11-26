@@ -1,6 +1,6 @@
 import flet as ft
 from sqlalchemy.exc import SQLAlchemyError
-from database.models import Session, Categoria
+from database.models import Session, Categoria, Sessao
 
 def change_binds(page, contador):
     # evitar duplicidade ao abrir o modal de binds

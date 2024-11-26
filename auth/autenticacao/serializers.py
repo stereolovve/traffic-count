@@ -8,11 +8,12 @@ Usuario = get_user_model()
 class RegistroSerializer(serializers.ModelSerializer):
     class Meta:
         model = Usuario
-        fields = ['id', 'username', 'password', 'nome_completo', 'email', 'setor']
+        fields = ['id', 'username', 'password', 'name','last_name', 'email', 'setor']
         extra_kwargs = {
             'password': {'write_only': True},
             'email': {'required': True},
-            'nome_completo': {'required': True},
+            'name': {'required': True},
+            'last_name': {'required': True},
             'setor': {'required': True},
         }
     
@@ -27,7 +28,8 @@ class RegistroSerializer(serializers.ModelSerializer):
         user = Usuario.objects.create_user(
             username=validated_data['username'],
             password=validated_data['password'],
-            nome_completo=validated_data['nome_completo'],
+            name=validated_data['name'],
+            last_name=validated_data['last_name'],
             email=validated_data['email'],
             setor=validated_data['setor']
         )
