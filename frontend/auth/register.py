@@ -80,7 +80,7 @@ class RegisterPage(ft.Container):
         try:
             with httpx.Client() as client:
                 response = client.post(
-                    "http://127.0.0.1:8000/api/register/",
+                    "http://3.91.159.225:8000/api/login/",
                     json={
                         "username": username,
                         "password": password,
