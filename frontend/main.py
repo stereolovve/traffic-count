@@ -4,6 +4,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from app import aba_inicio, aba_contagem, aba_historico, listener, sessao
 from utils.initializer import inicializar_variaveis, configurar_numpad_mappings
 from auth.login import LoginPage
+from utils.period import format_period
 from auth.register import RegisterPage
 from pynput import keyboard
 from utils.padrao_contagem import carregar_categorias_padrao, carregar_padroes_selecionados, obter_caminho_json
@@ -14,6 +15,9 @@ import re
 from utils.change_binds import change_binds
 import logging
 import httpx
+import openpyxl
+from openpyxl import Workbook
+from openpyxl.utils.dataframe import dataframe_to_rows
 import json
 
 #------------------------ LOGGING -------------------------
@@ -34,7 +38,7 @@ class ContadorPerplan(ft.Column):
         super().__init__()
         self.tokens = None
         self.page = page
-        self.username = username # nome do user autenticado pelo django
+        self.username = username
         self.app = app
         inicializar_variaveis(self)  
         configurar_numpad_mappings(self) 
@@ -44,53 +48,41 @@ class ContadorPerplan(ft.Column):
 
     #------------------------ SETUP DATE PICKER ------------------------
     def open_date_picker(self, e):
-        # Abre o DatePicker usando o Page.open()
         if hasattr(self, "datepicker"):
-            self.page.open(self.datepicker)  # Mostra o DatePicker como um diálogo
+            self.page.open(self.datepicker)
         else:
             print("DatePicker não está inicializado.")
     
     def change_date(self, e):
-        # self.datepicker.value retorna um objeto datetime.datetime
         data_original = self.datepicker.value
-
-        # Formatar diretamente para dd-mm-yyyy
-        self.data_formatada = data_original.strftime("%d-%m-%Y")
-
-        # Atualiza o rótulo com a data formatada
-        self.data_ponto_label.value = f"Data selecionada: {self.data_formatada}"
+        self.formated_date = data_original.strftime("%d-%m-%Y")
+        self.data_ponto_label.value = f"Data selecionada: {self.formated_date}"
         self.page.update()
 
     #------------------------ GERA COLUNA DE HORÁRIOS ------------------------
-    def gerar_coluna_horarios(self, periodo):
+    def gerar_coluna_horarios(self, period):
         try:
-            if not re.match(r'^\d{2}h-\d{2}h$', periodo):
-                raise ValueError("Período inválido. Use o formato HHh-HHh (ex: 06h-16h).")
+            start_time_str = self.inicio_input.value.strip()
+            start = datetime.strptime(start_time_str, "%H:%M")
+            end = datetime.strptime("23:59", "%H:%M")
 
-            # Converte o período em horas
-            hora_inicio, hora_fim = [int(h.split('h')[0]) for h in periodo.split('-')]
-            inicio = datetime.strptime(f"{hora_inicio:02d}:00", "%H:%M")
-            fim = datetime.strptime(f"{hora_fim:02d}:00", "%H:%M")
+            hours = []
+            while start < end:
+                next_time = start + timedelta(minutes=15)
+                hours.append({"das": start.strftime("%H:%M"), "às": next_time.strftime("%H:%M")})
+                start = next_time
 
-            # Gera a lista de horários
-            horarios = []
-            while inicio < fim:
-                proximo_horario = inicio + timedelta(minutes=15)
-                horarios.append({"das": inicio.strftime("%H:%M"), "às": proximo_horario.strftime("%H:%M")})
-                inicio = proximo_horario
-
-            return pd.DataFrame(horarios)
+            return pd.DataFrame(hours)
 
         except Exception as ex:
             logging.error(f"Erro ao gerar coluna de horários: {ex}")
             return pd.DataFrame()
 
-
     #------------------------ SETUP UI ------------------------
     def setup_ui(self):
         self.tabs = ft.Tabs(
             tabs=[
-                ft.Tab(text="Inicio", content=ft.Column(width=450, height=900)),  # Substituindo o content por Column
+                ft.Tab(text="Inicio", content=ft.Column(width=450, height=900)),
                 ft.Tab(text="Contador", content=ft.Column(width=450, height=900)),
                 ft.Tab(text="Histórico", content=ft.Column(width=450, height=900)),
                 ft.Tab(text="", icon=ft.icons.SETTINGS, content=ft.Column(width=450, height=900))
@@ -113,9 +105,10 @@ class ContadorPerplan(ft.Column):
 
         self.codigo_ponto_input = ft.TextField(label="Código (ex: ER2403. Tudo junto)")
         self.nome_ponto_input = ft.TextField(label="Ponto (ex: P10N)")
-        self.horas_contagem_input = ft.TextField(label="Periodo (ex: 6h-18h)")
-        self.datepicker = ft.DatePicker(
 
+        self.inicio_input = ft.TextField(label="Horário de início (ex: 06:00)", keyboard_type=ft.KeyboardType.DATETIME)
+
+        self.datepicker = ft.DatePicker(
             on_change=lambda e: self.change_date(e),
         )
         self.data_ponto_button = ft.ElevatedButton(
@@ -123,7 +116,6 @@ class ContadorPerplan(ft.Column):
             icon=ft.icons.CALENDAR_MONTH,
             on_click=self.open_date_picker,
         )
-
         self.data_ponto_label = ft.Text("Nenhuma data selecionada")
 
         self.padrao_dropdown = ft.Dropdown(
@@ -148,7 +140,7 @@ class ContadorPerplan(ft.Column):
             ft.Text(""),
             self.codigo_ponto_input,
             self.nome_ponto_input,
-            self.horas_contagem_input,
+            self.inicio_input,
             self.data_ponto_button,
             self.data_ponto_label,
             self.padrao_dropdown,
@@ -162,6 +154,8 @@ class ContadorPerplan(ft.Column):
 
         self.page.overlay.append(self.datepicker)
         self.update_sessao_status()
+        self.page.update()
+
         
     def adicionar_campo_movimento(self, e):
         aba_inicio.adicionar_campo_movimento(self, e)
@@ -171,6 +165,60 @@ class ContadorPerplan(ft.Column):
 
     def criar_sessao(self, e):
         sessao.criar_sessao(self, e)
+
+
+    def _inicializar_arquivo_excel(self):
+        try:
+            nome_pesquisador = re.sub(r'[<>:"/\\|?*]', '', self.username)
+            codigo = re.sub(r'[<>:"/\\|?*]', '', self.details['Código'])
+            diretorio_base = r'Z:\\0Pesquisa\\_0ContadorDigital\\Contagens'
+
+            if not os.path.exists(diretorio_base):
+                os.makedirs(diretorio_base, exist_ok=True)
+
+            diretorio_pesquisador_codigo = os.path.join(diretorio_base, nome_pesquisador, codigo)
+            if not os.path.exists(diretorio_pesquisador_codigo):
+                os.makedirs(diretorio_pesquisador_codigo, exist_ok=True)
+
+            arquivo_sessao = os.path.join(diretorio_pesquisador_codigo, f'{self.sessao}.xlsx')
+
+            if os.path.exists(arquivo_sessao):
+                os.remove(arquivo_sessao)
+
+            wb = Workbook()
+
+            if not self.details["Movimentos"]:
+                ws = wb.active
+                ws.title = "Placeholder"
+                ws.append(["Aviso", "Nenhum movimento foi definido."])
+                logging.warning("Nenhum movimento definido. Placeholder criado.")
+            else:
+                # Cria apenas as abas dos movimentos, sem horários
+                wb.remove(wb.active)  # Remove a planilha padrão
+                for movimento in self.details["Movimentos"]:
+                    wb.create_sheet(title=movimento)
+
+            ws_details = wb.create_sheet(title="Detalhes")
+            details_df = pd.DataFrame([self.details])
+
+            for coluna in details_df.columns:
+                details_df[coluna] = details_df[coluna].apply(
+                    lambda x: ', '.join(x) if isinstance(x, list) else x
+                )
+
+            for row in dataframe_to_rows(details_df, index=False, header=True):
+                ws_details.append(row)
+
+            wb.active = 0
+
+            wb.save(arquivo_sessao)
+            logging.info(f"Arquivo Excel inicializado com sucesso: {arquivo_sessao}")
+
+        except Exception as ex:
+            logging.error(f"Erro ao inicializar arquivo Excel: {ex}")
+            raise
+
+
 
     def confirmar_finalizar_sessao(self, e):
         sessao.confirmar_finalizar_sessao(self, e)
@@ -183,13 +231,14 @@ class ContadorPerplan(ft.Column):
         campos_obrigatorios = [
             (self.codigo_ponto_input, "Código"),
             (self.nome_ponto_input, "Ponto"),
-            (self.horas_contagem_input, "Periodo"),
+            (self.inicio_input, "Horário de Início"),
             (self.data_ponto_label, "Data do Ponto")
         ]
 
+        # Validação dos campos obrigatórios
         for campo, nome in campos_obrigatorios:
             if campo == self.data_ponto_label:
-                if not hasattr(self, "data_formatada") or not self.data_formatada:
+                if not hasattr(self, "formated_date") or not self.formated_date:
                     snackbar = ft.SnackBar(ft.Text(f"{nome} é obrigatório!"), bgcolor="ORANGE")
                     self.page.overlay.append(snackbar)
                     snackbar.open = True
@@ -202,6 +251,15 @@ class ContadorPerplan(ft.Column):
                 self.page.update()
                 return False
 
+        try:
+            datetime.strptime(self.inicio_input.value, "%H:%M")
+        except ValueError:
+            snackbar = ft.SnackBar(ft.Text("Horários devem estar no formato H:M!"), bgcolor="RED")
+            self.page.overlay.append(snackbar)
+            snackbar.open = True
+            self.page.update()
+            return False
+
         if not self.movimentos_container.controls:
             snackbar = ft.SnackBar(ft.Text("Adicione pelo menos um movimento!"), bgcolor="ORANGE")
             self.page.overlay.append(snackbar)
@@ -210,28 +268,21 @@ class ContadorPerplan(ft.Column):
             return False
 
         try:
-            sessao_existente = self.session.query(Sessao).filter_by(
-                sessao=f"Sessao_{self.codigo_ponto_input.value}_{self.nome_ponto_input.value}_{self.data_formatada}"
-            ).first()
-            if sessao_existente:
-                snackbar = ft.SnackBar(ft.Text("Sessão já existe com esses detalhes!"), bgcolor="YELLOW")
-                self.page.overlay.append(snackbar)
-                snackbar.open = True
-                self.page.update()
-                return False
-        except SQLAlchemyError as ex:
-            logging.error(f"Erro ao validar campos: {ex}")
+            period = format_period(self.inicio_input.value, "23:59")
+            self.period_formated = period
+        except ValueError as ex:
+            snackbar = ft.SnackBar(ft.Text(str(ex)), bgcolor="RED")
+            self.page.overlay.append(snackbar)
+            snackbar.open = True
+            self.page.update()
             return False
 
         return True
 
-
-
-
     # ------------------------ ABA CONTADOR ------------------------
     def setup_aba_contagem(self):
         aba_contagem.setup_aba_contagem(self)
-  
+        
     def resetar_todas_contagens(self, e):
         aba_contagem.resetar_todas_contagens(self, e)
 
@@ -240,7 +291,6 @@ class ContadorPerplan(ft.Column):
 
     def criar_conteudo_movimento(self, movimento):
         content = ft.Column()
-        # Adicionar o cabeçalho para cada movimento, colocando em um Row com height fixo para evitar sobreposição
         header = ft.Row(
             alignment=ft.MainAxisAlignment.CENTER,
             controls=[
@@ -249,7 +299,7 @@ class ContadorPerplan(ft.Column):
                 ft.Container(content=ft.Text("Contagem", weight=ft.FontWeight.W_400, size=12), width=80, height=40),
                 ft.Container(content=ft.Text("Ações", weight=ft.FontWeight.W_400, size=12), width=50, height=40),
             ],
-            height=50,  # Define uma altura fixa para evitar que ele suba e cause sobreposição
+            height=50,
         )
 
         content.controls.append(header)
@@ -298,7 +348,6 @@ class ContadorPerplan(ft.Column):
 
     def atualizar_borda_contagem(self):
         aba_contagem.atualizar_borda_contagem(self)
-
 
     def increment(self, veiculo, movimento):
         try:
@@ -392,149 +441,40 @@ class ContadorPerplan(ft.Column):
 
 
     def save_contagens(self, e):
-            try:
-                # Validate if `horarios_df` is set
-                if not hasattr(self, 'horarios_df') or self.horarios_df.empty:
-                    logging.error("Erro: `horarios_df` não está inicializado ou está vazio.")
-                    snackbar = ft.SnackBar(ft.Text("Erro: Horários não definidos. Crie uma sessão primeiro."), bgcolor="RED")
-                    self.page.overlay.append(snackbar)
-                    snackbar.open = True
-                    return
-
-                # Validate if there are any changes in `contagens`
-                if not self.contagens:
-                    logging.error("Nenhuma mudança nas contagens desde o último salvamento.")
-                    snackbar = ft.SnackBar(ft.Text("Erro: Nenhuma mudança nas contagens para salvar."), bgcolor="RED")
-                    self.page.overlay.append(snackbar)
-                    snackbar.open = True
-                    return
-
-                # Check the time of the last save
-                now = datetime.now()
-                if hasattr(self, 'last_save_time'):
-                    time_since_last_save = now - self.last_save_time
-                    if time_since_last_save < timedelta(minutes=5):
-                        # Show confirmation dialog
-                        def on_confirm_save(e):
-                            dialog.open = False
-                            self.page.update()
-                            self._perform_save(now)  # Perform save
-                        def on_cancel_save(e):
-                            dialog.open = False
-                            self.page.update()
-
-                        dialog = ft.AlertDialog(
-                            title=ft.Text("Confirmar Salvamento"),
-                            content=ft.Text("Você salvou recentemente. Deseja salvar novamente?"),
-                            actions=[
-                                ft.TextButton("Sim", on_click=on_confirm_save),
-                                ft.TextButton("Cancelar", on_click=on_cancel_save),
-                            ],
-                        )
-                        self.page.overlay.append(dialog)
-                        dialog.open = True
+        try:
+            now = datetime.now()
+            if hasattr(self, 'last_save_time'):
+                time_since_last_save = now - self.last_save_time
+                if time_since_last_save < timedelta(minutes=5):
+                    def on_confirm_save(e):
+                        dialog.open = False
                         self.page.update()
-                        return  # Exit function until the user confirms or cancels
+                        self._perform_save(now)
+                    def on_cancel_save(e):
+                        dialog.open = False
+                        self.page.update()
 
-                # Perform the save if no recent saves or no dialog is needed
-                self._perform_save(now)
+                    dialog = ft.AlertDialog(
+                        title=ft.Text("Confirmar Salvamento"),
+                        content=ft.Text("Você salvou recentemente. Deseja salvar novamente?"),
+                        actions=[
+                            ft.TextButton("Sim", on_click=on_confirm_save),
+                            ft.TextButton("Cancelar", on_click=on_cancel_save),
+                        ],
+                    )
+                    self.page.overlay.append(dialog)
+                    dialog.open = True
+                    self.page.update()
+                    return
+            self._perform_save(now)
 
-            except Exception as ex:
-                logging.error(f"Erro ao salvar contagens: {ex}")
-                snackbar = ft.SnackBar(ft.Text("Erro ao salvar contagens."), bgcolor="RED")
-                self.page.overlay.append(snackbar)
-                snackbar.open = True
+            if hasattr(self, "last_save_label"):
+                self.last_save_label.value = f"Último salvamento: {now.strftime('%d/%m/%Y %H:%M:%S')}"
                 self.page.update()
 
-    def _perform_save(self, now):
-        try:
-            # Update last save time
-            self.last_save_time = now
-
-            # Get all categories sorted by the pattern
-            todas_categorias = [categoria.veiculo for categoria in sorted(self.categorias, key=lambda x: x.criado_em)]
-
-            # Create a line of counts with all categories (default 0)
-            linha_contagem = {categoria: 0 for categoria in todas_categorias}
-
-            # Update counts for existing values
-            for (categoria, _), count in self.contagens.items():
-                if categoria in linha_contagem:
-                    linha_contagem[categoria] = count
-
-            # Add the current timestamp to the record
-            registro_atual = datetime.now().strftime('%H:%M:%S')
-            linha_contagem["registro"] = registro_atual
-
-            # Create a DataFrame for the new line
-            nova_linha_df = pd.DataFrame([linha_contagem])
-
-            # Add timings to the new line
-            if not hasattr(self, "ultima_linha_horarios"):
-                self.ultima_linha_horarios = 0
-
-            if self.ultima_linha_horarios < len(self.horarios_df):
-                horarios_linha = self.horarios_df.iloc[self.ultima_linha_horarios]
-                nova_linha_df.insert(0, "às", horarios_linha["às"])
-                nova_linha_df.insert(0, "das", horarios_linha["das"])
-                self.ultima_linha_horarios += 1
-            else:
-                logging.error("Erro: Não há horários disponíveis para salvar.")
-                snackbar = ft.SnackBar(ft.Text("Erro: Todos os horários já foram preenchidos."), bgcolor="RED")
-                self.page.overlay.append(snackbar)
-                snackbar.open = True
-                return
-
-            # Directory setup
-            nome_pesquisador = re.sub(r'[<>:"/\\|?*]', '', self.username)
-            codigo = re.sub(r'[<>:"/\\|?*]', '', self.detalhes['Código'])
-            diretorio_base = r'Z:\\0Pesquisa\\_0ContadorDigital\\Contagens'
-
-            if not os.path.exists(diretorio_base):
-                diretorio_base = os.getcwd()
-
-            diretorio_pesquisador_codigo = os.path.join(diretorio_base, nome_pesquisador, codigo)
-            if not os.path.exists(diretorio_pesquisador_codigo):
-                os.makedirs(diretorio_pesquisador_codigo)
-
-            arquivo_sessao = os.path.join(diretorio_pesquisador_codigo, f'{self.sessao}.xlsx')
-
-            # Attempt to load existing data
-            try:
-                existing_contagens = pd.read_excel(arquivo_sessao, sheet_name="Contagens")
-            except FileNotFoundError:
-                existing_contagens = pd.DataFrame(columns=nova_linha_df.columns)
-
-            # Concatenate the new row to the existing data
-            resultado_contagens = pd.concat([existing_contagens, nova_linha_df], ignore_index=True)
-
-            # Prepare the "Detalhes" DataFrame
-            detalhes_data = {
-                "Pesquisador": [self.username],
-                "Código": [self.detalhes["Código"]],
-                "Ponto": [self.detalhes["Ponto"]],
-                "Período": [self.detalhes["Periodo"]],
-                "Data do Ponto": [self.detalhes["Data do Ponto"]]
-            }
-            detalhes_df = pd.DataFrame(detalhes_data)
-
-            # Write to Excel
-            with pd.ExcelWriter(arquivo_sessao, engine='xlsxwriter') as writer:
-                resultado_contagens.to_excel(writer, sheet_name="Contagens", index=False)
-                detalhes_df.to_excel(writer, sheet_name="Detalhes", index=False)
-
-            # Log success
-            logging.info(f"Contagem salva em {arquivo_sessao}")
             snackbar = ft.SnackBar(ft.Text("Contagens salvas com sucesso!"), bgcolor="GREEN")
             self.page.overlay.append(snackbar)
             snackbar.open = True
-
-            # Update the last save label
-            self.last_save_label.value = f"Último salvamento: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}"
-            self.page.update()
-
-            # Save to history
-            self.salvar_historico(veiculo="", movimento="", acao="salvamento")
 
         except Exception as ex:
             logging.error(f"Erro ao salvar contagens: {ex}")
@@ -542,6 +482,51 @@ class ContadorPerplan(ft.Column):
             self.page.overlay.append(snackbar)
             snackbar.open = True
             self.page.update()
+
+    def _perform_save(self, now):
+        try:
+            if not hasattr(self, 'current_timeslot'):
+                self.current_timeslot = datetime.strptime(self.inicio_input.value.strip(), "%H:%M")
+
+            horario_atual = self.current_timeslot
+
+            nome_pesquisador = re.sub(r'[<>:"/\\|?*]', '', self.username)
+            codigo = re.sub(r'[<>:"/\\|?*]', '', self.details['Código'])
+            diretorio_base = r'Z:\\0Pesquisa\\_0ContadorDigital\\Contagens'
+            diretorio_pesquisador_codigo = os.path.join(diretorio_base, nome_pesquisador, codigo)
+            arquivo_sessao = os.path.join(diretorio_pesquisador_codigo, f'{self.sessao}.xlsx')
+
+            with pd.ExcelWriter(arquivo_sessao, engine='openpyxl', mode='a', if_sheet_exists='overlay') as writer:
+                for movimento in self.details["Movimentos"]:
+                    df_existente = pd.read_excel(arquivo_sessao, sheet_name=movimento)
+
+                    nova_linha = {
+                        "das": horario_atual.strftime("%H:%M"),
+                        "às": (horario_atual + timedelta(minutes=15)).strftime("%H:%M"),
+                    }
+
+                    for categoria in [c for c in self.categorias if c.movimento == movimento]:
+                        nova_linha[categoria.veiculo] = self.contagens.get((categoria.veiculo, movimento), 0)
+
+                    df_novo = pd.DataFrame([nova_linha])
+                    df_resultante = pd.concat([df_existente, df_novo], ignore_index=True)
+
+                    df_resultante.to_excel(writer, sheet_name=movimento, index=False)
+
+            self.current_timeslot += timedelta(minutes=15)
+            self.details["current_timeslot"] = self.current_timeslot.strftime("%H:%M")
+            self.salvar_sessao()
+            self.last_save_time = now
+            if hasattr(self, "last_save_label"):
+                self.last_save_label.value = f"Último salvamento: {now.strftime('%H:%M:%S')}"
+                self.page.update()
+
+            logging.info(f"Salvamento realizado com sucesso: {arquivo_sessao}")
+
+        except Exception as ex:
+            logging.error(f"Erro ao salvar contagens: {ex}")
+            raise
+
 
 
     def confirmar_finalizar_sessao(self, e):
@@ -579,7 +564,7 @@ class ContadorPerplan(ft.Column):
                 self.save_to_db(veiculo, movimento)
             
             self.sessao = None
-            self.detalhes = {"Movimentos": []}
+            self.details = {"Movimentos": []}
             self.contagens = {}
             self.binds = {}
             self.labels = {}
@@ -597,7 +582,7 @@ class ContadorPerplan(ft.Column):
     def restart_app(self):
         self.stop_listener()
         self.sessao = None
-        self.detalhes = {"Movimentos": []}
+        self.details = {"Movimentos": []}
         self.contagens = {}
         self.binds = {}
         self.labels = {}
@@ -703,7 +688,6 @@ class ContadorPerplan(ft.Column):
 
     def update_binds(self):
         try:
-            # Recarregar todos os binds do banco de dados
             self.binds = {(categoria.bind, categoria.movimento): (categoria.veiculo, categoria.movimento)
                         for categoria in self.session.query(Categoria).all()}
             logging.info("Binds atualizados com sucesso.")
@@ -748,7 +732,7 @@ class ContadorPerplan(ft.Column):
         tab = self.tabs.tabs[3].content
         tab.controls.clear()
         
-        self.page.theme_mode = ft.ThemeMode.SYSTEM
+        self.page.theme_mode = ft.ThemeMode.DARK
         self.modo_claro_escuro = ft.Switch(label="Modo claro", on_change=self.theme_changed)
         
         opacity = ft.Slider(value=100, min=20, max=100, divisions=80, label="Opacidade", on_change=self.ajustar_opacidade)
@@ -831,7 +815,7 @@ class ContadorPerplan(ft.Column):
                 bind = categoria.get('bind')
 
                 if veiculo and bind:
-                    for movimento in self.detalhes.get("Movimentos", []):
+                    for movimento in self.details.get("Movimentos", []):
                         categoria_existente = self.session.query(Categoria).filter_by(
                             veiculo=veiculo,
                             movimento=movimento
@@ -924,7 +908,6 @@ class ContadorPerplan(ft.Column):
             for categoria in categorias:
                 binds[(categoria.bind, categoria.movimento)] = (categoria.veiculo, categoria.movimento)
             
-            # Carregar contagens do banco de dados para a sessão atual
             contagens = {}
             if self.sessao:
                 contagens_db = self.session.query(Contagem).filter_by(sessao=self.sessao).all()
@@ -945,16 +928,13 @@ class ContadorPerplan(ft.Column):
         
     def logout_user(self, e):
         try:
-            # Remove o arquivo de tokens se existir
             if os.path.exists("auth_tokens.json"):
                 os.remove("auth_tokens.json")
 
-            # Verifica se a página está disponível
             if not self.page:
                 logging.error("Página está faltando ao tentar deslogar.")
                 return
 
-            # Chama o método de reset do aplicativo principal
             self.app.reset_app()
         except AttributeError as ex:
             logging.error(f"Erro ao deslogar: {ex}")
@@ -1027,4 +1007,3 @@ def main(page: ft.Page):
         app.show_login_page()
         
 ft.app(target=main)
-

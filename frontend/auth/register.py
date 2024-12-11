@@ -9,8 +9,8 @@ class RegisterPage(ft.Container):
 
         # Campos de entrada
         self.name_field = ft.TextField(label="Primeiro nome", width=300)
-        self.last_name_field = ft.TextField(label="Ultimo nome", width=300)
-        self.username_field = ft.TextField(label="Usuário (Coloque seunome.seunobrenome)", width=300)
+        self.last_name_field = ft.TextField(label="Sobrenome/Ultimo nome", width=300)
+        self.username_field = ft.TextField(label="Usuário (nome.sobrenome)", width=300)
         self.email_field = ft.TextField(label="E-mail", width=300)
         self.password_field = ft.TextField(label="Senha", password=True, width=300)
         self.confirm_password_field = ft.TextField(label="Confirme a Senha", password=True, width=300)

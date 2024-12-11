@@ -25,7 +25,7 @@ class Categoria(Base):
 class Sessao(Base):
     __tablename__ = 'sessoes'
     sessao = Column(String, primary_key=True)
-    detalhes = Column(String)
+    details = Column(String)
     padrao = Column(String)
     criada_em = Column(DateTime, default=datetime.now)
     ativa = Column(Boolean)

@@ -15,7 +15,7 @@ def __init__(self, page):
 def inicializar_variaveis(self):
     self.sessao = None
     self.session = Session()
-    self.detalhes = {"Movimentos": []}  # Inicializar com Movimentos vazio
+    self.details = {"Movimentos": []}  # Inicializar com Movimentos vazio
     self.contagens = {}
     self.binds = {}
     self.categorias = []

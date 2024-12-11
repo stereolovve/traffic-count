@@ -139,3 +139,244 @@ Traceback (most recent call last):
     self.register_button = ft.ElevatedButton("Registrar", on_click=self.register)
                                                                    ^^^^^^^^^^^^^
 AttributeError: 'RegisterPage' object has no attribute 'register'
+2024-11-28 11:56:48,721 - ERROR - Erro: Não há horários disponíveis para o movimento 'A'.
+2024-11-28 11:56:48,724 - ERROR - Erro: Não há horários disponíveis para o movimento 'B'.
+2024-11-28 12:04:15,918 - ERROR - Erro ao salvar contagens: At least one sheet must be visible
+2024-11-28 12:04:22,688 - ERROR - Erro ao salvar contagens: "There is no item named '[Content_Types].xml' in the archive"
+2024-11-28 12:13:07,058 - ERROR - Arquivo Excel corrompido. Recriando arquivo...
+2024-11-28 12:13:07,712 - ERROR - Erro ao salvar contagens: name 'load_workbook' is not defined
+2024-11-28 12:16:00,591 - ERROR - Erro ao salvar contagens: Sheet 'A' already exists and if_sheet_exists is set to 'error'.
+2024-11-28 12:19:34,165 - ERROR - Erro ao salvar contagens: Sheet 'A' already exists and if_sheet_exists is set to 'error'.
+2024-11-28 12:23:01,626 - ERROR - Erro ao salvar contagens: if_sheet_exists is only valid in append mode (mode='a')
+2024-11-28 12:23:05,275 - ERROR - Erro ao salvar contagens: if_sheet_exists is only valid in append mode (mode='a')
+2024-11-28 12:42:20,271 - ERROR - Erro ao salvar contagens: Sheet 'A' already exists and if_sheet_exists is set to 'error'.
+2024-11-28 12:42:27,347 - ERROR - Erro ao salvar contagens: Sheet 'A' already exists and if_sheet_exists is set to 'error'.
+2024-11-28 12:42:29,391 - ERROR - Erro ao salvar contagens: Sheet 'A' already exists and if_sheet_exists is set to 'error'.
+2024-11-28 12:44:10,626 - ERROR - Erro ao salvar contagens: [Errno 2] No such file or directory: 'Z:\\\\0Pesquisa\\\\_0ContadorDigital\\\\Contagens\\lucas.melo\\testesa\\testesa_p11_28-11-2024.xlsx'
+2024-11-28 12:46:05,120 - ERROR - Erro ao salvar contagens: Sheet 'A' already exists and if_sheet_exists is set to 'error'.
+2024-11-28 12:54:49,827 - ERROR - Erro ao salvar contagens: Sheet 'A' already exists and if_sheet_exists is set to 'error'.
+2024-11-28 12:58:22,972 - ERROR - Erro ao salvar contagens: name 'openpyxl' is not defined
+2024-11-28 14:17:20,480 - ERROR - Erro ao salvar contagens: [Errno 2] No such file or directory: 'Z:\\\\0Pesquisa\\\\_0ContadorDigital\\\\Contagens\\lucas.melo\\testesalvamento\\testesalvamento_p19_28-11-2024.xlsx'
+2024-11-28 14:17:25,624 - ERROR - Erro ao salvar contagens: [Errno 2] No such file or directory: 'Z:\\\\0Pesquisa\\\\_0ContadorDigital\\\\Contagens\\lucas.melo\\testesalvamento\\testesalvamento_p19_28-11-2024.xlsx'
+2024-11-28 14:19:10,815 - ERROR - Erro ao salvar contagens: [Errno 2] No such file or directory: 'Z:\\\\0Pesquisa\\\\_0ContadorDigital\\\\Contagens\\lucas.melo\\testesalvamento\\testesalvamento_p19_28-11-2024.xlsx'
+2024-11-28 14:19:33,304 - ERROR - Nenhuma mudança nas contagens desde o último salvamento.
+2024-11-28 14:19:43,446 - ERROR - Erro ao salvar contagens: [Errno 2] No such file or directory: 'Z:\\\\0Pesquisa\\\\_0ContadorDigital\\\\Contagens\\lucas.melo\\testesalvamento\\testesalvamento_p20_28-11-2024.xlsx'
+2024-11-28 14:20:49,224 - ERROR - Erro ao salvar contagens: [Errno 2] No such file or directory: 'Z:\\\\0Pesquisa\\\\_0ContadorDigital\\\\Contagens\\lucas.melo\\testesalvamento\\testesalvamento_p20_28-11-2024.xlsx'
+2024-11-28 14:21:14,309 - ERROR - Erro ao salvar contagens: [Errno 2] No such file or directory: 'Z:\\\\0Pesquisa\\\\_0ContadorDigital\\\\Contagens\\lucas.melo\\testesavalmento\\testesavalmento_p20_28-11-2024.xlsx'
+2024-11-28 14:27:32,422 - ERROR - Erro ao criar sessão: name 'pd' is not defined
+2024-11-28 14:27:36,292 - ERROR - Erro ao criar sessão: name 'pd' is not defined
+2024-11-28 14:27:59,200 - ERROR - Erro ao salvar contagens: [Errno 2] No such file or directory: 'Z:\\\\0Pesquisa\\\\_0ContadorDigital\\\\Contagens\\lucas.melo\\testesalvamento\\testesalvamento_p21_28-11-2024.xlsx'
+2024-11-28 14:27:59,201 - ERROR - Erro ao salvar contagens: [Errno 2] No such file or directory: 'Z:\\\\0Pesquisa\\\\_0ContadorDigital\\\\Contagens\\lucas.melo\\testesalvamento\\testesalvamento_p21_28-11-2024.xlsx'
+2024-11-28 14:29:00,007 - ERROR - Erro ao salvar contagens: Bad CRC-32 for file 'docProps/core.xml'
+2024-11-28 14:29:00,010 - ERROR - Erro ao salvar contagens: Bad CRC-32 for file 'docProps/core.xml'
+2024-11-28 14:29:00,484 - ERROR - Erro ao salvar contagens: Bad CRC-32 for file 'docProps/core.xml'
+2024-11-28 14:29:00,486 - ERROR - Erro ao salvar contagens: Bad CRC-32 for file 'docProps/core.xml'
+2024-11-28 14:29:00,655 - ERROR - Erro ao salvar contagens: Bad CRC-32 for file 'docProps/core.xml'
+2024-11-28 14:29:00,655 - ERROR - Erro ao salvar contagens: Bad CRC-32 for file 'docProps/core.xml'
+2024-11-28 14:29:16,357 - ERROR - Erro ao salvar contagens: Bad CRC-32 for file 'docProps/core.xml'
+2024-11-28 14:29:16,359 - ERROR - Erro ao salvar contagens: Bad CRC-32 for file 'docProps/core.xml'
+2024-11-28 14:29:17,526 - ERROR - Erro ao salvar contagens: Bad CRC-32 for file 'docProps/core.xml'
+2024-11-28 14:29:17,531 - ERROR - Erro ao salvar contagens: Bad CRC-32 for file 'docProps/core.xml'
+2024-11-28 14:29:17,578 - ERROR - Erro ao salvar contagens: Bad CRC-32 for file 'docProps/core.xml'
+2024-11-28 14:29:17,578 - ERROR - Erro ao salvar contagens: Bad CRC-32 for file 'docProps/core.xml'
+2024-11-28 14:29:19,226 - ERROR - Erro ao salvar contagens: Bad CRC-32 for file 'docProps/core.xml'
+2024-11-28 14:29:19,227 - ERROR - Erro ao salvar contagens: Bad CRC-32 for file 'docProps/core.xml'
+2024-11-28 15:13:54,894 - ERROR - Erro ao salvar contagens: strptime() argument 1 must be str, not float
+2024-11-28 15:13:54,895 - ERROR - Future exception was never retrieved
+future: <Future finished exception=TypeError('strptime() argument 1 must be str, not float')>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 458, in on_confirm_save
+    self._perform_save(now)  # Perform save
+    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 513, in _perform_save
+    horario_inicio = datetime.strptime(row['das'], '%H:%M')
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: strptime() argument 1 must be str, not float
+2024-11-28 15:14:00,554 - ERROR - Erro ao salvar contagens: strptime() argument 1 must be str, not float
+2024-11-28 15:14:00,555 - ERROR - Future exception was never retrieved
+future: <Future finished exception=TypeError('strptime() argument 1 must be str, not float')>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 458, in on_confirm_save
+    self._perform_save(now)  # Perform save
+    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 513, in _perform_save
+    horario_inicio = datetime.strptime(row['das'], '%H:%M')
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: strptime() argument 1 must be str, not float
+2024-11-28 15:29:07,161 - ERROR - Nenhuma mudança nas contagens desde o último salvamento.
+2024-11-28 16:02:23,490 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'ContadorPerplan' object has no attribute 'horas_contagem_input'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 184, in criar_sessao
+    sessao.criar_sessao(self, e)
+  File "C:\Users\lucas.melo\traffic-count\frontend\app\sessao.py", line 13, in criar_sessao
+    if not self.validar_campos():
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 231, in validar_campos
+    (self.horas_contagem_input, "Periodo"),
+     ^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'ContadorPerplan' object has no attribute 'horas_contagem_input'
+2024-11-28 16:08:59,978 - ERROR - Erro ao criar sessão: ContadorPerplan.gerar_coluna_horarios() takes 1 positional argument but 2 were given
+2024-11-28 16:13:23,277 - ERROR - Erro ao criar sessão: ContadorPerplan.gerar_coluna_horarios() missing 1 required positional argument: 'periodo'
+2024-11-28 16:19:04,370 - ERROR - Erro ao gerar coluna de horários: time data '24:00' does not match format '%H:%M'
+2024-11-28 16:19:08,558 - ERROR - Erro: `horarios_df` não está inicializado ou está vazio.
+2024-11-28 16:19:10,536 - ERROR - Erro: `horarios_df` não está inicializado ou está vazio.
+2024-11-28 16:19:11,310 - ERROR - Erro: `horarios_df` não está inicializado ou está vazio.
+2024-11-28 16:19:11,516 - ERROR - Erro: `horarios_df` não está inicializado ou está vazio.
+2024-11-28 16:19:11,894 - ERROR - Erro: `horarios_df` não está inicializado ou está vazio.
+2024-11-28 16:19:17,014 - ERROR - Erro: `horarios_df` não está inicializado ou está vazio.
+2024-11-28 16:19:34,964 - ERROR - Erro ao gerar coluna de horários: time data '24:00' does not match format '%H:%M'
+2024-11-28 16:19:39,497 - ERROR - Erro ao finalizar sessão: [WinError 32] O arquivo já está sendo usado por outro processo: 'C:\\Users\\lucas.melo\\traffic-count\\frontend\\dados.db'
+2024-11-28 16:20:03,698 - ERROR - Erro ao gerar coluna de horários: time data '24:00' does not match format '%H:%M'
+2024-11-28 16:20:03,950 - ERROR - Erro ao criar sessão: At least one sheet must be visible
+2024-11-28 16:37:13,700 - ERROR - Erro ao carregar tokens salvos: ('Leves', 'A')
+2024-11-28 16:38:16,081 - ERROR - Erro: `horarios_df` não está inicializado ou está vazio.
+2024-11-28 16:43:08,843 - ERROR - Erro ao gerar coluna de horários: time data '24:00' does not match format '%H:%M'
+2024-11-28 16:43:12,396 - ERROR - Erro: horarios_df não está inicializado ou está vazio.
+2024-11-28 16:59:22,945 - ERROR - Erro ao salvar contagens: [Errno 13] Permission denied: 'Z:\\\\0Pesquisa\\\\_0ContadorDigital\\\\Contagens\\lucas.melo\\ER2402\\ER2402_34_28-11-2024.xlsx'
+2024-11-28 16:59:22,946 - ERROR - Erro ao salvar contagens: [Errno 13] Permission denied: 'Z:\\\\0Pesquisa\\\\_0ContadorDigital\\\\Contagens\\lucas.melo\\ER2402\\ER2402_34_28-11-2024.xlsx'
+2024-11-28 17:05:20,985 - ERROR - Erro ao finalizar sessão: [WinError 32] O arquivo já está sendo usado por outro processo: 'C:\\Users\\lucas.melo\\traffic-count\\frontend\\dados.db'
+2024-11-28 17:26:33,973 - ERROR - Erro ao salvar contagens: O campo de inicio deve ser preenchido.
+2024-11-28 17:26:33,973 - ERROR - Erro ao salvar contagens: O campo de inicio deve ser preenchido.
+2024-11-28 17:26:36,289 - ERROR - Erro ao finalizar sessão: [WinError 32] O arquivo já está sendo usado por outro processo: 'C:\\Users\\lucas.melo\\traffic-count\\frontend\\dados.db'
+2024-11-28 17:26:53,215 - ERROR - Erro ao criar sessão: 'ContadorPerplan' object has no attribute 'fim_input'
+2024-11-28 17:27:19,695 - ERROR - Erro ao criar sessão: 'ContadorPerplan' object has no attribute 'fim_input'
+2024-11-28 17:29:42,414 - ERROR - Erro ao finalizar sessão: [WinError 32] O arquivo já está sendo usado por outro processo: 'C:\\Users\\lucas.melo\\traffic-count\\frontend\\dados.db'
+2024-11-28 17:29:54,906 - ERROR - Erro ao criar sessão: At least one sheet must be visible
+2024-11-28 17:30:04,500 - ERROR - Erro ao criar sessão: At least one sheet must be visible
+2024-11-28 17:30:42,104 - ERROR - Erro ao carregar tokens salvos: 'ContadorPerplan' object has no attribute 'on_time_selected'
+2024-11-28 17:31:12,641 - ERROR - Erro ao carregar tokens salvos: 'ContadorPerplan' object has no attribute 'on_time_selected'
+2024-11-28 17:31:38,855 - ERROR - Erro ao carregar tokens salvos: TimePicker.__init__() got an unexpected keyword argument 'label'
+2024-11-28 17:31:55,368 - ERROR - Erro ao carregar tokens salvos: TimePicker.__init__() got an unexpected keyword argument 'format_24h'
+2024-11-28 17:43:58,142 - ERROR - Erro ao inicializar arquivo Excel: name 'load_workbook' is not defined
+2024-11-28 17:43:58,143 - ERROR - Erro ao criar sessão: name 'load_workbook' is not defined
+2024-11-28 17:44:19,403 - ERROR - Erro ao salvar contagens: O campo de inicio deve ser preenchido.
+2024-11-28 17:44:19,404 - ERROR - Erro ao salvar contagens: O campo de inicio deve ser preenchido.
+2024-11-28 17:44:22,579 - ERROR - Erro ao finalizar sessão: [WinError 32] O arquivo já está sendo usado por outro processo: 'C:\\Users\\lucas.melo\\traffic-count\\frontend\\dados.db'
+2024-11-28 17:44:43,008 - ERROR - Erro ao inicializar arquivo Excel: name 'load_workbook' is not defined
+2024-11-28 17:44:43,009 - ERROR - Erro ao criar sessão: name 'load_workbook' is not defined
+2024-11-28 17:45:09,180 - ERROR - Erro ao finalizar sessão: [WinError 32] O arquivo já está sendo usado por outro processo: 'C:\\Users\\lucas.melo\\traffic-count\\frontend\\dados.db'
+2024-11-28 17:45:21,176 - ERROR - Erro ao inicializar arquivo Excel: At least one sheet must be visible
+2024-11-28 17:45:21,177 - ERROR - Erro ao criar sessão: At least one sheet must be visible
+2024-11-28 17:46:36,850 - ERROR - Erro ao finalizar sessão: [WinError 32] O arquivo já está sendo usado por outro processo: 'C:\\Users\\lucas.melo\\traffic-count\\frontend\\dados.db'
+2024-11-28 17:46:49,615 - ERROR - Erro ao inicializar arquivo Excel: At least one sheet must be visible
+2024-11-28 17:46:49,615 - ERROR - Erro ao criar sessão: At least one sheet must be visible
+2024-11-28 17:47:54,307 - ERROR - Erro ao finalizar sessão: [WinError 32] O arquivo já está sendo usado por outro processo: 'C:\\Users\\lucas.melo\\traffic-count\\frontend\\dados.db'
+2024-11-28 17:48:05,649 - ERROR - Erro ao inicializar arquivo Excel: Instance '<Categoria at 0x230f3113050>' has been deleted, or its row is otherwise not present.
+2024-11-28 17:48:05,650 - ERROR - Erro no banco de dados: Instance '<Categoria at 0x230f3113050>' has been deleted, or its row is otherwise not present.
+2024-11-28 17:50:03,355 - ERROR - Erro ao finalizar sessão: [WinError 32] O arquivo já está sendo usado por outro processo: 'C:\\Users\\lucas.melo\\traffic-count\\frontend\\dados.db'
+2024-11-28 17:50:12,438 - ERROR - Erro ao inicializar arquivo Excel: At least one sheet must be visible
+2024-11-28 17:50:12,439 - ERROR - Erro ao criar sessão: At least one sheet must be visible
+2024-11-28 17:51:10,616 - ERROR - Erro ao finalizar sessão: [WinError 32] O arquivo já está sendo usado por outro processo: 'C:\\Users\\lucas.melo\\traffic-count\\frontend\\dados.db'
+2024-11-28 17:51:21,992 - ERROR - Erro ao inicializar arquivo Excel: At least one sheet must be visible
+2024-11-28 17:51:21,993 - ERROR - Erro ao criar sessão: At least one sheet must be visible
+2024-11-28 17:52:16,988 - ERROR - Erro ao inicializar arquivo Excel: Cannot convert ['A', 'B'] to Excel
+2024-11-28 17:52:16,990 - ERROR - Erro ao criar sessão: Cannot convert ['A', 'B'] to Excel
+2024-11-28 17:53:41,519 - ERROR - Erro ao finalizar sessão: [WinError 32] O arquivo já está sendo usado por outro processo: 'C:\\Users\\lucas.melo\\traffic-count\\frontend\\dados.db'
+2024-11-28 22:54:39,790 - ERROR - Nenhuma mudança nas contagens desde o último salvamento.
+2024-11-28 22:54:56,550 - ERROR - Erro ao salvar contagens: O campo de inicio deve ser preenchido.
+2024-11-28 22:54:56,551 - ERROR - Erro ao salvar contagens: O campo de inicio deve ser preenchido.
+2024-11-28 22:55:02,652 - ERROR - Erro ao finalizar sessão: [WinError 32] O arquivo já está sendo usado por outro processo: 'C:\\Users\\lucas.melo\\traffic-count\\frontend\\dados.db'
+2024-11-28 22:59:38,380 - ERROR - Erro ao finalizar sessão: [WinError 32] O arquivo já está sendo usado por outro processo: 'C:\\Users\\lucas.melo\\traffic-count\\frontend\\dados.db'
+2024-12-02 15:50:10,727 - ERROR - Erro ao salvar contagens: O campo de inicio deve ser preenchido.
+2024-12-02 15:50:10,732 - ERROR - Erro ao salvar contagens: O campo de inicio deve ser preenchido.
+2024-12-11 14:44:35,613 - ERROR - Erro ao salvar contagens: O campo de inicio deve ser preenchido.
+2024-12-11 14:44:35,615 - ERROR - Erro ao salvar contagens: O campo de inicio deve ser preenchido.
+2024-12-11 15:37:35,352 - ERROR - Future exception was never retrieved
+future: <Future finished exception=NameError("name 'formatar_period' is not defined")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 165, in criar_sessao
+    sessao.criar_sessao(self, e)
+  File "C:\Users\lucas.melo\traffic-count\frontend\app\sessao.py", line 16, in criar_sessao
+    if not self.validar_campos():
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 279, in validar_campos
+    period = formatar_period(self.inicio_input.value, "23:59")
+             ^^^^^^^^^^^^^^^
+NameError: name 'formatar_period' is not defined. Did you mean: 'format_period'?
+2024-12-11 15:38:36,624 - ERROR - Erro ao criar sessão: 'details' is an invalid keyword argument for Sessao
+2024-12-11 15:39:55,142 - ERROR - Erro inesperado ao carregar categorias: 'ContadorPerplan' object has no attribute 'details'
+2024-12-11 15:39:55,144 - ERROR - Erro ao carregar padrões: Erro ao carregar categorias: 'ContadorPerplan' object has no attribute 'details'
+2024-12-11 15:53:01,027 - ERROR - Erro ao inicializar arquivo Excel: 'ContadorPerplan' object has no attribute 'horarios_df'
+2024-12-11 15:53:01,029 - ERROR - Erro ao criar sessão: 'ContadorPerplan' object has no attribute 'horarios_df'
+2024-12-11 16:20:18,501 - ERROR - Erro ao gerar coluna de horários: time data '' does not match format '%H:%M'
+2024-12-11 16:20:20,138 - ERROR - Erro: horarios_df não está inicializado ou está vazio.
+2024-12-11 18:54:23,478 - ERROR - Erro ao gerar coluna de horários: time data '' does not match format '%H:%M'
+2024-12-11 19:20:24,195 - ERROR - Erro ao carregar sessão ativa: 'ContadorPerplan' object has no attribute 'gerar_coluna_horarios'
+2024-12-11 19:21:36,854 - ERROR - Erro ao inicializar arquivo Excel: 'ContadorPerplan' object has no attribute 'horarios_df'
+2024-12-11 19:21:36,855 - ERROR - Erro ao criar sessão: 'ContadorPerplan' object has no attribute 'horarios_df'
+2024-12-11 19:22:59,954 - ERROR - Erro ao inicializar arquivo Excel: name 'df_horarios' is not defined
+2024-12-11 19:22:59,955 - ERROR - Erro ao criar sessão: name 'df_horarios' is not defined
+2024-12-11 19:29:44,395 - ERROR - Erro: horarios_df não está inicializado ou está vazio.
+2024-12-11 19:29:55,130 - ERROR - Erro: horarios_df não está inicializado ou está vazio.
+2024-12-11 19:55:15,070 - ERROR - Erro ao salvar contagens: time data '' does not match format '%H:%M'
+2024-12-11 19:55:15,072 - ERROR - Erro ao salvar contagens: time data '' does not match format '%H:%M'
+2024-12-11 20:16:21,645 - ERROR - Erro ao carregar sessão ativa: 'Periodo'
+2024-12-11 20:25:09,938 - ERROR - Erro ao salvar contagens: This session is in 'prepared' state; no further SQL can be emitted within this transaction.
+2024-12-11 20:25:09,940 - ERROR - Future exception was never retrieved
+future: <Future finished exception=InvalidRequestError("This session is in 'prepared' state; no further SQL can be emitted within this transaction.")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 452, in on_confirm_save
+    self._perform_save(now)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 508, in _perform_save
+    for categoria in [c for c in self.categorias if c.movimento == movimento]:
+                                                    ^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\orm\attributes.py", line 566, in __get__
+    return self.impl.get(state, dict_)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\orm\attributes.py", line 1086, in get
+    value = self._fire_loader_callables(state, key, passive)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\orm\attributes.py", line 1116, in _fire_loader_callables
+    return state._load_expired(state, passive)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\orm\state.py", line 803, in _load_expired
+    self.manager.expired_attribute_loader(self, toload, passive)
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\orm\loading.py", line 1670, in load_scalar_attributes
+    result = load_on_ident(
+             ^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\orm\loading.py", line 509, in load_on_ident
+    return load_on_pk_identity(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\orm\loading.py", line 694, in load_on_pk_identity
+    session.execute(
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2362, in execute
+    return self._execute_internal(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2237, in _execute_internal
+    conn = self._connection_for_bind(bind)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2106, in _connection_for_bind
+    return trans._connection_for_bind(engine, execution_options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 2, in _connection_for_bind
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\orm\state_changes.py", line 103, in _go
+    self._raise_for_prerequisite_state(fn.__name__, current_state)
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 996, in _raise_for_prerequisite_state
+    raise sa_exc.InvalidRequestError(
+sqlalchemy.exc.InvalidRequestError: This session is in 'prepared' state; no further SQL can be emitted within this transaction.

@@ -1,6 +1,7 @@
 import flet as ft
 
 def setup_aba_contagem(self):
+
     tab = self.tabs.tabs[1].content
     tab.controls.clear()
     self.contagem_ativa = False
@@ -29,10 +30,9 @@ def setup_aba_contagem(self):
         icon=ft.icons.REFRESH,
         icon_color="orange",
         tooltip="Resetar todas as contagens",
-        on_click=self.confirmar_resetar_todas_contagens  # Chama o diálogo de confirmação
+        on_click=self.confirmar_resetar_todas_contagens
     )
 
-    # Adicionando o indicador de último salvamento
     self.last_save_label = ft.Text("Último salvamento: ainda não salvo", size=12, color="gray")
 
     controls_row = ft.Row(
@@ -42,20 +42,18 @@ def setup_aba_contagem(self):
     )
 
     tab.controls.append(controls_row)
-    tab.controls.append(self.last_save_label)  # Exibe o texto de salvamento
+    tab.controls.append(self.last_save_label)
 
-    # Adicionar cabeçalho dentro de cada aba de contagem
     self.movimento_tabs = ft.Tabs(
         selected_index=0,
         animation_duration=50,
         tabs=[ft.Tab(text=movimento, content=self.criar_conteudo_movimento(movimento))
-            for movimento in self.detalhes["Movimentos"]],
+            for movimento in self.details["Movimentos"]],
         expand=1,
     )
 
     tab.controls.append(self.movimento_tabs)
 
-    # Cabeçalho movido para dentro da função criar_conteudo_movimento
     self.page.update()
 
 def resetar_todas_contagens(self, e):
@@ -70,7 +68,6 @@ def resetar_todas_contagens(self, e):
         snackbar.open = True
         self.page.update()
 
-        # Salvar no histórico
         self.salvar_historico(veiculo="N/A", movimento=current_movimento, acao="reset")
 
     except Exception as ex:
@@ -80,7 +77,7 @@ def resetar_todas_contagens(self, e):
         self.page.update()
 
 def confirmar_resetar_todas_contagens(self, e):
-    """Diálogo de confirmação para resetar todas as contagens"""
+    # da pra lançar uns lambda aqui
     def close_dialog(e):
         dialog.open = False
         self.page.update()
@@ -88,7 +85,7 @@ def confirmar_resetar_todas_contagens(self, e):
     def reset_and_close(e):
         dialog.open = False
         self.page.update()
-        self.resetar_todas_contagens(None)  # Chama o método real de resetar as contagens
+        self.resetar_todas_contagens(None)
 
     dialog = ft.AlertDialog(
         title=ft.Text("Resetar Todas as Contagens"),
@@ -105,7 +102,6 @@ def confirmar_resetar_todas_contagens(self, e):
 def criar_conteudo_movimento(self, movimento):
     content = ft.Column()
 
-    # Adicionar o cabeçalho para cada movimento, colocando em um Row com height fixo para evitar sobreposição
     header = ft.Row(
         alignment=ft.MainAxisAlignment.CENTER,
         controls=[
@@ -114,7 +110,7 @@ def criar_conteudo_movimento(self, movimento):
             ft.Container(content=ft.Text("Contagem", weight=ft.FontWeight.W_400, size=12), width=80, height=40),
             ft.Container(content=ft.Text("Ações", weight=ft.FontWeight.W_400, size=12), width=50, height=40),
         ],
-        height=50,  # Define uma altura fixa para evitar que ele suba e cause sobreposição
+        height=50,
     )
 
     content.controls.append(header)
@@ -132,7 +128,6 @@ def create_category_control(self, veiculo, bind, movimento):
     label_count = ft.Text(f"{self.contagens.get((veiculo, movimento), 0)}", size=15, width=50)
     self.labels[(veiculo, movimento)] = label_count
 
-    # Variável para manter o campo escondido até ser necessário
     campo_visivel = False
 
     popup_menu = ft.PopupMenuButton(
@@ -157,24 +152,11 @@ def create_category_control(self, veiculo, bind, movimento):
     )
 
 def atualizar_borda_contagem(self):
-    """Atualiza a cor da borda (fundo) da janela com base no status do contador"""
     if self.contagem_ativa:
-        # Cor verde para indicar que o contador está ativo
         self.page.window.bgcolor = "green"
-        self.toggle_button.bgcolor = "lightgreen"
-        self.toggle_button.shadow = ft.BoxShadow(blur_radius=15, color="lightgreen")  # Efeito de brilho
-        
-        # Efeito pulsante usando Animation
-        self.toggle_button.scale = 1.1
-        self.toggle_button.animate_scale = ft.Animation(duration=500, curve=ft.AnimationCurve.BOUNCE_OUT)
+        self.toggle_button.bgcolor = "lightgreen"        
     else:
-        # Cor vermelha para indicar que o contador está desativado
         self.page.window.bgcolor = "red"
         self.toggle_button.bgcolor = "orange"
-        self.toggle_button.shadow = ft.BoxShadow(blur_radius=15, color="orange")
         
-        # Remover animação quando o contador está desligado
-        self.toggle_button.scale = 1.1
-        self.toggle_button.animate_scale = ft.Animation(duration=500, curve=ft.AnimationCurve.EASE_IN_OUT)
-    
     self.page.update()

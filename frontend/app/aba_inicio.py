@@ -8,15 +8,13 @@ def setup_aba_inicio(self):
     tab = self.tabs.tabs[0].content
     tab.controls.clear()
 
-    self.codigo_ponto_input = ft.TextField(label="Código, digite desse modo: ER2403")
+    self.codigo_ponto_input = ft.TextField(label="Código (ex: ER2403. Tudo junto)")
     self.nome_ponto_input = ft.TextField(label="Ponto (ex: P10N)")
-    self.horas_contagem_input = ft.TextField(label="Periodo, digite desse modo: 06h-07h")
 
-    # DatePicker integrado
+    self.inicio_input = ft.TextField(label="Horário de início (ex: 06:00)", keyboard_type=ft.KeyboardType.DATETIME)
+
     self.datepicker = ft.DatePicker(
-        first_date=datetime.datetime(2023, 10, 1),
-        last_date=datetime.datetime(2024, 10, 1),
-        on_change=lambda e: self.change_date(e),  # Corrigida a referência ao método
+        on_change=lambda e: self.change_date(e),
     )
     self.data_ponto_button = ft.ElevatedButton(
         "Selecionar Data",
@@ -24,6 +22,16 @@ def setup_aba_inicio(self):
         on_click=self.open_date_picker,
     )
     self.data_ponto_label = ft.Text("Nenhuma data selecionada")
+
+    self.padrao_dropdown = ft.Dropdown(
+        label="Selecione o padrão",
+        options=[
+            ft.dropdown.Option("Padrão Perplan"),
+            ft.dropdown.Option("Padrão Perci"),
+            ft.dropdown.Option("Padrão Simplificado"),
+        ],
+        on_change=self.carregar_padroes_selecionados,
+    )
 
     self.movimentos_container = ft.Column()
     adicionar_movimento_button = ft.ElevatedButton(
@@ -37,9 +45,10 @@ def setup_aba_inicio(self):
         ft.Text(""),
         self.codigo_ponto_input,
         self.nome_ponto_input,
-        self.horas_contagem_input,
+        self.inicio_input,
         self.data_ponto_button,
         self.data_ponto_label,
+        self.padrao_dropdown,
         self.movimentos_container,
         adicionar_movimento_button,
         criar_sessao_button
@@ -48,18 +57,15 @@ def setup_aba_inicio(self):
     self.sessao_status = ft.Text("", weight=ft.FontWeight.BOLD)
     tab.controls.append(self.sessao_status)
 
-    # Adiciona o DatePicker ao overlay da página
     self.page.overlay.append(self.datepicker)
     self.update_sessao_status()
+    self.page.update()
 
 
 def open_date_picker(self, e):
-    # Abre o DatePicker
     self.datepicker.pick_date()
 
-
 def change_date(self, e):
-    # Atualiza o label com a data selecionada
     self.data_ponto_label.value = f"Data selecionada: {self.datepicker.value}"
     self.page.update()
 

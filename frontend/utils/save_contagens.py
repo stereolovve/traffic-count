@@ -7,16 +7,16 @@ from datetime import datetime
 def save_contagens(self, e):
     try:
         contagens_dfs = {}
-        for movimento in self.detalhes["Movimentos"]:
+        for movimento in self.details["Movimentos"]:
             contagens_movimento = {veiculo: count for (veiculo, mov), count in self.contagens.items() if mov == movimento}
             contagens_df = pd.DataFrame([contagens_movimento])
             contagens_df.fillna(0, inplace=True)
             contagens_dfs[movimento] = contagens_df
 
-        detalhes_df = pd.DataFrame([self.detalhes])
+        details_df = pd.DataFrame([self.details])
 
-        nome_pesquisador = re.sub(r'[<>:"/\\|?*]', '', self.detalhes['Pesquisador'])
-        codigo = re.sub(r'[<>:"/\\|?*]', '', self.detalhes['Código'])
+        nome_pesquisador = re.sub(r'[<>:"/\\|?*]', '', self.details['Pesquisador'])
+        codigo = re.sub(r'[<>:"/\\|?*]', '', self.details['Código'])
 
         diretorio_base = r'Z:\0Pesquisa\_0ContadorDigital\Contagens'
         
@@ -31,18 +31,18 @@ def save_contagens(self, e):
 
         try:
             existing_df = pd.read_excel(arquivo_sessao, sheet_name=None)
-            for movimento in self.detalhes["Movimentos"]:
+            for movimento in self.details["Movimentos"]:
                 if movimento in existing_df:
                     contagens_dfs[movimento] = pd.concat([existing_df[movimento], contagens_dfs[movimento]])
             if 'Detalhes' in existing_df:
-                detalhes_df = pd.concat([existing_df['Detalhes'], detalhes_df])
+                details_df = pd.concat([existing_df['Detalhes'], details_df])
         except FileNotFoundError:
             pass
 
         with pd.ExcelWriter(arquivo_sessao, engine='xlsxwriter') as writer:
             for movimento, df in contagens_dfs.items():
                 df.to_excel(writer, sheet_name=movimento, index=False)
-            detalhes_df.to_excel(writer, sheet_name='Detalhes', index=False)
+            details_df.to_excel(writer, sheet_name='Detalhes', index=False)
 
         logging.info(f"Contagem salva em {arquivo_sessao}")
         snackbar = ft.SnackBar(ft.Text("Contagens salvas com sucesso!"), bgcolor="GREEN")

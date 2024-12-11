@@ -20,7 +20,7 @@ def carregar_categorias_padrao(self, caminho_json, padrao):
             bind = categoria.get('bind')
 
             if veiculo and bind:
-                for movimento in self.detalhes.get("Movimentos", []):  # Ensure that movimentos exist
+                for movimento in self.details.get("Movimentos", []):  # Ensure that movimentos exist
                     # Check if the category already exists in the database
                     categoria_existente = self.session.query(Categoria).filter_by(
                         veiculo=veiculo,
