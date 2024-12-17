@@ -18,7 +18,9 @@ def criar_sessao(self, e):
 
     try:
         period = format_period(self.inicio_input.value, "23:59")
-        original_date = self.data_ponto_label.value.replace("Data selecionada: ", "")
+        horario_inicial = period.split('-')[0]
+        horario_inicial_file_safe = horario_inicial.replace(":", "h")
+        original_date = self.data_ponto_input.value.replace("Data selecionada: ", "")
         self.formated_date = datetime.strptime(original_date, "%d-%m-%Y").strftime("%d-%m-%Y")
 
         self.details = {
@@ -30,7 +32,7 @@ def criar_sessao(self, e):
             "Movimentos": [mov.controls[0].value for mov in self.movimentos_container.controls]
         }
 
-        self.sessao = f"{self.details['Código']}_{self.details['Ponto']}_{self.formated_date}"
+        self.sessao = f"{self.details['Ponto']}_{self.formated_date}_{horario_inicial_file_safe}"
         padrao_selecionado = self.padrao_dropdown.value
 
         sessao_existente = self.session.query(Sessao).filter_by(sessao=self.sessao).first()
@@ -50,7 +52,7 @@ def criar_sessao(self, e):
         self.session.query(Categoria).delete()
         self.session.commit()
 
-        self._inicializar_arquivo_excel()  # Sem horários pré-definidos agora
+        self._inicializar_arquivo_excel()
         self.carregar_padroes_selecionados()
         self.contagens, self.binds, self.categorias = self.carregar_config()
         self.setup_aba_contagem()
@@ -86,8 +88,6 @@ def criar_sessao(self, e):
         snackbar.open = True
 
 
-
-
 def finalizar_sessao(self):
     try:
         sessao_a_remover = self.session.query(Sessao).filter_by(sessao=self.sessao).first()
@@ -111,7 +111,6 @@ def finalizar_sessao(self):
     except Exception as ex:
         logging.error(f"Erro ao finalizar sessão: {ex}")
         self.session.rollback()
-
 
 
        
@@ -164,17 +163,13 @@ def carregar_sessao_ativa(self):
             self.sessao = sessao_ativa.sessao
             self.details = json.loads(sessao_ativa.details)
 
-            # Define o current_timeslot
             if "current_timeslot" in self.details:
-                # Caso já tenha sido salvo o current_timeslot anteriormente
                 self.current_timeslot = datetime.strptime(self.details["current_timeslot"], "%H:%M")
             else:
-                # Extrai o horário inicial do Período (ex: "06:00-23:59")
                 if 'Periodo' in self.details:
                     horario_inicial_str = self.details['Periodo'].split('-')[0]
                     self.current_timeslot = datetime.strptime(horario_inicial_str.strip(), "%H:%M")
                 else:
-                    # Se não houver período, lança um erro ou defina um horário padrão
                     raise ValueError("Detalhes da sessão não contêm 'Periodo'.")
 
             self.padrao_dropdown.value = sessao_ativa.padrao
@@ -202,9 +197,6 @@ def carregar_sessao_ativa(self):
     except Exception as ex:
         logging.error(f"Erro ao carregar sessão ativa: {ex}")
         return False
-
-
-
 
         
 def salvar_sessao(self):

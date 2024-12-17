@@ -47,7 +47,7 @@ def setup_aba_contagem(self):
     self.movimento_tabs = ft.Tabs(
         selected_index=0,
         animation_duration=50,
-        tabs=[ft.Tab(text=movimento, content=self.criar_conteudo_movimento(movimento))
+        tabs=[ft.Tab(text=movimento, content=self.create_moviment_content(movimento))
             for movimento in self.details["Movimentos"]],
         expand=1,
     )
@@ -99,22 +99,8 @@ def confirmar_resetar_todas_contagens(self, e):
     dialog.open = True
     self.page.update()
 
-def criar_conteudo_movimento(self, movimento):
+def create_moviment_content(self, movimento):
     content = ft.Column()
-
-    header = ft.Row(
-        alignment=ft.MainAxisAlignment.CENTER,
-        controls=[
-            ft.Container(content=ft.Text("       Categoria", weight=ft.FontWeight.W_400, size=12), width=150, height=40),
-            ft.Container(content=ft.Text("Bind", weight=ft.FontWeight.W_400, size=12), width=50, height=40),
-            ft.Container(content=ft.Text("Contagem", weight=ft.FontWeight.W_400, size=12), width=80, height=40),
-            ft.Container(content=ft.Text("Ações", weight=ft.FontWeight.W_400, size=12), width=50, height=40),
-        ],
-        height=50,
-    )
-
-    content.controls.append(header)
-
     categorias = [c for c in self.categorias if c.movimento == movimento]
     for categoria in categorias:
         control = self.create_category_control(categoria.veiculo, categoria.bind, movimento)

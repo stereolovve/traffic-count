@@ -380,3 +380,690 @@ Traceback (most recent call last):
   File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 996, in _raise_for_prerequisite_state
     raise sa_exc.InvalidRequestError(
 sqlalchemy.exc.InvalidRequestError: This session is in 'prepared' state; no further SQL can be emitted within this transaction.
+2024-12-13 14:08:13,016 - ERROR - Erro ao carregar tokens salvos: DatePicker.__init__() got an unexpected keyword argument 'locale'
+2024-12-13 14:26:36,724 - ERROR - Erro ao carregar tokens salvos: 'ContadorPerplan' object has no attribute 'on_date_confirmed'
+2024-12-13 14:30:57,342 - ERROR - Future exception was never retrieved
+future: <Future finished exception=ValueError('list.remove(x): x not in list')>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\utils\datepicker.py", line 77, in cancel_selection
+    self.on_cancel()
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 67, in on_date_cancelled
+    self.page.controls.remove(self.custom_date_picker)
+ValueError: list.remove(x): x not in list
+2024-12-13 14:30:57,603 - ERROR - Future exception was never retrieved
+future: <Future finished exception=ValueError('list.remove(x): x not in list')>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\utils\datepicker.py", line 77, in cancel_selection
+    self.on_cancel()
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 67, in on_date_cancelled
+    self.page.controls.remove(self.custom_date_picker)
+ValueError: list.remove(x): x not in list
+2024-12-13 14:44:50,880 - ERROR - Future exception was never retrieved
+future: <Future finished exception=ValueError('list.remove(x): x not in list')>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\utils\datepicker.py", line 89, in cancel_selection
+    self.on_cancel()
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 67, in on_date_cancelled
+    self.page.controls.remove(self.custom_date_picker)
+ValueError: list.remove(x): x not in list
+2024-12-13 14:44:52,097 - ERROR - Future exception was never retrieved
+future: <Future finished exception=ValueError('list.remove(x): x not in list')>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\utils\datepicker.py", line 89, in cancel_selection
+    self.on_cancel()
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 67, in on_date_cancelled
+    self.page.controls.remove(self.custom_date_picker)
+ValueError: list.remove(x): x not in list
+2024-12-13 14:44:52,292 - ERROR - Future exception was never retrieved
+future: <Future finished exception=ValueError('list.remove(x): x not in list')>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\utils\datepicker.py", line 89, in cancel_selection
+    self.on_cancel()
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 67, in on_date_cancelled
+    self.page.controls.remove(self.custom_date_picker)
+ValueError: list.remove(x): x not in list
+2024-12-13 14:54:40,062 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'ContadorPerplan' object has no attribute 'data_ponto_label'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 119, in criar_sessao
+    sessao.criar_sessao(self, e)
+  File "C:\Users\lucas.melo\traffic-count\frontend\app\sessao.py", line 16, in criar_sessao
+    if not self.validar_campos():
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 187, in validar_campos
+    (self.data_ponto_label, "Data do Ponto")
+     ^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'ContadorPerplan' object has no attribute 'data_ponto_label'. Did you mean: 'data_ponto_input'?
+2024-12-13 14:59:27,159 - ERROR - Erro ao criar sessão: 'ContadorPerplan' object has no attribute 'data_ponto_label'
+2024-12-13 15:00:46,459 - ERROR - Erro ao inicializar arquivo Excel: [Errno 22] Invalid argument: 'Z:\\\\0Pesquisa\\\\_0ContadorDigital\\\\Contagens\\lucas.melo\\Teste\\Teste_P10_13-12-2024_06:15 - 23:59.xlsx'
+2024-12-13 15:00:46,461 - ERROR - Erro ao criar sessão: [Errno 22] Invalid argument: 'Z:\\\\0Pesquisa\\\\_0ContadorDigital\\\\Contagens\\lucas.melo\\Teste\\Teste_P10_13-12-2024_06:15 - 23:59.xlsx'
+2024-12-13 15:01:30,870 - ERROR - Erro ao criar sessão: format_period() missing 1 required positional argument: 'end_date'
+2024-12-13 15:03:08,404 - ERROR - Erro ao inicializar arquivo Excel: [Errno 22] Invalid argument: 'Z:\\\\0Pesquisa\\\\_0ContadorDigital\\\\Contagens\\lucas.melo\\teste\\teste_p10_13-12-2024_06:30 - 23:59.xlsx'
+2024-12-13 15:03:08,405 - ERROR - Erro ao criar sessão: [Errno 22] Invalid argument: 'Z:\\\\0Pesquisa\\\\_0ContadorDigital\\\\Contagens\\lucas.melo\\teste\\teste_p10_13-12-2024_06:30 - 23:59.xlsx'
+2024-12-16 16:19:03,068 - ERROR - Erro ao carregar tokens salvos: 'str' object has no attribute '_build_add_commands'
+2024-12-17 15:52:04,380 - ERROR - Erro ao carregar tokens salvos: TimePicker.__init__() got an unexpected keyword argument 'show_seconds'
+2024-12-17 15:54:26,897 - ERROR - Erro ao carregar tokens salvos: TimePicker.__init__() got an unexpected keyword argument 'hour_format'
+2024-12-17 15:54:58,803 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'datetime.time' object has no attribute 'split'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 130, in period_changed
+    hours, minutes = map(int, selected_time.split(":"))
+                              ^^^^^^^^^^^^^^^^^^^
+AttributeError: 'datetime.time' object has no attribute 'split'
+2024-12-17 15:55:12,964 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'datetime.time' object has no attribute 'split'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 130, in period_changed
+    hours, minutes = map(int, selected_time.split(":"))
+                              ^^^^^^^^^^^^^^^^^^^
+AttributeError: 'datetime.time' object has no attribute 'split'
+2024-12-17 15:57:09,494 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'datetime.time' object has no attribute 'split'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 130, in period_changed
+    hours, minutes = map(int, selected_time.split(":"))
+                              ^^^^^^^^^^^^^^^^^^^
+AttributeError: 'datetime.time' object has no attribute 'split'
+2024-12-17 15:57:53,036 - ERROR - Future exception was never retrieved
+future: <Future finished exception=TypeError("descriptor 'time' for 'datetime.datetime' objects doesn't apply to a 'int' object")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 134, in period_changed
+    self.period_picker.value = datetime.time(hours, adjusted_minutes)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: descriptor 'time' for 'datetime.datetime' objects doesn't apply to a 'int' object
+2024-12-17 16:15:50,592 - ERROR - Erro ao carregar tokens salvos: module 'flet' has no attribute 'CupertinoTimePicker'
+2024-12-17 16:21:35,141 - ERROR - Erro ao carregar tokens salvos: module 'flet' has no attribute 'CupertinoTimePicker'
+2024-12-17 16:26:41,436 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'int' object has no attribute 'minute'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 82, in picker_changed
+    adjusted_minutes = (selected.minute // 15) * 15
+                        ^^^^^^^^^^^^^^^
+AttributeError: 'int' object has no attribute 'minute'
+2024-12-17 16:26:41,609 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'int' object has no attribute 'minute'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 82, in picker_changed
+    adjusted_minutes = (selected.minute // 15) * 15
+                        ^^^^^^^^^^^^^^^
+AttributeError: 'int' object has no attribute 'minute'
+2024-12-17 16:26:42,178 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'int' object has no attribute 'minute'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 82, in picker_changed
+    adjusted_minutes = (selected.minute // 15) * 15
+                        ^^^^^^^^^^^^^^^
+AttributeError: 'int' object has no attribute 'minute'
+2024-12-17 16:26:42,306 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'int' object has no attribute 'minute'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 82, in picker_changed
+    adjusted_minutes = (selected.minute // 15) * 15
+                        ^^^^^^^^^^^^^^^
+AttributeError: 'int' object has no attribute 'minute'
+2024-12-17 16:26:42,423 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'int' object has no attribute 'minute'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 82, in picker_changed
+    adjusted_minutes = (selected.minute // 15) * 15
+                        ^^^^^^^^^^^^^^^
+AttributeError: 'int' object has no attribute 'minute'
+2024-12-17 16:26:42,473 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'int' object has no attribute 'minute'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 82, in picker_changed
+    adjusted_minutes = (selected.minute // 15) * 15
+                        ^^^^^^^^^^^^^^^
+AttributeError: 'int' object has no attribute 'minute'
+2024-12-17 16:26:42,627 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'int' object has no attribute 'minute'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 82, in picker_changed
+    adjusted_minutes = (selected.minute // 15) * 15
+                        ^^^^^^^^^^^^^^^
+AttributeError: 'int' object has no attribute 'minute'
+2024-12-17 16:26:42,665 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'int' object has no attribute 'minute'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 82, in picker_changed
+    adjusted_minutes = (selected.minute // 15) * 15
+                        ^^^^^^^^^^^^^^^
+AttributeError: 'int' object has no attribute 'minute'
+2024-12-17 16:26:42,722 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'int' object has no attribute 'minute'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 82, in picker_changed
+    adjusted_minutes = (selected.minute // 15) * 15
+                        ^^^^^^^^^^^^^^^
+AttributeError: 'int' object has no attribute 'minute'
+2024-12-17 16:26:42,767 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'int' object has no attribute 'minute'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 82, in picker_changed
+    adjusted_minutes = (selected.minute // 15) * 15
+                        ^^^^^^^^^^^^^^^
+AttributeError: 'int' object has no attribute 'minute'
+2024-12-17 16:26:42,833 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'int' object has no attribute 'minute'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 82, in picker_changed
+    adjusted_minutes = (selected.minute // 15) * 15
+                        ^^^^^^^^^^^^^^^
+AttributeError: 'int' object has no attribute 'minute'
+2024-12-17 16:26:43,586 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'int' object has no attribute 'minute'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 82, in picker_changed
+    adjusted_minutes = (selected.minute // 15) * 15
+                        ^^^^^^^^^^^^^^^
+AttributeError: 'int' object has no attribute 'minute'
+2024-12-17 16:26:43,695 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'int' object has no attribute 'minute'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 82, in picker_changed
+    adjusted_minutes = (selected.minute // 15) * 15
+                        ^^^^^^^^^^^^^^^
+AttributeError: 'int' object has no attribute 'minute'
+2024-12-17 16:26:43,822 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'int' object has no attribute 'minute'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 82, in picker_changed
+    adjusted_minutes = (selected.minute // 15) * 15
+                        ^^^^^^^^^^^^^^^
+AttributeError: 'int' object has no attribute 'minute'
+2024-12-17 16:26:43,956 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'int' object has no attribute 'minute'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 82, in picker_changed
+    adjusted_minutes = (selected.minute // 15) * 15
+                        ^^^^^^^^^^^^^^^
+AttributeError: 'int' object has no attribute 'minute'
+2024-12-17 16:26:44,048 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'int' object has no attribute 'minute'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 82, in picker_changed
+    adjusted_minutes = (selected.minute // 15) * 15
+                        ^^^^^^^^^^^^^^^
+AttributeError: 'int' object has no attribute 'minute'
+2024-12-17 16:26:44,228 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'int' object has no attribute 'minute'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 82, in picker_changed
+    adjusted_minutes = (selected.minute // 15) * 15
+                        ^^^^^^^^^^^^^^^
+AttributeError: 'int' object has no attribute 'minute'
+2024-12-17 16:26:44,265 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'int' object has no attribute 'minute'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 82, in picker_changed
+    adjusted_minutes = (selected.minute // 15) * 15
+                        ^^^^^^^^^^^^^^^
+AttributeError: 'int' object has no attribute 'minute'
+2024-12-17 16:26:44,315 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'int' object has no attribute 'minute'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 82, in picker_changed
+    adjusted_minutes = (selected.minute // 15) * 15
+                        ^^^^^^^^^^^^^^^
+AttributeError: 'int' object has no attribute 'minute'
+2024-12-17 16:26:44,398 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'int' object has no attribute 'minute'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 82, in picker_changed
+    adjusted_minutes = (selected.minute // 15) * 15
+                        ^^^^^^^^^^^^^^^
+AttributeError: 'int' object has no attribute 'minute'
+2024-12-17 16:26:44,558 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'int' object has no attribute 'minute'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 82, in picker_changed
+    adjusted_minutes = (selected.minute // 15) * 15
+                        ^^^^^^^^^^^^^^^
+AttributeError: 'int' object has no attribute 'minute'
+2024-12-17 16:26:44,632 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'int' object has no attribute 'minute'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 82, in picker_changed
+    adjusted_minutes = (selected.minute // 15) * 15
+                        ^^^^^^^^^^^^^^^
+AttributeError: 'int' object has no attribute 'minute'
+2024-12-17 16:26:45,210 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'int' object has no attribute 'minute'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 82, in picker_changed
+    adjusted_minutes = (selected.minute // 15) * 15
+                        ^^^^^^^^^^^^^^^
+AttributeError: 'int' object has no attribute 'minute'
+2024-12-17 16:26:45,480 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'int' object has no attribute 'minute'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 82, in picker_changed
+    adjusted_minutes = (selected.minute // 15) * 15
+                        ^^^^^^^^^^^^^^^
+AttributeError: 'int' object has no attribute 'minute'
+2024-12-17 16:26:45,716 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'int' object has no attribute 'minute'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 82, in picker_changed
+    adjusted_minutes = (selected.minute // 15) * 15
+                        ^^^^^^^^^^^^^^^
+AttributeError: 'int' object has no attribute 'minute'
+2024-12-17 16:26:46,418 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'int' object has no attribute 'minute'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 82, in picker_changed
+    adjusted_minutes = (selected.minute // 15) * 15
+                        ^^^^^^^^^^^^^^^
+AttributeError: 'int' object has no attribute 'minute'
+2024-12-17 16:26:46,581 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'int' object has no attribute 'minute'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 82, in picker_changed
+    adjusted_minutes = (selected.minute // 15) * 15
+                        ^^^^^^^^^^^^^^^
+AttributeError: 'int' object has no attribute 'minute'
+2024-12-17 16:26:46,850 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'int' object has no attribute 'minute'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 82, in picker_changed
+    adjusted_minutes = (selected.minute // 15) * 15
+                        ^^^^^^^^^^^^^^^
+AttributeError: 'int' object has no attribute 'minute'
+2024-12-17 16:26:46,925 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'int' object has no attribute 'minute'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 82, in picker_changed
+    adjusted_minutes = (selected.minute // 15) * 15
+                        ^^^^^^^^^^^^^^^
+AttributeError: 'int' object has no attribute 'minute'
+2024-12-17 16:26:47,422 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'int' object has no attribute 'minute'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 82, in picker_changed
+    adjusted_minutes = (selected.minute // 15) * 15
+                        ^^^^^^^^^^^^^^^
+AttributeError: 'int' object has no attribute 'minute'
+2024-12-17 16:26:47,968 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'int' object has no attribute 'minute'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 82, in picker_changed
+    adjusted_minutes = (selected.minute // 15) * 15
+                        ^^^^^^^^^^^^^^^
+AttributeError: 'int' object has no attribute 'minute'
+2024-12-17 16:26:48,189 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'int' object has no attribute 'minute'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 82, in picker_changed
+    adjusted_minutes = (selected.minute // 15) * 15
+                        ^^^^^^^^^^^^^^^
+AttributeError: 'int' object has no attribute 'minute'
+2024-12-17 16:26:48,279 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'int' object has no attribute 'minute'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 82, in picker_changed
+    adjusted_minutes = (selected.minute // 15) * 15
+                        ^^^^^^^^^^^^^^^
+AttributeError: 'int' object has no attribute 'minute'
+2024-12-17 16:26:48,865 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'int' object has no attribute 'minute'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 82, in picker_changed
+    adjusted_minutes = (selected.minute // 15) * 15
+                        ^^^^^^^^^^^^^^^
+AttributeError: 'int' object has no attribute 'minute'
+2024-12-17 16:26:48,938 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'int' object has no attribute 'minute'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 82, in picker_changed
+    adjusted_minutes = (selected.minute // 15) * 15
+                        ^^^^^^^^^^^^^^^
+AttributeError: 'int' object has no attribute 'minute'
+2024-12-17 16:26:49,155 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'int' object has no attribute 'minute'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 82, in picker_changed
+    adjusted_minutes = (selected.minute // 15) * 15
+                        ^^^^^^^^^^^^^^^
+AttributeError: 'int' object has no attribute 'minute'
+2024-12-17 16:26:49,235 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'int' object has no attribute 'minute'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 82, in picker_changed
+    adjusted_minutes = (selected.minute // 15) * 15
+                        ^^^^^^^^^^^^^^^
+AttributeError: 'int' object has no attribute 'minute'
+2024-12-17 16:26:50,233 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'int' object has no attribute 'minute'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 82, in picker_changed
+    adjusted_minutes = (selected.minute // 15) * 15
+                        ^^^^^^^^^^^^^^^
+AttributeError: 'int' object has no attribute 'minute'
+2024-12-17 16:26:50,411 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'int' object has no attribute 'minute'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 82, in picker_changed
+    adjusted_minutes = (selected.minute // 15) * 15
+                        ^^^^^^^^^^^^^^^
+AttributeError: 'int' object has no attribute 'minute'
+2024-12-17 16:27:19,407 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'int' object has no attribute 'minute'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 82, in picker_changed
+    adjusted_minutes = (selected.minute // 15) * 15
+                        ^^^^^^^^^^^^^^^
+AttributeError: 'int' object has no attribute 'minute'
+2024-12-17 16:27:20,877 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'int' object has no attribute 'minute'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 82, in picker_changed
+    adjusted_minutes = (selected.minute // 15) * 15
+                        ^^^^^^^^^^^^^^^
+AttributeError: 'int' object has no attribute 'minute'
+2024-12-17 16:27:22,067 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'int' object has no attribute 'minute'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 82, in picker_changed
+    adjusted_minutes = (selected.minute // 15) * 15
+                        ^^^^^^^^^^^^^^^
+AttributeError: 'int' object has no attribute 'minute'
+2024-12-17 16:28:18,802 - ERROR - Future exception was never retrieved
+future: <Future finished exception=TypeError("ContadorPerplan.setup_aba_inicio.<locals>.picker_changed() missing 1 required positional argument: 'e'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+TypeError: ContadorPerplan.setup_aba_inicio.<locals>.picker_changed() missing 1 required positional argument: 'e'
+2024-12-17 16:28:20,019 - ERROR - Future exception was never retrieved
+future: <Future finished exception=TypeError("ContadorPerplan.setup_aba_inicio.<locals>.picker_changed() missing 1 required positional argument: 'e'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+TypeError: ContadorPerplan.setup_aba_inicio.<locals>.picker_changed() missing 1 required positional argument: 'e'
+2024-12-17 16:28:20,551 - ERROR - Future exception was never retrieved
+future: <Future finished exception=TypeError("ContadorPerplan.setup_aba_inicio.<locals>.picker_changed() missing 1 required positional argument: 'e'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+TypeError: ContadorPerplan.setup_aba_inicio.<locals>.picker_changed() missing 1 required positional argument: 'e'
+2024-12-17 16:29:23,302 - ERROR - Future exception was never retrieved
+future: <Future finished exception=TypeError("unsupported operand type(s) for divmod(): 'ControlEvent' and 'int'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 82, in picker_changed
+    hours, remainder = divmod(selected_seconds, 3600)  # Converte para horas e o restante
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: unsupported operand type(s) for divmod(): 'ControlEvent' and 'int'
+2024-12-17 16:33:31,267 - ERROR - Erro ao carregar tokens salvos: type object 'CupertinoTimerPickerMode' has no attribute 'HM'

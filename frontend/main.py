@@ -1,5 +1,5 @@
 import flet as ft
-from database.models import Session, Categoria, Sessao, Contagem, Historico, init_db  # Importar os modelos e sessão do arquivo database.py
+from database.models import Session, Categoria, Sessao, Contagem, Historico, init_db
 from sqlalchemy.exc import SQLAlchemyError
 from app import aba_inicio, aba_contagem, aba_historico, listener, sessao
 from utils.initializer import inicializar_variaveis, configurar_numpad_mappings
@@ -9,7 +9,7 @@ from auth.register import RegisterPage
 from pynput import keyboard
 from utils.padrao_contagem import carregar_categorias_padrao, carregar_padroes_selecionados, obter_caminho_json
 import pandas as pd
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
 import os
 import re
 from utils.change_binds import change_binds
@@ -34,7 +34,6 @@ class ContadorPerplan(ft.Column):
     #------------------------ CONSTRUTOR ------------------
     def __init__(self, page, username, app):
         
-        
         super().__init__()
         self.tokens = None
         self.page = page
@@ -45,39 +44,6 @@ class ContadorPerplan(ft.Column):
         self.setup_ui()
         self.carregar_sessao_ativa()
         self.pressed_keys = set()
-
-    #------------------------ SETUP DATE PICKER ------------------------
-    def open_date_picker(self, e):
-        if hasattr(self, "datepicker"):
-            self.page.open(self.datepicker)
-        else:
-            print("DatePicker não está inicializado.")
-    
-    def change_date(self, e):
-        data_original = self.datepicker.value
-        self.formated_date = data_original.strftime("%d-%m-%Y")
-        self.data_ponto_label.value = f"Data selecionada: {self.formated_date}"
-        self.page.update()
-
-    #------------------------ GERA COLUNA DE HORÁRIOS ------------------------
-    def gerar_coluna_horarios(self, period):
-        try:
-            start_time_str = self.inicio_input.value.strip()
-            start = datetime.strptime(start_time_str, "%H:%M")
-            end = datetime.strptime("23:59", "%H:%M")
-
-            hours = []
-            while start < end:
-                next_time = start + timedelta(minutes=15)
-                hours.append({"das": start.strftime("%H:%M"), "às": next_time.strftime("%H:%M")})
-                start = next_time
-
-            return pd.DataFrame(hours)
-
-        except Exception as ex:
-            logging.error(f"Erro ao gerar coluna de horários: {ex}")
-            return pd.DataFrame()
-
     #------------------------ SETUP UI ------------------------
     def setup_ui(self):
         self.tabs = ft.Tabs(
@@ -96,72 +62,79 @@ class ContadorPerplan(ft.Column):
         self.setup_aba_config()
         self.tabs.tabs[1].content.visible = False
         self.atualizar_borda_contagem()
-
-
     #------------------------ ABA INICIO ------------------------
     def setup_aba_inicio(self):
         tab = self.tabs.tabs[0].content
         tab.controls.clear()
+        hoje_str = datetime.now().strftime("%d-%m-%Y")
+        self.codigo_ponto_input = ft.TextField(label="Código", hint_text="exemplo: ER2403")
+        self.nome_ponto_input = ft.TextField(label="Ponto", hint_text="exemplo: P10; P15")
+        self.data_ponto_input = ft.TextField(label="Data do Ponto", hint_text="dd-mm-aaaa", value=hoje_str)
+        self.selected_time = "00:00"
 
-        self.codigo_ponto_input = ft.TextField(label="Código (ex: ER2403. Tudo junto)")
-        self.nome_ponto_input = ft.TextField(label="Ponto (ex: P10N)")
+        def picker_changed(e):
+            selected_seconds = e.control.value
+            hours, remainder = divmod(selected_seconds, 3600)
+            minutes = (remainder // 60)
+            adjusted_minutes = (minutes // 15) * 15
+            self.selected_time = f"{hours:02}:{adjusted_minutes:02}"
+            self.time_picker_button.text = self.selected_time
+            self.time_picker_button.update()
 
-        self.inicio_input = ft.TextField(label="Horário de início (ex: 06:00)", keyboard_type=ft.KeyboardType.DATETIME)
-
-        self.datepicker = ft.DatePicker(
-            on_change=lambda e: self.change_date(e),
+        self.time_picker = ft.CupertinoTimerPicker(
+            mode=ft.CupertinoTimerPickerMode.HOUR_MINUTE,
+            value=0,
+            minute_interval=15,
+            on_change=picker_changed
         )
-        self.data_ponto_button = ft.ElevatedButton(
-            "Selecionar Data",
-            icon=ft.icons.CALENDAR_MONTH,
-            on_click=self.open_date_picker,
-        )
-        self.data_ponto_label = ft.Text("Nenhuma data selecionada")
 
-        self.padrao_dropdown = ft.Dropdown(
-            label="Selecione o padrão",
-            options=[
-                ft.dropdown.Option("Padrão Perplan"),
-                ft.dropdown.Option("Padrão Perci"),
-                ft.dropdown.Option("Padrão Simplificado"),
-            ],
-            on_change=self.carregar_padroes_selecionados,
+        self.time_picker_button = ft.ElevatedButton(
+            text="Selecionar Horário",
+            on_click=lambda _: self.page.open(
+                ft.AlertDialog(content=self.time_picker)
+            )
         )
 
         self.movimentos_container = ft.Column()
+
+        def adicionar_campo_movimento(e):
+            movimento_input = ft.TextField(label="Movimento", hint_text="Exemplo: Carros, Bicicletas")
+            remover_button = ft.IconButton(
+                icon=ft.icons.REMOVE,
+                on_click=lambda _: remover_campo_movimento(movimento_input, remover_button)
+            )
+            self.movimentos_container.controls.append(
+                ft.Row(controls=[movimento_input, remover_button], spacing=10)
+            )
+            self.page.update()
+
+        def remover_campo_movimento(movimento_input, remover_button):
+            self.movimentos_container.controls.remove(
+                ft.Row(controls=[movimento_input, remover_button], spacing=10)
+            )
+            self.page.update()
+
         adicionar_movimento_button = ft.ElevatedButton(
             text="Adicionar Movimento",
-            on_click=self.adicionar_campo_movimento
+            on_click=adicionar_campo_movimento
         )
 
-        criar_sessao_button = ft.ElevatedButton(text="Criar Sessão", on_click=self.criar_sessao)
+        criar_sessao_button = ft.ElevatedButton(
+            text="Criar Sessão", on_click=self.criar_sessao
+        )
 
         tab.controls.extend([
-            ft.Text(""),
             self.codigo_ponto_input,
             self.nome_ponto_input,
-            self.inicio_input,
-            self.data_ponto_button,
-            self.data_ponto_label,
-            self.padrao_dropdown,
-            self.movimentos_container,
+            self.data_ponto_input,
+            self.time_picker_button,
             adicionar_movimento_button,
+            self.movimentos_container,
             criar_sessao_button
         ])
 
-        self.sessao_status = ft.Text("", weight=ft.FontWeight.BOLD)
-        tab.controls.append(self.sessao_status)
-
-        self.page.overlay.append(self.datepicker)
-        self.update_sessao_status()
         self.page.update()
 
-        
-    def adicionar_campo_movimento(self, e):
-        aba_inicio.adicionar_campo_movimento(self, e)
-
-    def remover_campo_movimento(self, movimento_input, remover_button):
-        aba_inicio.remover_campo_movimento(self, movimento_input, remover_button)
 
     def criar_sessao(self, e):
         sessao.criar_sessao(self, e)
@@ -193,8 +166,7 @@ class ContadorPerplan(ft.Column):
                 ws.append(["Aviso", "Nenhum movimento foi definido."])
                 logging.warning("Nenhum movimento definido. Placeholder criado.")
             else:
-                # Cria apenas as abas dos movimentos, sem horários
-                wb.remove(wb.active)  # Remove a planilha padrão
+                wb.remove(wb.active)
                 for movimento in self.details["Movimentos"]:
                     wb.create_sheet(title=movimento)
 
@@ -219,7 +191,6 @@ class ContadorPerplan(ft.Column):
             raise
 
 
-
     def confirmar_finalizar_sessao(self, e):
         sessao.confirmar_finalizar_sessao(self, e)
 
@@ -232,19 +203,11 @@ class ContadorPerplan(ft.Column):
             (self.codigo_ponto_input, "Código"),
             (self.nome_ponto_input, "Ponto"),
             (self.inicio_input, "Horário de Início"),
-            (self.data_ponto_label, "Data do Ponto")
+            (self.data_ponto_input, "Data do Ponto")
         ]
 
-        # Validação dos campos obrigatórios
         for campo, nome in campos_obrigatorios:
-            if campo == self.data_ponto_label:
-                if not hasattr(self, "formated_date") or not self.formated_date:
-                    snackbar = ft.SnackBar(ft.Text(f"{nome} é obrigatório!"), bgcolor="ORANGE")
-                    self.page.overlay.append(snackbar)
-                    snackbar.open = True
-                    self.page.update()
-                    return False
-            elif not campo.value:
+            if not campo.value:
                 snackbar = ft.SnackBar(ft.Text(f"{nome} é obrigatório!"), bgcolor="ORANGE")
                 self.page.overlay.append(snackbar)
                 snackbar.open = True
@@ -252,9 +215,20 @@ class ContadorPerplan(ft.Column):
                 return False
 
         try:
-            datetime.strptime(self.inicio_input.value, "%H:%M")
+            datetime.strptime(self.inicio_input.value.strip(), "%H:%M")
         except ValueError:
-            snackbar = ft.SnackBar(ft.Text("Horários devem estar no formato H:M!"), bgcolor="RED")
+            snackbar = ft.SnackBar(ft.Text("Horários devem estar no formato HH:MM!"), bgcolor="RED")
+            self.page.overlay.append(snackbar)
+            snackbar.open = True
+            self.page.update()
+            return False
+
+        try:
+            data_str = self.data_ponto_input.value.strip()
+            dt = datetime.strptime(data_str, "%d-%m-%Y")
+            self.formated_date = dt.strftime("%d-%m-%Y")
+        except ValueError:
+            snackbar = ft.SnackBar(ft.Text("Data inválida! Use o formato dd-mm-aaaa."), bgcolor="RED")
             self.page.overlay.append(snackbar)
             snackbar.open = True
             self.page.update()
@@ -268,7 +242,7 @@ class ContadorPerplan(ft.Column):
             return False
 
         try:
-            period = format_period(self.inicio_input.value, "23:59")
+            period = format_period(self.inicio_input.value.strip(), "23:59")
             self.period_formated = period
         except ValueError as ex:
             snackbar = ft.SnackBar(ft.Text(str(ex)), bgcolor="RED")
@@ -278,6 +252,7 @@ class ContadorPerplan(ft.Column):
             return False
 
         return True
+    
 
     # ------------------------ ABA CONTADOR ------------------------
     def setup_aba_contagem(self):
@@ -289,21 +264,8 @@ class ContadorPerplan(ft.Column):
     def confirmar_resetar_todas_contagens(self, e):
         aba_contagem.confirmar_resetar_todas_contagens(self, e)
 
-    def criar_conteudo_movimento(self, movimento):
+    def create_moviment_content(self, movimento):
         content = ft.Column()
-        header = ft.Row(
-            alignment=ft.MainAxisAlignment.CENTER,
-            controls=[
-                ft.Container(content=ft.Text("       Categoria", weight=ft.FontWeight.W_400, size=12), width=150, height=40),
-                ft.Container(content=ft.Text("Bind", weight=ft.FontWeight.W_400, size=12), width=50, height=40),
-                ft.Container(content=ft.Text("Contagem", weight=ft.FontWeight.W_400, size=12), width=80, height=40),
-                ft.Container(content=ft.Text("Ações", weight=ft.FontWeight.W_400, size=12), width=50, height=40),
-            ],
-            height=50,
-        )
-
-        content.controls.append(header)
-
         categorias = [c for c in self.categorias if c.movimento == movimento]
         for categoria in categorias:
             control = self.create_category_control(categoria.veiculo, categoria.bind, movimento)
@@ -384,15 +346,12 @@ class ContadorPerplan(ft.Column):
                 self.contagens[(veiculo, movimento)] = nova_contagem
                 self.update_labels(veiculo, movimento)
                 self.save_to_db(veiculo, movimento)
-
                 self.salvar_historico(veiculo, movimento, "edição manual")
                 snackbar = ft.SnackBar(ft.Text(f"Contagem de '{veiculo}' no movimento '{movimento}' foi atualizada para {nova_contagem}."), bgcolor="BLUE")
                 self.page.overlay.append(snackbar)
                 snackbar.open = True
-
                 dialog.open = False
                 self.contagem_ativa = True
-
                 self.page.update()
 
             except ValueError:
@@ -469,7 +428,7 @@ class ContadorPerplan(ft.Column):
             self._perform_save(now)
 
             if hasattr(self, "last_save_label"):
-                self.last_save_label.value = f"Último salvamento: {now.strftime('%d/%m/%Y %H:%M:%S')}"
+                self.last_save_label.value = f"Último salvamento: {now.strftime('%H:%M:%S')}"
                 self.page.update()
 
             snackbar = ft.SnackBar(ft.Text("Contagens salvas com sucesso!"), bgcolor="GREEN")
@@ -526,7 +485,6 @@ class ContadorPerplan(ft.Column):
         except Exception as ex:
             logging.error(f"Erro ao salvar contagens: {ex}")
             raise
-
 
 
     def confirmar_finalizar_sessao(self, e):
@@ -731,13 +689,22 @@ class ContadorPerplan(ft.Column):
     def setup_aba_config(self):
         tab = self.tabs.tabs[3].content
         tab.controls.clear()
-        
+
+
+        username_connected = ft.Container(
+            content=ft.Text(f"Conectado como: {self.username}", weight=ft.FontWeight.W_400, size=15),
+            alignment=ft.alignment.center
+        )
+
         self.page.theme_mode = ft.ThemeMode.DARK
         self.modo_claro_escuro = ft.Switch(label="Modo claro", on_change=self.theme_changed)
         
-        opacity = ft.Slider(value=100, min=20, max=100, divisions=80, label="Opacidade", on_change=self.ajustar_opacidade)
+        opacity = ft.Slider(value=100, min=20, max=100, divisions=20, label="Opacidade", on_change=self.ajustar_opacidade)
         
-        config_button = ft.ElevatedButton(text="Configurar Binds", on_click=lambda e: change_binds(self.page, self))
+        config_button = ft.ElevatedButton(
+            text="Configurar Binds", 
+            on_click=lambda e: change_binds(self.page, self))
+            
         self.page.update()
         
         logout_button = ft.ElevatedButton(
@@ -746,7 +713,7 @@ class ContadorPerplan(ft.Column):
         color="WHITE",
         on_click=self.logout_user
         )
-        
+        tab.controls.append(username_connected)
         tab.controls.append(self.modo_claro_escuro)
         tab.controls.append(opacity)
         tab.controls.append(config_button)
@@ -964,8 +931,8 @@ def main(page: ft.Page):
             contador = ContadorPerplan(page, username=self.username, app=self)
             self.page.add(contador)
 
-            self.page.window.width = 450
-            self.page.window.height = 1080
+            self.page.window.width = 800
+            self.page.window.height = 600
             self.page.window.always_on_top = True
 
             contador.start_listener()
