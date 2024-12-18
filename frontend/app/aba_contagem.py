@@ -9,7 +9,7 @@ def setup_aba_contagem(self):
     self.toggle_button = ft.Switch(
         tooltip="Ativar contagem",
         value=False,
-        on_change=self.toggle_contagem
+        on_change=self.toggle_contagem,
     )
 
     save_button = ft.IconButton(

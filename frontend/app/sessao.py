@@ -17,21 +17,23 @@ def criar_sessao(self, e):
         return
 
     try:
-        period = format_period(self.inicio_input.value, "23:59")
-        horario_inicial = period.split('-')[0]
+        horario_inicial = self.time_picker_button.text
         horario_inicial_file_safe = horario_inicial.replace(":", "h")
-        original_date = self.data_ponto_input.value.replace("Data selecionada: ", "")
+
+        original_date = self.data_ponto_input.value.strip()
+        if not original_date:
+            raise ValueError("Data não foi preenchida.")
+        
         self.formated_date = datetime.strptime(original_date, "%d-%m-%Y").strftime("%d-%m-%Y")
 
         self.details = {
             "Pesquisador": self.username,
             "Código": self.codigo_ponto_input.value,
             "Ponto": self.nome_ponto_input.value,
-            "Periodo": period,
-            "Data do Ponto": self.formated_date,
+            "HorarioInicio": self.selected_time,
+            "Data do Ponto": self.data_ponto_input.value,
             "Movimentos": [mov.controls[0].value for mov in self.movimentos_container.controls]
         }
-
         self.sessao = f"{self.details['Ponto']}_{self.formated_date}_{horario_inicial_file_safe}"
         padrao_selecionado = self.padrao_dropdown.value
 
@@ -77,8 +79,8 @@ def criar_sessao(self, e):
         self.page.overlay.append(snackbar)
         snackbar.open = True
     except ValueError as ex:
-        logging.error(f"Erro no periodo: {ex}")
-        snackbar = ft.SnackBar(ft.Text(f"Erro no periodo: {ex}"), bgcolor="RED")
+        logging.error(f"Erro no periodo ou data: {ex}")
+        snackbar = ft.SnackBar(ft.Text(f"Erro no periodo ou data: {ex}"), bgcolor="RED")
         self.page.overlay.append(snackbar)
         snackbar.open = True
     except Exception as ex:
@@ -159,23 +161,21 @@ def carregar_sessao_ativa(self):
     try:
         sessao_ativa = self.session.query(Sessao).filter_by(ativa=True).first()
         if sessao_ativa:
-            logging.info(f"Sessão ativa encontrada: {sessao_ativa.sessao}")
             self.sessao = sessao_ativa.sessao
             self.details = json.loads(sessao_ativa.details)
 
             if "current_timeslot" in self.details:
                 self.current_timeslot = datetime.strptime(self.details["current_timeslot"], "%H:%M")
+            elif "Periodo" in self.details:
+                horario_inicial_str = self.details["Periodo"].split('-')[0].strip()
+                self.current_timeslot = datetime.strptime(horario_inicial_str, "%H:%M")
             else:
-                if 'Periodo' in self.details:
-                    horario_inicial_str = self.details['Periodo'].split('-')[0]
-                    self.current_timeslot = datetime.strptime(horario_inicial_str.strip(), "%H:%M")
-                else:
-                    raise ValueError("Detalhes da sessão não contêm 'Periodo'.")
+                logging.warning("Campo 'Periodo' ausente nos detalhes. Usando o horário padrão.")
+                self.current_timeslot = datetime.strptime(self.selected_time, "%H:%M")
 
             self.padrao_dropdown.value = sessao_ativa.padrao
             self.carregar_padroes_selecionados()
             self.update_binds()
-
             self.contagens, self.binds, self.categorias = self.carregar_config()
             self.setup_aba_contagem()
 

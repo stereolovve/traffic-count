@@ -10,8 +10,9 @@ def on_key_press(self, key):
     if not self.contagem_ativa:
         return
     try:
-        if hasattr(key, 'name') and key.name == 'ctrl_s':
-            self.save_contagens()
+        if hasattr(key, 'name') and key.name == 'shift_r':
+            self.movimento_tabs.selected_index = (self.movimento_tabs.selected_index + 1) % len(self.movimento_tabs.tabs)
+            self.page.update()
             return
         if hasattr(key, 'name') and key.name.startswith('f') and key.name[1:].isdigit():
             index = int(key.name[1:]) - 1

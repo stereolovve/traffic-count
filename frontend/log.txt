@@ -1067,3 +1067,175 @@ Traceback (most recent call last):
                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 TypeError: unsupported operand type(s) for divmod(): 'ControlEvent' and 'int'
 2024-12-17 16:33:31,267 - ERROR - Erro ao carregar tokens salvos: type object 'CupertinoTimerPickerMode' has no attribute 'HM'
+2024-12-18 10:17:03,202 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'ContadorPerplan' object has no attribute 'inicio_input'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 140, in criar_sessao
+    sessao.criar_sessao(self, e)
+  File "C:\Users\lucas.melo\traffic-count\frontend\app\sessao.py", line 16, in criar_sessao
+    if not self.validar_campos():
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 205, in validar_campos
+    (self.inicio_input, "Horário de Início"),
+     ^^^^^^^^^^^^^^^^^
+AttributeError: 'ContadorPerplan' object has no attribute 'inicio_input'
+2024-12-18 10:18:48,958 - ERROR - Future exception was never retrieved
+future: <Future finished exception=ValueError('list.remove(x): x not in list')>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 104, in <lambda>
+    on_click=lambda _: remover_campo_movimento(movimento_input, remover_button)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 112, in remover_campo_movimento
+    self.movimentos_container.controls.remove(
+ValueError: list.remove(x): x not in list
+2024-12-18 10:18:49,860 - ERROR - Future exception was never retrieved
+future: <Future finished exception=ValueError('list.remove(x): x not in list')>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 104, in <lambda>
+    on_click=lambda _: remover_campo_movimento(movimento_input, remover_button)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 112, in remover_campo_movimento
+    self.movimentos_container.controls.remove(
+ValueError: list.remove(x): x not in list
+2024-12-18 10:19:15,264 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'ContadorPerplan' object has no attribute 'inicio_input'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 140, in criar_sessao
+    sessao.criar_sessao(self, e)
+  File "C:\Users\lucas.melo\traffic-count\frontend\app\sessao.py", line 16, in criar_sessao
+    if not self.validar_campos():
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 205, in validar_campos
+    (self.inicio_input, "Horário de Início"),
+     ^^^^^^^^^^^^^^^^^
+AttributeError: 'ContadorPerplan' object has no attribute 'inicio_input'
+2024-12-18 10:19:19,523 - ERROR - Future exception was never retrieved
+future: <Future finished exception=ValueError('list.remove(x): x not in list')>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 104, in <lambda>
+    on_click=lambda _: remover_campo_movimento(movimento_input, remover_button)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 112, in remover_campo_movimento
+    self.movimentos_container.controls.remove(
+ValueError: list.remove(x): x not in list
+2024-12-18 10:32:36,262 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'ContadorPerplan' object has no attribute 'inicio_input'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 185, in criar_sessao
+    sessao.criar_sessao(self, e)
+  File "C:\Users\lucas.melo\traffic-count\frontend\app\sessao.py", line 16, in criar_sessao
+    if not self.validar_campos():
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 250, in validar_campos
+    (self.inicio_input, "Horário de Início"),
+     ^^^^^^^^^^^^^^^^^
+AttributeError: 'ContadorPerplan' object has no attribute 'inicio_input'
+2024-12-18 10:52:19,376 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AttributeError("'ContadorPerplan' object has no attribute 'inicio_input'")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 185, in criar_sessao
+    sessao.criar_sessao(self, e)
+  File "C:\Users\lucas.melo\traffic-count\frontend\app\sessao.py", line 16, in criar_sessao
+    if not self.validar_campos():
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 250, in validar_campos
+    (self.inicio_input, "Horário de Início"),
+     ^^^^^^^^^^^^^^^^^
+AttributeError: 'ContadorPerplan' object has no attribute 'inicio_input'
+2024-12-18 10:53:21,959 - ERROR - Erro ao criar sessão: name 'original_date' is not defined
+2024-12-18 10:58:09,216 - ERROR - Erro ao criar sessão: 'ContadorPerplan' object has no attribute 'padrao_dropdown'
+2024-12-18 11:03:18,063 - ERROR - Erro ao criar sessão: 'ContadorPerplan' object has no attribute 'sessao_status'
+2024-12-18 11:03:22,212 - ERROR - Erro ao criar sessão: 'ContadorPerplan' object has no attribute 'sessao_status'
+2024-12-18 11:04:12,103 - ERROR - Erro ao criar sessão: 'ContadorPerplan' object has no attribute 'sessao_status'
+2024-12-18 11:04:19,048 - ERROR - Erro ao carregar sessão ativa: 'ContadorPerplan' object has no attribute 'sessao_status'
+2024-12-18 11:05:10,382 - ERROR - Erro ao carregar sessão ativa: 'ContadorPerplan' object has no attribute 'padrao_dropdown'
+2024-12-18 11:05:19,801 - ERROR - Erro ao criar sessão: 'ContadorPerplan' object has no attribute 'padrao_dropdown'
+2024-12-18 11:13:30,917 - ERROR - Erro ao carregar tokens salvos: module 'flet_core.icons' has no attribute 'CLOCK'
+2024-12-18 11:19:49,058 - ERROR - Erro ao carregar tokens salvos: ElevatedButton.__init__() got an unexpected keyword argument 'border_radius'
+2024-12-18 13:58:13,151 - ERROR - Erro ao carregar tokens salvos: Text.__init__() got an unexpected keyword argument 'align'
+2024-12-18 13:58:24,966 - ERROR - Erro ao carregar tokens salvos: Text.__init__() got an unexpected keyword argument 'alignment'
+2024-12-18 14:03:39,874 - ERROR - Erro ao carregar tokens salvos: 'mappingproxy' object has no attribute '__dict__'
+2024-12-18 14:12:20,384 - ERROR - Erro ao carregar tokens salvos: TextField.__init__() got an unexpected keyword argument 'marginy'
+2024-12-18 14:13:46,548 - ERROR - Erro ao carregar tokens salvos: TextField.__init__() got an unexpected keyword argument 'margin'
+2024-12-18 14:13:55,704 - ERROR - Erro ao carregar tokens salvos: TextField.__init__() got an unexpected keyword argument 'padding'
+2024-12-18 14:19:47,126 - ERROR - Erro ao carregar tokens salvos: Switch.__init__() got an unexpected keyword argument 'inactive_color'
+2024-12-18 14:21:38,301 - ERROR - Erro ao carregar sessão ativa: time data 'Horário: 03:00' does not match format '%H:%M'
+2024-12-18 14:21:57,677 - ERROR - Erro ao carregar sessão ativa: time data 'Horário: 03:00' does not match format '%H:%M'
+2024-12-18 14:22:16,622 - ERROR - Erro ao carregar sessão ativa: time data 'Horário: 03:00' does not match format '%H:%M'
+2024-12-18 14:27:22,922 - ERROR - Erro ao carregar sessão ativa: ElevatedButton Control must be added to the page first
+2024-12-18 14:27:53,332 - ERROR - Erro ao salvar contagens: 'ContadorPerplan' object has no attribute 'inicio_input'
+2024-12-18 14:27:53,333 - ERROR - Erro ao salvar contagens: 'ContadorPerplan' object has no attribute 'inicio_input'
+2024-12-18 14:37:04,414 - ERROR - Erro ao carregar sessão ativa: ElevatedButton Control must be added to the page first
+2024-12-18 14:39:07,692 - ERROR - Erro ao carregar sessão ativa: ElevatedButton Control must be added to the page first
+2024-12-18 14:44:57,992 - ERROR - Erro ao salvar contagens: time data 'Horário: 09:00' does not match format '%H:%M'
+2024-12-18 14:44:57,993 - ERROR - Erro ao salvar contagens: time data 'Horário: 09:00' does not match format '%H:%M'
+2024-12-18 14:49:09,480 - ERROR - Erro ao carregar sessão ativa: Detalhes da sessão não contêm 'Periodo'.
+2024-12-18 15:24:28,091 - ERROR - Erro ao carregar sessão ativa: Detalhes da sessão não contêm 'Periodo'.
+2024-12-18 15:24:56,757 - ERROR - Erro ao carregar sessão ativa: Detalhes da sessão não contêm 'Periodo'.
+2024-12-18 15:26:57,239 - ERROR - Erro ao carregar sessão ativa: ElevatedButton Control must be added to the page first
+2024-12-18 15:29:32,341 - ERROR - Erro ao carregar sessão ativa: ElevatedButton Control must be added to the page first
+2024-12-18 15:33:44,988 - ERROR - Erro ao carregar sessão ativa: ElevatedButton Control must be added to the page first
+2024-12-18 15:39:55,462 - ERROR - Erro ao carregar sessão ativa: ElevatedButton Control must be added to the page first
+2024-12-18 15:40:43,369 - ERROR - Erro ao carregar sessão ativa: ElevatedButton Control must be added to the page first
+2024-12-18 15:42:48,013 - ERROR - Erro ao carregar sessão ativa: ElevatedButton Control must be added to the page first
+2024-12-18 15:45:53,476 - ERROR - Erro ao carregar sessão ativa: ElevatedButton Control must be added to the page first
+2024-12-18 15:49:39,318 - ERROR - Erro ao carregar sessão ativa: ElevatedButton Control must be added to the page first
+2024-12-18 15:49:59,080 - ERROR - Erro ao carregar sessão ativa: ElevatedButton Control must be added to the page first
+2024-12-18 15:50:16,386 - ERROR - Erro ao carregar sessão ativa: ElevatedButton Control must be added to the page first
+2024-12-18 16:11:27,808 - ERROR - Erro ao salvar contagens: 'NoneType' object has no attribute 'strftime'
+2024-12-18 16:11:27,809 - ERROR - Erro ao pressionar tecla: 'NoneType' object has no attribute 'strftime'
+2024-12-18 16:11:28,435 - ERROR - Erro ao salvar contagens: 'NoneType' object has no attribute 'strftime'
+2024-12-18 16:11:28,436 - ERROR - Erro ao pressionar tecla: 'NoneType' object has no attribute 'strftime'
+2024-12-18 16:11:28,908 - ERROR - Erro ao salvar contagens: 'NoneType' object has no attribute 'strftime'
+2024-12-18 16:11:28,908 - ERROR - Erro ao pressionar tecla: 'NoneType' object has no attribute 'strftime'
+2024-12-18 16:11:29,568 - ERROR - Erro ao salvar contagens: 'NoneType' object has no attribute 'strftime'
+2024-12-18 16:11:29,569 - ERROR - Erro ao pressionar tecla: 'NoneType' object has no attribute 'strftime'
+2024-12-18 16:11:29,973 - ERROR - Erro ao salvar contagens: 'NoneType' object has no attribute 'strftime'
+2024-12-18 16:11:29,974 - ERROR - Erro ao pressionar tecla: 'NoneType' object has no attribute 'strftime'
+2024-12-18 16:11:30,658 - ERROR - Erro ao salvar contagens: 'NoneType' object has no attribute 'strftime'
+2024-12-18 16:11:30,659 - ERROR - Erro ao pressionar tecla: 'NoneType' object has no attribute 'strftime'
+2024-12-18 16:11:31,110 - ERROR - Erro ao salvar contagens: 'NoneType' object has no attribute 'strftime'
+2024-12-18 16:11:31,111 - ERROR - Erro ao pressionar tecla: 'NoneType' object has no attribute 'strftime'
+2024-12-18 16:11:31,724 - ERROR - Erro ao salvar contagens: 'NoneType' object has no attribute 'strftime'
+2024-12-18 16:11:31,725 - ERROR - Erro ao pressionar tecla: 'NoneType' object has no attribute 'strftime'
+2024-12-18 16:11:38,853 - ERROR - Erro ao salvar contagens: 'NoneType' object has no attribute 'strftime'
+2024-12-18 16:11:38,854 - ERROR - Erro ao pressionar tecla: 'NoneType' object has no attribute 'strftime'
+2024-12-18 16:11:40,320 - ERROR - Erro ao salvar contagens: 'NoneType' object has no attribute 'strftime'
+2024-12-18 16:11:40,321 - ERROR - Erro ao pressionar tecla: 'NoneType' object has no attribute 'strftime'
+2024-12-18 16:11:40,843 - ERROR - Erro ao salvar contagens: 'NoneType' object has no attribute 'strftime'
+2024-12-18 16:11:40,843 - ERROR - Erro ao pressionar tecla: 'NoneType' object has no attribute 'strftime'
