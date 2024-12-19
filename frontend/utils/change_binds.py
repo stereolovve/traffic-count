@@ -3,7 +3,6 @@ from sqlalchemy.exc import SQLAlchemyError
 from database.models import Session, Categoria, Sessao
 
 def change_binds(page, contador):
-    # evitar duplicidade ao abrir o modal de binds
     if hasattr(page, 'dialog') and page.dialog is not None:
         page.dialog.open = False
         page.dialog = None
@@ -35,14 +34,13 @@ def change_binds(page, contador):
         page.snack_bar.open = True
         page.update()
         return
-    # Função para salvar o bind atualizado no banco de dados
+
     def salvar_bind_no_banco(veiculo, bind_atualizado):
         if bind_atualizado:
             try:
-                # Update the database
-                categorias = contador.session.query(Categoria).filter_by(veiculo=veiculo).all()
-                for categoria in categorias:
-                    categoria.bind = bind_atualizado
+                categorias_update = contador.session.query(Categoria).filter_by(veiculo=veiculo, padrao=padrao_atual).all()
+                for categoria_up in categorias_update:
+                    categoria_up.bind = bind_atualizado
                 contador.session.commit()
                 contador.update_binds()
                 contador.setup_aba_contagem()
@@ -56,45 +54,37 @@ def change_binds(page, contador):
                 page.snack_bar.open = True
             finally:
                 page.update()
+
     def fechar_dialogo(e):
         page.dialog.open = False
         page.update()
 
-    try:
-        categorias = contador.session.query(Categoria).filter_by(padrao=contador.padrao_dropdown.value).all()
-
-        if not categorias:
-            page.snack_bar = ft.SnackBar(ft.Text("Nenhuma categoria encontrada para o padrão selecionado!"), bgcolor="RED")
-            page.snack_bar.open = True
-            page.update()
-            return
-    except SQLAlchemyError as ex:
-        page.snack_bar = ft.SnackBar(ft.Text(f"Erro ao buscar categorias: {ex}"), bgcolor="RED")
-        page.snack_bar.open = True
-        page.update()
-        return
-
     content = ft.Column(spacing=10, scroll="adaptive")
 
+    veiculos_exibidos = set()
     for categoria in categorias:
         veiculo = categoria.veiculo
+        if veiculo in veiculos_exibidos:
+            continue
+        veiculos_exibidos.add(veiculo)
+
         bind_field = ft.TextField(value=categoria.bind)
         salvar_button = ft.ElevatedButton(
             text="Salvar",
-            on_click=lambda e, veiculo=veiculo, bind_field=bind_field: salvar_bind_no_banco(veiculo, bind_field.value)
+            on_click=lambda e, v=veiculo, bf=bind_field: salvar_bind_no_banco(v, bf.value)
         )
 
-        content.controls.append(ft.Text(f"Atalho de {veiculo}"))
+        content.controls.append(ft.Text(f"Atalho de {veiculo}", weight=ft.FontWeight.BOLD))
         content.controls.append(bind_field)
         content.controls.append(salvar_button)
+        content.controls.append(ft.Divider())
 
     dialog = ft.AlertDialog(
-        title=ft.Text("Configurar Atalhos"),
-        content=ft.Container(content=content, width=400, height=600),  # Define uma altura fixa para suportar o scrolling
+        title=ft.Text(f"Configurar Binds ({padrao_atual})"),
+        content=ft.Container(content=content, width=400, height=600),
         actions=[ft.TextButton("Fechar", on_click=fechar_dialogo)]
     )
 
     page.dialog = dialog
     page.dialog.open = True
     page.update()
-
