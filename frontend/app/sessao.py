@@ -15,7 +15,7 @@ from utils.period import format_period
 def criar_sessao(self, e):
     if not self.validar_campos():
         return
-
+    
     try:
         horario_inicial = self.time_picker_button.text
         horario_inicial_file_safe = horario_inicial.replace(":", "h")
@@ -35,7 +35,11 @@ def criar_sessao(self, e):
             "Movimentos": [mov.controls[0].value for mov in self.movimentos_container.controls]
         }
         self.sessao = f"{self.details['Ponto']}_{self.formated_date}_{horario_inicial_file_safe}"
+        
         padrao_selecionado = self.padrao_dropdown.value
+        
+        self.current_timeslot = datetime.strptime(self.selected_time, "%H:%M")
+        self.details["current_timeslot"] = self.selected_time
 
         sessao_existente = self.session.query(Sessao).filter_by(sessao=self.sessao).first()
         if sessao_existente:

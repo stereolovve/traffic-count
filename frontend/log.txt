@@ -1239,3 +1239,59 @@ AttributeError: 'ContadorPerplan' object has no attribute 'inicio_input'
 2024-12-18 16:11:40,321 - ERROR - Erro ao pressionar tecla: 'NoneType' object has no attribute 'strftime'
 2024-12-18 16:11:40,843 - ERROR - Erro ao salvar contagens: 'NoneType' object has no attribute 'strftime'
 2024-12-18 16:11:40,843 - ERROR - Erro ao pressionar tecla: 'NoneType' object has no attribute 'strftime'
+2024-12-21 11:56:23,512 - ERROR - Erro ao salvar contagens: This session is in 'prepared' state; no further SQL can be emitted within this transaction.
+2024-12-21 11:56:23,533 - ERROR - Future exception was never retrieved
+future: <Future finished exception=InvalidRequestError("This session is in 'prepared' state; no further SQL can be emitted within this transaction.")>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 413, in on_confirm_save
+    self._perform_save(now)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 466, in _perform_save
+    for categoria in [c for c in self.categorias if c.movimento == movimento]:
+                                                    ^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\orm\attributes.py", line 566, in __get__
+    return self.impl.get(state, dict_)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\orm\attributes.py", line 1086, in get
+    value = self._fire_loader_callables(state, key, passive)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\orm\attributes.py", line 1116, in _fire_loader_callables
+    return state._load_expired(state, passive)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\orm\state.py", line 803, in _load_expired
+    self.manager.expired_attribute_loader(self, toload, passive)
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\orm\loading.py", line 1670, in load_scalar_attributes
+    result = load_on_ident(
+             ^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\orm\loading.py", line 509, in load_on_ident
+    return load_on_pk_identity(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\orm\loading.py", line 694, in load_on_pk_identity
+    session.execute(
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2362, in execute
+    return self._execute_internal(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2237, in _execute_internal
+    conn = self._connection_for_bind(bind)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2106, in _connection_for_bind
+    return trans._connection_for_bind(engine, execution_options)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 2, in _connection_for_bind
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\orm\state_changes.py", line 103, in _go
+    self._raise_for_prerequisite_state(fn.__name__, current_state)
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 996, in _raise_for_prerequisite_state
+    raise sa_exc.InvalidRequestError(
+sqlalchemy.exc.InvalidRequestError: This session is in 'prepared' state; no further SQL can be emitted within this transaction.
+2024-12-21 12:04:26,437 - ERROR - Erro ao salvar contagens: [Errno 2] No such file or directory: 'Z:\\\\0Pesquisa\\\\_0ContadorDigital\\\\Contagens\\lucas.melo\\Teste\\P10_21-12-2024_Horárioh 12h45.xlsx'
+2024-12-21 12:04:26,438 - ERROR - Erro ao salvar contagens: [Errno 2] No such file or directory: 'Z:\\\\0Pesquisa\\\\_0ContadorDigital\\\\Contagens\\lucas.melo\\Teste\\P10_21-12-2024_Horárioh 12h45.xlsx'
+2024-12-21 12:06:27,524 - ERROR - Erro ao salvar sessão: This session is in 'prepared' state; no further SQL can be emitted within this transaction.
+2024-12-21 12:06:27,551 - ERROR - Erro ao salvar no DB: Method 'rollback()' can't be called here; method 'rollback()' is already in progress and this would cause an unexpected state change to <SessionTransactionState.CLOSED: 5> (Background on this error at: https://sqlalche.me/e/20/isce)
+2024-12-21 12:06:27,551 - ERROR - Erro ao incrementar: Method 'rollback()' can't be called here; method 'rollback()' is already in progress and this would cause an unexpected state change to <SessionTransactionState.CLOSED: 5> (Background on this error at: https://sqlalche.me/e/20/isce)
+2024-12-21 13:24:06,028 - ERROR - Erro ao salvar contagens: 'ContadorPerplan' object has no attribute 'current_timeslot'
+2024-12-21 13:24:06,029 - ERROR - Erro ao salvar contagens: 'ContadorPerplan' object has no attribute 'current_timeslot'
+2024-12-21 14:07:01,870 - ERROR - Erro ao salvar contagens: Event loop is closed

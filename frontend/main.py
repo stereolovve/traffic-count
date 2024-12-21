@@ -81,7 +81,7 @@ class ContadorPerplan(ft.Column):
             minutes = (remainder // 60)
             adjusted_minutes = (minutes // 15) * 15
             self.selected_time = f"{hours:02}:{adjusted_minutes:02}"
-            self.time_picker_button.text = f"Horário: {self.selected_time}"
+            self.time_picker_button.text = f"{self.selected_time}"
             self.time_picker_button.update()
 
 
@@ -93,7 +93,7 @@ class ContadorPerplan(ft.Column):
         )
 
         self.time_picker_button = ft.ElevatedButton(
-            text=f"Horário: {self.selected_time}",
+            text=f"{self.selected_time}",
             style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=1)),
             width=float('inf'),
             height=40,
@@ -442,10 +442,6 @@ class ContadorPerplan(ft.Column):
 
     def _perform_save(self, now):
         try:
-            if not hasattr(self, 'current_timeslot'):
-                horario_inicial = self.time_picker_button.text.replace("Horário: ", "").strip()
-                self.current_timeslot = datetime.strptime(horario_inicial, "%H:%M")
-
             horario_atual = self.current_timeslot
 
             nome_pesquisador = re.sub(r'[<>:"/\\|?*]', '', self.username)
@@ -701,7 +697,6 @@ class ContadorPerplan(ft.Column):
         tab = self.tabs.tabs[3].content
         tab.controls.clear()
 
-        # Perfil do usuário
         avatar = ft.CircleAvatar(
            # foreground_image_url="https://example.com/imagem_perfil.png",  # Troque pela URL da imagem ou remova se não tiver uma
             radius=40,
@@ -714,7 +709,6 @@ class ContadorPerplan(ft.Column):
             text_align=ft.TextAlign.CENTER
         )
 
-        # Contêiner para o perfil (avatar e nome)
         profile_container = ft.Column(
             controls=[
                 ft.Container(avatar, alignment=ft.alignment.center),
@@ -724,20 +718,17 @@ class ContadorPerplan(ft.Column):
             horizontal_alignment=ft.CrossAxisAlignment.CENTER
         )
 
-        # Ajustes de tema e opacidade
         self.page.theme_mode = ft.ThemeMode.DARK
         self.modo_claro_escuro = ft.Switch(label="Modo claro", on_change=self.theme_changed)
 
         opacity = ft.Slider(value=100, min=20, max=100, divisions=20, label="Opacidade", on_change=self.ajustar_opacidade)
         
-        # Botão para configurar Binds
         config_button = ft.ElevatedButton(
             text="Configurar Binds", 
             on_click=lambda e: change_binds(self.page, self),
             icon=ft.icons.SETTINGS
         )
         
-        # Botão de Logout
         logout_button = ft.ElevatedButton(
             text="Sair",
             bgcolor="RED",
@@ -746,26 +737,20 @@ class ContadorPerplan(ft.Column):
             icon=ft.icons.LOGOUT
         )
 
-        # Montagem final da aba config
-        # Usamos espaçamento entre seções e divisores para um visual mais organizado
         config_layout = ft.Column(
             controls=[
                 profile_container,
                 ft.Divider(),
-                # Seção do tema
                 ft.Text("Aparência", weight=ft.FontWeight.BOLD, size=16),
                 self.modo_claro_escuro,
                 ft.Divider(),
-                # Seção da opacidade
                 ft.Text("Transparência da Janela", weight=ft.FontWeight.BOLD, size=16),
                 opacity,
                 ft.Divider(),
-                # Seção de configurações avançadas (binds)
                 ft.Text("Configurações Avançadas", weight=ft.FontWeight.BOLD, size=16),
                 config_button,
                 ft.Divider(),
-                # Seção de logout
-                ft.Text("Sessão", weight=ft.FontWeight.BOLD, size=16),
+                ft.Text("Deslogar:", weight=ft.FontWeight.BOLD, size=16),
                 logout_button
             ],
             spacing=20,

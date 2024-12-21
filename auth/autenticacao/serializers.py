@@ -18,13 +18,11 @@ class RegistroSerializer(serializers.ModelSerializer):
         }
     
     def validate_username(self, value):
-        # Verifica se o username está no formato nome.sobrenome
         if not re.match(r'^[a-zA-Z]+\.[a-zA-Z]+$', value):
             raise ValidationError("O username deve estar no formato nome.sobrenome.")
         return value
     
     def create(self, validated_data):
-        # Criação do usuário com senha hash
         user = Usuario.objects.create_user(
             username=validated_data['username'],
             password=validated_data['password'],
