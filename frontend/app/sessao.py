@@ -5,6 +5,7 @@ import json
 import logging
 from datetime import datetime
 import os
+import re
 from openpyxl.utils.dataframe import dataframe_to_rows
 import openpyxl
 import pandas as pd
@@ -19,6 +20,8 @@ def criar_sessao(self, e):
     try:
         horario_inicial = self.time_picker_button.text
         horario_inicial_file_safe = horario_inicial.replace(":", "h")
+        
+
 
         original_date = self.data_ponto_input.value.strip()
         if not original_date:
@@ -34,7 +37,11 @@ def criar_sessao(self, e):
             "Data do Ponto": self.data_ponto_input.value,
             "Movimentos": [mov.controls[0].value for mov in self.movimentos_container.controls]
         }
-        self.sessao = f"{self.details['Ponto']}_{self.formated_date}_{horario_inicial_file_safe}"
+        movimentos_str = "-".join(self.details["Movimentos"])
+        
+        movimentos_str = re.sub(r'[<>:"/\\|?*]', '', movimentos_str)
+        self.sessao = f"{self.details['Ponto']}_{self.formated_date}_{movimentos_str}_{horario_inicial_file_safe}"
+
         
         padrao_selecionado = self.padrao_dropdown.value
         

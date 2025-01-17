@@ -6,13 +6,12 @@ from rest_framework import status
 from .serializers import RegistroSerializer
 from .models import User
 import logging
+from django.contrib.auth import authenticate
+
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-
-
-from django.contrib.auth import authenticate
 
 class LoginView(APIView):
     permission_classes = [AllowAny]
@@ -46,7 +45,6 @@ class RegisterView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        logger.info(f"Payload recebido: {request.data}")
         username = request.data.get("username")
         password = request.data.get("password")
         name = request.data.get("name")

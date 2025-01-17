@@ -7,7 +7,6 @@ class RegisterPage(ft.Container):
         self.app = app
         super().__init__()
 
-        # Campos de entrada
         self.name_field = ft.TextField(label="Primeiro nome", width=300)
         self.last_name_field = ft.TextField(label="Sobrenome/Ultimo nome", width=300)
         self.username_field = ft.TextField(label="Usuário (nome.sobrenome)", width=300)
@@ -15,7 +14,6 @@ class RegisterPage(ft.Container):
         self.password_field = ft.TextField(label="Senha", password=True, width=300)
         self.confirm_password_field = ft.TextField(label="Confirme a Senha", password=True, width=300)
 
-        # Menu suspenso para selecionar o setor
         self.setor_field = ft.Dropdown(
             label="Setor",
             options=[
@@ -27,12 +25,10 @@ class RegisterPage(ft.Container):
             width=300
         )
 
-        # Botões
         self.register_button = ft.ElevatedButton("Registrar", on_click=self.register)
         self.error_text = ft.Text(value="", color="red", visible=False)
         self.back_to_login_button = ft.TextButton("Já tem uma conta? Entrar", on_click=self.back_to_login)
 
-        # Adicionar os controles ao Container
         self.content = ft.Container(
             ft.Column(
             [
@@ -51,14 +47,13 @@ class RegisterPage(ft.Container):
             alignment=ft.MainAxisAlignment.CENTER,
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
         ),
-            border_radius=10,  # Borda arredondada
-            width=800,  # Largura fixa para centralizar
-            height=600  # Altura fixa
+            border_radius=10,
+            width=800,
+            height=600
             
             )
 
     def register(self, e):
-        # Capturar valores dos campos
         name = self.name_field.value
         last_name = self.last_name_field.value
         username = self.username_field.value
@@ -67,11 +62,10 @@ class RegisterPage(ft.Container):
         confirm_password = self.confirm_password_field.value
         setor = self.setor_field.value
 
-        # Validar os campos
         if not all([name, last_name, username, email, password, confirm_password, setor]):
             self.error_text.value = "Todos os campos são obrigatórios!"
             self.error_text.visible = True
-            if self.page:  # Verifique se o controle foi adicionado à página
+            if self.page:
                 self.update()
             return
 
@@ -82,7 +76,6 @@ class RegisterPage(ft.Container):
                 self.update()
             return
 
-        # Fazer requisição para o backend
         try:
             with httpx.Client() as client:
                 response = client.post(
@@ -131,8 +124,6 @@ class RegisterPage(ft.Container):
             self.error_text.visible = True
             if self.page:
                 self.update()
-
-
 
 
     def back_to_login(self, e):

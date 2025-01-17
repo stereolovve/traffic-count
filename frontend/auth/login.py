@@ -2,7 +2,7 @@ import flet as ft
 import httpx
 import json
 
-class LoginPage(ft.Container):  # Tela de login
+class LoginPage(ft.Container): 
     def __init__(self, app):
         self.app = app
         super().__init__()
@@ -21,14 +21,13 @@ class LoginPage(ft.Container):  # Tela de login
         self.register_button = ft.TextButton("Não tem uma conta? Registrar", on_click=self.show_register)
         self.error_text = ft.Text(value="", color="red", visible=False)
 
-        # Layout
         self.content = ft.Container(
     content=ft.Column(
         [
             ft.Text("Login", size=30, weight="bold"),
             self.username_field,
             self.password_field,
-            ft.Row(  # Usando Row para alinhar checkbox com os outros componentes
+            ft.Row(
                 [
                     self.remember_me_checkbox,
                 ],
@@ -59,7 +58,6 @@ class LoginPage(ft.Container):  # Tela de login
             return
 
         try:
-            # Enviando os dados para o backend para autenticação
             with httpx.Client() as client:
                 response = client.post(
                     "http://3.91.159.225/api/login/",
@@ -68,7 +66,7 @@ class LoginPage(ft.Container):  # Tela de login
 
             if response.status_code == 200:
                 tokens = response.json()
-                self.app.tokens = tokens  # Armazena os tokens de autenticação
+                self.app.tokens = tokens
                 self.app.username = username
                 
                 if self.remember_me_checkbox.value:
@@ -79,7 +77,7 @@ class LoginPage(ft.Container):  # Tela de login
                 self.app.page.overlay.append(snackbar)
                 snackbar.open = True
                 
-                self.app.switch_to_main_app()  # Alterna para a interface principal
+                self.app.switch_to_main_app()
             
             elif response.status_code == 401:
                 self.error_text.value = "Credenciais inválidas!"

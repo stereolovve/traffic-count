@@ -1,11 +1,13 @@
 from sqlalchemy import create_engine, Column, String, Integer, DateTime, Boolean, ForeignKey, PrimaryKeyConstraint
 from sqlalchemy.orm import sessionmaker, declarative_base
 from datetime import datetime
-
+import os
 # Inicializa a base declarativa do SQLAlchemy
 Base = declarative_base()
 
 # Configura o engine do banco de dados
+db_path = os.path.join(os.getenv('USERPROFILE'), 'dados.db')
+
 engine = create_engine('sqlite:///dados.db')
 
 # Cria a sessão do banco de dados

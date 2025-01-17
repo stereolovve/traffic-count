@@ -1295,3 +1295,296 @@ sqlalchemy.exc.InvalidRequestError: This session is in 'prepared' state; no furt
 2024-12-21 13:24:06,028 - ERROR - Erro ao salvar contagens: 'ContadorPerplan' object has no attribute 'current_timeslot'
 2024-12-21 13:24:06,029 - ERROR - Erro ao salvar contagens: 'ContadorPerplan' object has no attribute 'current_timeslot'
 2024-12-21 14:07:01,870 - ERROR - Erro ao salvar contagens: Event loop is closed
+2024-12-26 19:05:11,870 - ERROR - Erro ao salvar contagens: [Errno 2] No such file or directory: 'Z:\\\\0Pesquisa\\\\_0ContadorDigital\\\\Contagens\\lucas.melo\\sdfsfdsdf\\dfssd_24-12-2024_02h00.xlsx'
+2024-12-26 19:05:11,870 - ERROR - Erro ao salvar contagens: [Errno 2] No such file or directory: 'Z:\\\\0Pesquisa\\\\_0ContadorDigital\\\\Contagens\\lucas.melo\\sdfsfdsdf\\dfssd_24-12-2024_02h00.xlsx'
+2024-12-26 19:05:11,870 - ERROR - Erro ao salvar contagens: [Errno 2] No such file or directory: 'Z:\\\\0Pesquisa\\\\_0ContadorDigital\\\\Contagens\\lucas.melo\\sdfsfdsdf\\dfssd_24-12-2024_02h00.xlsx'
+2024-12-26 19:05:11,870 - ERROR - Erro ao salvar contagens: [Errno 2] No such file or directory: 'Z:\\\\0Pesquisa\\\\_0ContadorDigital\\\\Contagens\\lucas.melo\\sdfsfdsdf\\dfssd_24-12-2024_02h00.xlsx'
+2024-12-26 19:05:11,870 - ERROR - Erro ao salvar contagens: [Errno 2] No such file or directory: 'Z:\\\\0Pesquisa\\\\_0ContadorDigital\\\\Contagens\\lucas.melo\\sdfsfdsdf\\dfssd_24-12-2024_02h00.xlsx'
+2024-12-26 19:05:11,895 - ERROR - Erro ao salvar contagens: [Errno 2] No such file or directory: 'Z:\\\\0Pesquisa\\\\_0ContadorDigital\\\\Contagens\\lucas.melo\\sdfsfdsdf\\dfssd_24-12-2024_02h00.xlsx'
+2024-12-26 19:05:11,895 - ERROR - Erro ao salvar contagens: [Errno 2] No such file or directory: 'Z:\\\\0Pesquisa\\\\_0ContadorDigital\\\\Contagens\\lucas.melo\\sdfsfdsdf\\dfssd_24-12-2024_02h00.xlsx'
+2024-12-26 19:05:11,895 - ERROR - Erro ao salvar contagens: [Errno 2] No such file or directory: 'Z:\\\\0Pesquisa\\\\_0ContadorDigital\\\\Contagens\\lucas.melo\\sdfsfdsdf\\dfssd_24-12-2024_02h00.xlsx'
+2024-12-26 19:05:11,895 - ERROR - Erro ao salvar contagens: [Errno 2] No such file or directory: 'Z:\\\\0Pesquisa\\\\_0ContadorDigital\\\\Contagens\\lucas.melo\\sdfsfdsdf\\dfssd_24-12-2024_02h00.xlsx'
+2024-12-26 19:05:11,902 - ERROR - Erro ao salvar contagens: [Errno 2] No such file or directory: 'Z:\\\\0Pesquisa\\\\_0ContadorDigital\\\\Contagens\\lucas.melo\\sdfsfdsdf\\dfssd_24-12-2024_02h00.xlsx'
+2024-12-26 19:05:11,902 - ERROR - Erro ao salvar contagens: [Errno 2] No such file or directory: 'Z:\\\\0Pesquisa\\\\_0ContadorDigital\\\\Contagens\\lucas.melo\\sdfsfdsdf\\dfssd_24-12-2024_02h00.xlsx'
+2024-12-26 19:05:11,902 - ERROR - Erro ao salvar contagens: [Errno 2] No such file or directory: 'Z:\\\\0Pesquisa\\\\_0ContadorDigital\\\\Contagens\\lucas.melo\\sdfsfdsdf\\dfssd_24-12-2024_02h00.xlsx'
+2024-12-26 19:05:11,902 - ERROR - Erro ao salvar contagens: [Errno 2] No such file or directory: 'Z:\\\\0Pesquisa\\\\_0ContadorDigital\\\\Contagens\\lucas.melo\\sdfsfdsdf\\dfssd_24-12-2024_02h00.xlsx'
+2024-12-26 19:05:11,902 - ERROR - Erro ao salvar contagens: [Errno 2] No such file or directory: 'Z:\\\\0Pesquisa\\\\_0ContadorDigital\\\\Contagens\\lucas.melo\\sdfsfdsdf\\dfssd_24-12-2024_02h00.xlsx'
+2024-12-26 19:05:11,946 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AssertionError()>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 430, in save_contagens
+    self._perform_save(now)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 453, in _perform_save
+    with pd.ExcelWriter(arquivo_sessao, engine='openpyxl', mode='a', if_sheet_exists='overlay') as writer:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\pandas\io\excel\_openpyxl.py", line 61, in __init__
+    super().__init__(
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\pandas\io\excel\_base.py", line 1246, in __init__
+    self._handles = get_handle(
+                    ^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\pandas\io\common.py", line 882, in get_handle
+    handle = open(handle, ioargs.mode)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'Z:\\\\0Pesquisa\\\\_0ContadorDigital\\\\Contagens\\lucas.melo\\sdfsfdsdf\\dfssd_24-12-2024_02h00.xlsx'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 441, in save_contagens
+    self.page.update()
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 719, in update
+    r = self.__update(self)
+        ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 833, in __update
+    commands, added_controls, removed_controls = self.__prepare_update(*controls)
+                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 849, in __prepare_update
+    control.build_update_commands(
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\control.py", line 467, in build_update_commands
+    ctrl.build_update_commands(
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\control.py", line 467, in build_update_commands
+    ctrl.build_update_commands(
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\control.py", line 483, in build_update_commands
+    assert self.__uid is not None
+           ^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
+2024-12-26 19:05:12,051 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AssertionError()>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 430, in save_contagens
+    self._perform_save(now)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 453, in _perform_save
+    with pd.ExcelWriter(arquivo_sessao, engine='openpyxl', mode='a', if_sheet_exists='overlay') as writer:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\pandas\io\excel\_openpyxl.py", line 61, in __init__
+    super().__init__(
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\pandas\io\excel\_base.py", line 1246, in __init__
+    self._handles = get_handle(
+                    ^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\pandas\io\common.py", line 882, in get_handle
+    handle = open(handle, ioargs.mode)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'Z:\\\\0Pesquisa\\\\_0ContadorDigital\\\\Contagens\\lucas.melo\\sdfsfdsdf\\dfssd_24-12-2024_02h00.xlsx'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 441, in save_contagens
+    self.page.update()
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 719, in update
+    r = self.__update(self)
+        ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 833, in __update
+    commands, added_controls, removed_controls = self.__prepare_update(*controls)
+                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 849, in __prepare_update
+    control.build_update_commands(
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\control.py", line 467, in build_update_commands
+    ctrl.build_update_commands(
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\control.py", line 467, in build_update_commands
+    ctrl.build_update_commands(
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\control.py", line 483, in build_update_commands
+    assert self.__uid is not None
+           ^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
+2024-12-26 19:05:12,227 - ERROR - Erro ao incrementar: 
+2024-12-26 19:05:12,233 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AssertionError()>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 430, in save_contagens
+    self._perform_save(now)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 453, in _perform_save
+    with pd.ExcelWriter(arquivo_sessao, engine='openpyxl', mode='a', if_sheet_exists='overlay') as writer:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\pandas\io\excel\_openpyxl.py", line 61, in __init__
+    super().__init__(
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\pandas\io\excel\_base.py", line 1246, in __init__
+    self._handles = get_handle(
+                    ^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\pandas\io\common.py", line 882, in get_handle
+    handle = open(handle, ioargs.mode)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'Z:\\\\0Pesquisa\\\\_0ContadorDigital\\\\Contagens\\lucas.melo\\sdfsfdsdf\\dfssd_24-12-2024_02h00.xlsx'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 441, in save_contagens
+    self.page.update()
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 719, in update
+    r = self.__update(self)
+        ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 833, in __update
+    commands, added_controls, removed_controls = self.__prepare_update(*controls)
+                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 849, in __prepare_update
+    control.build_update_commands(
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\control.py", line 467, in build_update_commands
+    ctrl.build_update_commands(
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\control.py", line 467, in build_update_commands
+    ctrl.build_update_commands(
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\control.py", line 483, in build_update_commands
+    assert self.__uid is not None
+           ^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
+2024-12-26 19:05:12,238 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AssertionError()>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 430, in save_contagens
+    self._perform_save(now)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 453, in _perform_save
+    with pd.ExcelWriter(arquivo_sessao, engine='openpyxl', mode='a', if_sheet_exists='overlay') as writer:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\pandas\io\excel\_openpyxl.py", line 61, in __init__
+    super().__init__(
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\pandas\io\excel\_base.py", line 1246, in __init__
+    self._handles = get_handle(
+                    ^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\pandas\io\common.py", line 882, in get_handle
+    handle = open(handle, ioargs.mode)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'Z:\\\\0Pesquisa\\\\_0ContadorDigital\\\\Contagens\\lucas.melo\\sdfsfdsdf\\dfssd_24-12-2024_02h00.xlsx'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 441, in save_contagens
+    self.page.update()
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 719, in update
+    r = self.__update(self)
+        ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 833, in __update
+    commands, added_controls, removed_controls = self.__prepare_update(*controls)
+                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 849, in __prepare_update
+    control.build_update_commands(
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\control.py", line 467, in build_update_commands
+    ctrl.build_update_commands(
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\control.py", line 467, in build_update_commands
+    ctrl.build_update_commands(
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\control.py", line 483, in build_update_commands
+    assert self.__uid is not None
+           ^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
+2024-12-26 19:05:12,242 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AssertionError()>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 430, in save_contagens
+    self._perform_save(now)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 453, in _perform_save
+    with pd.ExcelWriter(arquivo_sessao, engine='openpyxl', mode='a', if_sheet_exists='overlay') as writer:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\pandas\io\excel\_openpyxl.py", line 61, in __init__
+    super().__init__(
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\pandas\io\excel\_base.py", line 1246, in __init__
+    self._handles = get_handle(
+                    ^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\pandas\io\common.py", line 882, in get_handle
+    handle = open(handle, ioargs.mode)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'Z:\\\\0Pesquisa\\\\_0ContadorDigital\\\\Contagens\\lucas.melo\\sdfsfdsdf\\dfssd_24-12-2024_02h00.xlsx'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 441, in save_contagens
+    self.page.update()
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 719, in update
+    r = self.__update(self)
+        ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 833, in __update
+    commands, added_controls, removed_controls = self.__prepare_update(*controls)
+                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 849, in __prepare_update
+    control.build_update_commands(
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\control.py", line 467, in build_update_commands
+    ctrl.build_update_commands(
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\control.py", line 467, in build_update_commands
+    ctrl.build_update_commands(
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\control.py", line 483, in build_update_commands
+    assert self.__uid is not None
+           ^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
+2024-12-26 19:05:12,248 - ERROR - Future exception was never retrieved
+future: <Future finished exception=AssertionError()>
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 430, in save_contagens
+    self._perform_save(now)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 453, in _perform_save
+    with pd.ExcelWriter(arquivo_sessao, engine='openpyxl', mode='a', if_sheet_exists='overlay') as writer:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\pandas\io\excel\_openpyxl.py", line 61, in __init__
+    super().__init__(
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\pandas\io\excel\_base.py", line 1246, in __init__
+    self._handles = get_handle(
+                    ^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\pandas\io\common.py", line 882, in get_handle
+    handle = open(handle, ioargs.mode)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'Z:\\\\0Pesquisa\\\\_0ContadorDigital\\\\Contagens\\lucas.melo\\sdfsfdsdf\\dfssd_24-12-2024_02h00.xlsx'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\lucas.melo\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 944, in wrapper
+    handler(*args)
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 441, in save_contagens
+    self.page.update()
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 719, in update
+    r = self.__update(self)
+        ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 833, in __update
+    commands, added_controls, removed_controls = self.__prepare_update(*controls)
+                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\page.py", line 849, in __prepare_update
+    control.build_update_commands(
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\control.py", line 467, in build_update_commands
+    ctrl.build_update_commands(
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\control.py", line 467, in build_update_commands
+    ctrl.build_update_commands(
+  File "C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_core\control.py", line 483, in build_update_commands
+    assert self.__uid is not None
+           ^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
+2024-12-26 19:05:13,200 - ERROR - Erro ao incrementar: 
+2024-12-26 19:05:13,758 - ERROR - Erro ao incrementar: 
+2024-12-26 19:05:15,212 - ERROR - Erro ao incrementar: 
+2024-12-26 19:06:27,666 - ERROR - Erro ao salvar contagens: [Errno 2] No such file or directory: 'Z:\\\\0Pesquisa\\\\_0ContadorDigital\\\\Contagens\\lucas.melo\\teste\\p01_26-12-2024_07h00.xlsx'
+2024-12-26 19:06:27,667 - ERROR - Erro ao salvar contagens: [Errno 2] No such file or directory: 'Z:\\\\0Pesquisa\\\\_0ContadorDigital\\\\Contagens\\lucas.melo\\teste\\p01_26-12-2024_07h00.xlsx'
+2024-12-26 19:06:27,956 - ERROR - Erro ao salvar contagens: [Errno 2] No such file or directory: 'Z:\\\\0Pesquisa\\\\_0ContadorDigital\\\\Contagens\\lucas.melo\\teste\\p01_26-12-2024_07h00.xlsx'
+2024-12-26 19:06:27,958 - ERROR - Erro ao salvar contagens: [Errno 2] No such file or directory: 'Z:\\\\0Pesquisa\\\\_0ContadorDigital\\\\Contagens\\lucas.melo\\teste\\p01_26-12-2024_07h00.xlsx'
+2025-01-04 20:37:49,817 - ERROR - Erro ao carregar sessão ativa: 'ContadorPerplan' object has no attribute 'status_sessao'
+2025-01-04 20:38:19,212 - ERROR - Erro ao carregar sessão ativa: 'ContadorPerplan' object has no attribute 'status_sessao'
+2025-01-04 20:38:39,736 - ERROR - Erro ao criar sessão: 'Row' object has no attribute 'value'
+2025-01-13 16:12:10,473 - ERROR - Erro ao salvar contagens: [Errno 2] No such file or directory: 'Z:\\\\0Pesquisa\\\\_0ContadorDigital\\\\Contagens\\lucas.melo\\teste\\P0111_13-01-2025__09h00_.xlsx'
+2025-01-13 16:12:10,478 - ERROR - Erro ao salvar contagens: [Errno 2] No such file or directory: 'Z:\\\\0Pesquisa\\\\_0ContadorDigital\\\\Contagens\\lucas.melo\\teste\\P0111_13-01-2025__09h00_.xlsx'
+2025-01-13 16:12:24,304 - ERROR - Erro ao criar sessão: name 're' is not defined
+2025-01-13 16:12:46,282 - ERROR - Erro ao criar sessão: cannot access local variable 'movimentos_str' where it is not associated with a value
