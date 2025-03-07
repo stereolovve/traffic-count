@@ -39,32 +39,35 @@ def carregar_historico(self, e):
         
         self.historico_lista.controls.clear()
         for registro in registros:
-            # Condicional para exibir a ação "edição manual" em roxo
             if registro.acao == "edição manual":
-                cor = "purple"  # Destacar como roxo para edição manual
+                cor = "purple"
             elif registro.acao == "salvamento":
                 cor = "blue"
             elif registro.acao == "reset":
                 cor = "orange"
-            elif registro.acao == "incremento":
+            elif registro.acao == "increment":
                 cor = "green"
-            elif registro.acao == "remoção":
+            elif registro.acao == "decrement":
                 cor = "red"
             else:
                 cor = "black"
 
-            # Exibir cada registro no histórico
+            veiculo = registro.categoria.veiculo if registro.categoria else "N/A"  # Access via relationship
             linha = ft.Container(
                 content=ft.Text(
-                    f"{registro.timestamp.strftime('%d/%m/%Y %H:%M:%S')} | Categoria: {registro.veiculo} | Movimento: {registro.movimento} | Ação: {registro.acao}",
+                    f"{registro.timestamp.strftime('%d/%m/%Y %H:%M:%S')} | Categoria: {veiculo} | Movimento: {registro.movimento} | Ação: {registro.acao}",
                     color=cor),
                 padding=10,
                 border_radius=5
             )
             self.historico_lista.controls.append(linha)
 
-        self.page.update()
+        if not registros:
+            self.historico_lista.controls.append(ft.Text("Nenhum registro encontrado."))
 
+        self.page.update()
     except SQLAlchemyError as ex:
         logging.error(f"Erro ao carregar histórico: {ex}")
+        self.historico_lista.controls.append(ft.Text("Erro ao carregar histórico."))
+        self.page.update()
         

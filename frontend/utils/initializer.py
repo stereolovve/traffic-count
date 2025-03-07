@@ -10,7 +10,7 @@ def __init__(self, page):
     self.inicializar_variaveis()
     self.configurar_numpad_mappings()
     self.setup_ui()
-    self.carregar_sessao_ativa()
+    self.load_active_session()
 
 def inicializar_variaveis(self):
     self.sessao = None

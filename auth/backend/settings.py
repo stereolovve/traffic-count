@@ -41,11 +41,12 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework_simplejwt',
+    
     'corsheaders',
     'autenticacao',
 ]
 
-CORS_ALLOW_ALL_ORIGINS = True  # Ou especifique a origem do frontend
+CORS_ALLOW_ALL_ORIGINS = True
 
 
 MIDDLEWARE = [
@@ -144,8 +145,8 @@ REST_FRAMEWORK = {
 
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(hours=1),  # Token de acesso válido por 1 hora
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),  # Token de atualização válido por 1 dia
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=365),  # Token de acesso válido por 1 hora
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=2*365),  # Token de atualização válido por 1 dia
     'ROTATE_REFRESH_TOKENS': False,  # Não gere novos tokens de atualização automaticamente
-    'BLACKLIST_AFTER_ROTATION': True,  # Permita invalidar tokens de atualização antigos
+    'BLACKLIST_AFTER_ROTATION': False,  # Permita invalidar tokens de atualização antigos
 }

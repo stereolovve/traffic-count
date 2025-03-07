@@ -1,5 +1,7 @@
 venv
 dados.db
-db.sqlite3
+auth/db.sqlite3
 log.txt
 auth_tokens.json
+icone.spec
+main.spec

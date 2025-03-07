@@ -1,3 +1,4 @@
+# auth/autenticacao/apps.py
 from django.apps import AppConfig
 
 

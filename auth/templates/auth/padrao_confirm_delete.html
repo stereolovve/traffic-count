@@ -1,0 +1,7 @@
+<h1>Confirmar Deleção</h1>
+<p>Tem certeza que deseja deletar "{{ object }}"?</p>
+<form method="post">
+    {% csrf_token %}
+    <button type="submit">Confirmar</button>
+</form>
+<a href="{% url 'padrao_list' %}">Cancelar</a>

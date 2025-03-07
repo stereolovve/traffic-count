@@ -1,7 +1,10 @@
+# auth/autenticacao/serializers.py
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 import re
 from rest_framework.validators import ValidationError
+from .models import PadraoContagem, UserPadraoContagem
+
 
 Usuario = get_user_model()
 
@@ -32,3 +35,15 @@ class RegistroSerializer(serializers.ModelSerializer):
             setor=validated_data['setor']
         )
         return user
+
+
+class PadraoContagemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PadraoContagem
+        fields = '__all__'
+
+class UserPadraoContagemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserPadraoContagem
+        fields = '__all__'
+        read_only_fields = ['user']

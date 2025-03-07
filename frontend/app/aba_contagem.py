@@ -1,59 +1,113 @@
+# app/aba_contagem.py
 import flet as ft
+import logging
+from datetime import datetime, timedelta
+
+logging.getLogger(__name__).setLevel(logging.DEBUG)
 
 def setup_aba_contagem(self):
-
     tab = self.tabs.tabs[1].content
     tab.controls.clear()
     self.contagem_ativa = False
+    self.labels.clear()
+
+    session_info = ft.Container(
+        content=ft.Row(
+            alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+            controls=[
+                ft.Text(f"👤 Usuário: {self.username}", size=14, weight=ft.FontWeight.W_500, color="BLUE"),
+                ft.Text(f"📌 Sessão: {self.sessao if self.sessao else 'Nenhuma'}", size=14, weight=ft.FontWeight.W_500, color="BLUE"),
+            ],
+        ),
+        padding=ft.padding.symmetric(horizontal=10, vertical=5),
+        bgcolor=ft.colors.SURFACE_VARIANT,
+        border_radius=8,
+    )
 
     self.toggle_button = ft.Switch(
-        tooltip="Ativar contagem",
+        label="🟢 Ativar Contagem",
         value=False,
         on_change=self.toggle_contagem,
     )
 
-    save_button = ft.IconButton(
-        icon=ft.icons.SAVE,
-        icon_color="lightblue",
-        tooltip="Salvar contagem",
-        on_click=self.save_contagens
-    )
-
-    end_session_button = ft.IconButton(
-        icon=ft.icons.STOP,
-        tooltip="Finalizar sessão",
-        icon_color="RED",
-        on_click=self.confirmar_finalizar_sessao
-    )
-
-    reset_all_button = ft.IconButton(
-        icon=ft.icons.REFRESH,
-        icon_color="orange",
-        tooltip="Resetar todas as contagens",
-        on_click=self.confirmar_resetar_todas_contagens
-    )
-
-    self.last_save_label = ft.Text("Último salvamento: ainda não salvo", size=12, color="gray")
-
-    controls_row = ft.Row(
+    action_buttons = ft.Row(
         alignment=ft.MainAxisAlignment.CENTER,
-        spacing=20,
-        controls=[self.toggle_button, save_button, end_session_button, reset_all_button],
+        spacing=10,
+        controls=[
+            ft.ElevatedButton("💾 Salvar", bgcolor="lightblue", on_click=self.save_contagens),
+            ft.ElevatedButton("🛑 Finalizar", bgcolor="RED", on_click=self.confirmar_finalizar_sessao),
+            ft.ElevatedButton("🔄 Resetar", bgcolor="ORANGE", on_click=self.resetar_todas_contagens),
+            ft.ElevatedButton("📝 Observação", bgcolor="PURPLE", on_click=self.abrir_dialogo_observacao),
+        ]
     )
 
-    tab.controls.append(controls_row)
-    tab.controls.append(self.last_save_label)
-
-    self.movimento_tabs = ft.Tabs(
-        selected_index=0,
-        animation_duration=50,
-        tabs=[ft.Tab(text=movimento, content=self.create_moviment_content(movimento))
-            for movimento in self.details["Movimentos"]],
-        expand=1,
+    if not hasattr(self, "last_save_time") or self.last_save_time is None:
+        self.last_save_time = datetime.now()
+    
+    self.last_save_label = ft.Text(
+        value=f"⏳ Último salvamento: {self.last_save_time.strftime('%H:%M:%S')}",
+        size=14, weight=ft.FontWeight.W_500, color="GRAY"
     )
 
-    tab.controls.append(self.movimento_tabs)
+    if not hasattr(self, "current_timeslot") or self.current_timeslot is None:
+        self.current_timeslot = datetime.strptime(self.details["HorarioInicio"], "%H:%M") if "HorarioInicio" in self.details else datetime.now().replace(second=0, microsecond=0)
 
+    periodo_inicio = self.current_timeslot.strftime("%H:%M")
+    periodo_fim = (self.current_timeslot + timedelta(minutes=15)).strftime("%H:%M")
+    
+    self.period_label = ft.Text(
+        value=f"🕒 Período: {periodo_inicio} - {periodo_fim}",
+        size=14, weight=ft.FontWeight.W_500, color="DARKGRAY"
+    )
+
+    status_container = ft.Container(
+        content=ft.Row(
+            controls=[self.last_save_label, self.period_label],
+            spacing=15,
+            alignment=ft.MainAxisAlignment.CENTER
+        ),
+        bgcolor=ft.colors.SURFACE_VARIANT,
+        padding=ft.padding.symmetric(horizontal=12, vertical=6),
+        border_radius=8,
+        margin=ft.margin.only(top=10, bottom=10),
+        alignment=ft.alignment.center
+    )
+
+    movimentos = self.details.get("Movimentos", [])
+    if not movimentos:
+        logging.warning("[WARNING] Nenhum movimento encontrado em self.details['Movimentos']")
+        tab.controls.append(ft.Text("⚠ Nenhum movimento disponível", color="red"))
+    else:
+        self.movimento_tabs = ft.Tabs(
+            selected_index=0,
+            animation_duration=100,
+            tabs=[ft.Tab(text=mov, content=self.create_moviment_content(mov)) for mov in movimentos],
+            expand=1,
+        )
+        tab.controls.extend([
+            session_info, 
+            ft.Row([self.toggle_button], alignment=ft.MainAxisAlignment.CENTER, spacing=20),  # 🔹 Mantendo apenas um switch
+            action_buttons, 
+            status_container, 
+            self.movimento_tabs
+        ])
+
+    tab.visible = True
+    self.atualizar_borda_contagem()
+    self.page.update()
+
+
+def toggle_listener(self, e):
+    if self.listener_switch.value:
+        self.start_listener()
+        self.listener_switch.label = "🎧 Listener Ativado"
+        logging.info("✅ Listener ativado")
+    else:
+        self.stop_listener()
+        self.listener_switch.label = "🚫 Listener Desativado"
+        logging.info("❌ Listener desativado")
+
+    self.listener_switch.update()
     self.page.update()
 
 def resetar_todas_contagens(self, e):
@@ -63,86 +117,37 @@ def resetar_todas_contagens(self, e):
             self.contagens[(veiculo, current_movimento)] = 0
             self.update_labels(veiculo, current_movimento)
             self.save_to_db(veiculo, current_movimento)
-        snackbar = ft.SnackBar(ft.Text(f"Contagens do movimento '{current_movimento}' foram resetadas."), bgcolor="BLUE")
+            self.salvar_historico(veiculo, current_movimento, "reset")
+
+        snackbar = ft.SnackBar(
+            ft.Text(f"✅ Contagens do movimento '{current_movimento}' foram resetadas."),
+            bgcolor="BLUE"
+        )
         self.page.overlay.append(snackbar)
         snackbar.open = True
         self.page.update()
 
-        self.salvar_historico(veiculo="N/A", movimento=current_movimento, acao="reset")
+        logging.info(f"[INFO] Contagens resetadas para movimento '{current_movimento}'")
 
     except Exception as ex:
-        snackbar = ft.SnackBar(ft.Text(f"Erro ao resetar contagens do movimento '{current_movimento}'."), bgcolor="RED")
+        logging.error(f"[ERROR] Erro ao resetar contagens do movimento '{current_movimento}': {ex}")
+        snackbar = ft.SnackBar(
+            ft.Text(f"❌ Erro ao resetar contagens do movimento '{current_movimento}'."), bgcolor="RED"
+        )
         self.page.overlay.append(snackbar)
         snackbar.open = True
         self.page.update()
 
-def confirmar_resetar_todas_contagens(self, e):
-    # da pra lançar uns lambda aqui
-    def close_dialog(e):
-        dialog.open = False
-        self.page.update()
 
-    def reset_and_close(e):
-        dialog.open = False
-        self.page.update()
-        self.resetar_todas_contagens(None)
-
-    dialog = ft.AlertDialog(
-        title=ft.Text("Resetar Todas as Contagens"),
-        content=ft.Text("Você tem certeza que deseja resetar todas as contagens?"),
-        actions=[
-            ft.TextButton("Sim", on_click=reset_and_close),
-            ft.TextButton("Cancelar", on_click=close_dialog),
-        ],
-    )
-    self.page.overlay.append(dialog)
-    dialog.open = True
-    self.page.update()
-
-def create_moviment_content(self, movimento):
-    content = ft.Column()
-    categorias = [c for c in self.categorias if c.movimento == movimento]
-    for categoria in categorias:
-        control = self.create_category_control(categoria.veiculo, categoria.bind, movimento)
-        content.controls.append(control)
-
-    return content
-
-def create_category_control(self, veiculo, bind, movimento):
-    label_veiculo = ft.Text(f"{veiculo}", size=15, width=100)
-    label_bind = ft.Text(f"({bind})", color="cyan", size=15, width=50)
-    label_count = ft.Text(f"{self.contagens.get((veiculo, movimento), 0)}", size=15, width=50)
-    self.labels[(veiculo, movimento)] = label_count
-
-    campo_visivel = False
-
-    popup_menu = ft.PopupMenuButton(
-        icon_color="teal",
-        items=[
-            ft.PopupMenuItem(text="Adicionar", icon=ft.icons.ADD, on_click=lambda e, v=veiculo, m=movimento: self.increment(v, m)),
-            ft.PopupMenuItem(text="Remover", icon=ft.icons.REMOVE, on_click=lambda e, v=veiculo, m=movimento: self.decrement(v, m)),
-            ft.PopupMenuItem(text="Editar Contagem", icon=ft.icons.EDIT, on_click=lambda e: self.abrir_edicao_contagem(veiculo, movimento)),
-            ft.PopupMenuItem(text="Editar Bind", icon=ft.icons.EDIT, on_click=lambda e, v=veiculo, m=movimento: self.editar_bind(v, m))
-        ]
-    )
-
-    return ft.Row(
-        alignment=ft.MainAxisAlignment.CENTER,
-        spacing=5,
-        controls=[
-            ft.Container(content=label_veiculo, alignment=ft.alignment.center_left),
-            ft.Container(content=label_bind, alignment=ft.alignment.center),
-            ft.Container(content=label_count, alignment=ft.alignment.center_right),
-            popup_menu
-        ]
-    )
 
 def atualizar_borda_contagem(self):
     if self.contagem_ativa:
         self.page.window.bgcolor = "green"
-        self.toggle_button.bgcolor = "lightgreen"        
+        if hasattr(self, "toggle_button"):
+            self.toggle_button.bgcolor = "lightgreen"
     else:
         self.page.window.bgcolor = "red"
-        self.toggle_button.bgcolor = "orange"
-        
+        if hasattr(self, "toggle_button"):
+            self.toggle_button.bgcolor = "orange"
+    
     self.page.update()

@@ -4,53 +4,54 @@ from database.models import Session, Contagem, init_db, Sessao
 import flet as ft
 import logging
 import time
+import threading
 
 
 def on_key_press(self, key):
+    
     if not self.contagem_ativa:
         return
-    try:
-        if hasattr(key, 'name') and key.name == 'shift_r':
-            self.movimento_tabs.selected_index = (self.movimento_tabs.selected_index + 1) % len(self.movimento_tabs.tabs)
-            self.page.update()
-            return
-        if hasattr(key, 'name') and key.name.startswith('f') and key.name[1:].isdigit():
-            index = int(key.name[1:]) - 1
-            if 0 <= index < len(self.movimento_tabs.tabs):
-                self.movimento_tabs.selected_index = index
+    
+    def _processar_tecla():
+        try:
+            if hasattr(key, 'name') and key.name in ['shift_r', 'caps_lock', 'up', 'down']:
+                self.movimento_tabs.selected_index = (self.movimento_tabs.selected_index + 1) % len(self.movimento_tabs.tabs)
                 self.page.update()
-            return
+                return
+            
+            if hasattr(key, 'name') and key.name.startswith('f') and key.name[1:].isdigit():
+                index = int(key.name[1:]) - 1
+                if 0 <= index < len(self.movimento_tabs.tabs):
+                    self.movimento_tabs.selected_index = index
+                    self.page.update()
+                    print(f"[DEBUG] 🔄 Mudando para aba {index}")
+                return
 
-        if hasattr(key, 'name') and key.name == 'caps_lock':
-            self.movimento_tabs.selected_index = (self.movimento_tabs.selected_index + 1) % len(self.movimento_tabs.tabs)
-            self.page.update()
-            return
+            char = None
+            if hasattr(key, 'vk') and key.vk in self.numpad_mappings:
+                char = self.numpad_mappings[key.vk]
+            elif hasattr(key, 'char'):
+                char = key.char
+            else:
+                char = str(key).strip("'")
 
-        if hasattr(key, 'name') and key.name == 'up':
-            self.movimento_tabs.selected_index = (self.movimento_tabs.selected_index + 1) % len(self.movimento_tabs.tabs)
-            self.page.update()
-            return
+            current_movimento = self.movimento_tabs.tabs[self.movimento_tabs.selected_index].text
 
-        if hasattr(key, 'name') and key.name == 'down':
-            self.movimento_tabs.selected_index = (self.movimento_tabs.selected_index - 1) % len(self.movimento_tabs.tabs)
-            self.page.update()
-            return
+            # **Ajuste aqui:** Verifica se `char` está nos binds atualizados
+            if char in self.binds.values():
+                veiculo = [k for k, v in self.binds.items() if v == char][0]  # Encontra a chave (veículo)
+                self.increment(veiculo, current_movimento)  # 🔥 Chama a função corretamente
+            else:
+                pass
 
-        char = None
-        if hasattr(key, 'vk') and key.vk in self.numpad_mappings:
-            char = self.numpad_mappings[key.vk]
-        elif hasattr(key, 'char'):
-            char = key.char
-        else:
-            char = str(key).strip("'")
+        except Exception as ex:
+            logging.error(f"Erro ao pressionar tecla: {ex}")
 
-        current_movimento = self.movimento_tabs.tabs[self.movimento_tabs.selected_index].text
-        if (char, current_movimento) in self.binds:
-            veiculo, movimento = self.binds[(char, current_movimento)]
-            self.increment(veiculo, movimento)
+    # 🚀 Processa cada tecla pressionada em uma thread separada
+    threading.Thread(target=_processar_tecla, daemon=True).start()
 
-    except Exception as ex:
-        logging.error(f"Erro ao pressionar tecla: {ex}")
+
+
 
         
 def finalizar_sessao(self):
