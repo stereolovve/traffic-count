@@ -1,11 +1,9 @@
-# loginregister/login.py
 import flet as ft
 import logging
 import json
 from pathlib import Path
 from utils.config import API_URL, DESKTOP_DIR
 from utils.api import async_api_request
-
 
 logging.getLogger(__name__).setLevel(logging.ERROR)
 
@@ -25,6 +23,14 @@ class LoginPage(ft.Container):
         self.login_button = ft.ElevatedButton("Entrar", on_click=self.login)
         self.register_button = ft.TextButton("Não tem uma conta? Registrar", on_click=self.show_register)
         self.error_text = ft.Text(value="", color="red", visible=False)
+        # Indicador de carregamento
+        self.loading_indicator = ft.ProgressRing(
+            width=50,
+            height=50,
+            visible=False,
+            stroke_width=6,
+            color=ft.colors.BLUE_700
+        )
 
         # Container content with centered layout
         self.content = ft.Container(
@@ -34,8 +40,9 @@ class LoginPage(ft.Container):
                     self.username_field,
                     self.password_field,
                     self.login_button,
-                    self.register_button,
+                    self.loading_indicator,  # Adiciona o indicador ao layout
                     self.error_text,
+                    self.register_button,
                 ],
                 alignment=ft.MainAxisAlignment.CENTER,
                 horizontal_alignment=ft.CrossAxisAlignment.CENTER,
@@ -57,12 +64,22 @@ class LoginPage(ft.Container):
             self.error_text.value = message
             self.error_text.color = "green" if is_success else "red"
             self.error_text.visible = True
-            self.update()
+            self.loading_indicator.visible = False  # Oculta o indicador ao mostrar mensagem
+            self.page.update()
         else:
             logging.warning("Tentativa de atualizar LoginPage fora do contexto da página.")
 
     async def perform_login(self, username, password):
         """Realiza a operação de login de forma assíncrona."""
+        # Mostra o indicador de carregamento
+        if self.page:
+            self.loading_indicator.visible = True
+            self.login_button.disabled = True  # Desativa o botão para evitar cliques múltiplos
+            self.page.update()
+        else:
+            logging.error("self.page é None durante o início do login.")
+            return
+
         try:
             payload = {"username": username, "password": password}
             response = await async_api_request(
@@ -71,7 +88,7 @@ class LoginPage(ft.Container):
                 json_data=payload
             )
 
-            if isinstance(response, dict) and "access" in response:  # ✅ Verifica corretamente
+            if isinstance(response, dict) and "access" in response:
                 self.app.tokens = {"access": response["access"], "refresh": response["refresh"]}
                 self.app.username = username
 
@@ -91,10 +108,14 @@ class LoginPage(ft.Container):
 
                 # Mostra mensagem de sucesso e redireciona
                 snackbar = ft.SnackBar(ft.Text("Login realizado com sucesso!"), bgcolor="GREEN")
-                self.page.overlay.append(snackbar)
-                snackbar.open = True
+                if self.page:
+                    self.page.overlay.append(snackbar)
+                    snackbar.open = True
+                    self.page.update()
+                else:
+                    logging.warning("self.page é None ao mostrar snackbar de sucesso no login.")
 
-                await self.app.switch_to_main_app()  # ✅ Aguarda a troca de tela
+                await self.app.switch_to_main_app()  # Aguarda a troca de tela
             else:
                 raise ValueError("Credenciais inválidas!")
 
@@ -103,7 +124,14 @@ class LoginPage(ft.Container):
         except Exception as ex:
             logging.error(f"Erro ao fazer login: {ex}")
             self.show_error(f"Erro ao conectar: {str(ex)}")
-
+        finally:
+            # Oculta o indicador e reativa o botão, independentemente do resultado
+            if self.page:
+                self.loading_indicator.visible = False
+                self.login_button.disabled = False
+                self.page.update()
+            else:
+                logging.warning("self.page é None no finally do login.")
 
     def login(self, e):
         """Handles the login button click, scheduling the async login operation."""
@@ -114,14 +142,14 @@ class LoginPage(ft.Container):
             self.show_error("Usuário e senha são obrigatórios!")
             return
 
-        # Define a standalone coroutine function for page.run_task
         async def wrapped_login():
             await self.perform_login(username, password)
 
-        # Schedule the coroutine using page.run_task
-        self.page.run_task(wrapped_login)
+        if self.page:
+            self.page.run_task(wrapped_login)
+        else:
+            logging.error("self.page é None ao iniciar o login.")
 
     def show_register(self, e):
-        """Switches to the register page (synchronous)."""
         print("🔄 Alternando para tela de registro...")
         self.app.show_register_page()

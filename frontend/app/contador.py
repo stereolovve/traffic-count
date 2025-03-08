@@ -43,7 +43,7 @@ class ContadorPerplan(ft.Column):
         configurar_numpad_mappings(self)
         self.session_lock = threading.Lock() 
         self.session = Session()  
-
+    
         self.setup_ui()
         self.page.update()
         asyncio.create_task(self.load_active_session()) 
@@ -362,6 +362,7 @@ class ContadorPerplan(ft.Column):
                 logging.debug(f"[DEBUG] Categorias carregadas do banco: {[(c.veiculo, c.movimento) for c in self.categorias]}")
 
                 self.setup_aba_contagem()
+                self.page.update()
 
             except Exception as ex:
                 logging.error(f"[ERROR] Erro ao carregar categorias locais: {ex}")
@@ -652,7 +653,9 @@ class ContadorPerplan(ft.Column):
 
         content = ft.Column()
         
-        categorias = [c for c in self.categorias if movimento in c.movimento.split(", ")]
+        categorias = [c for c in self.categorias if movimento.strip().upper() == c.movimento.strip().upper()]
+        
+        logging.debug(f"[DEBUG] Categorias encontradas para {movimento}: {[(c.veiculo, c.movimento) for c in categorias]}")
 
         if not categorias:
             logging.warning(f"[WARNING] Nenhuma categoria encontrada para {movimento}")
@@ -701,7 +704,6 @@ class ContadorPerplan(ft.Column):
 
         self.page.update()
         return row
-
 
     def save_new_binds(self, novos_binds):
         try:

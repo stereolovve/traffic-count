@@ -1,10 +1,8 @@
-# loginregister/register.py
 import flet as ft
 import logging
 import asyncio
 from utils.config import API_URL
 from utils.api import async_api_request
-
 
 logger = logging.getLogger(__name__)
 
@@ -12,7 +10,7 @@ class RegisterPage(ft.Container):
     def __init__(self, app):
         super().__init__()
         self.app = app
-        self.page = app.page
+        self.page = app.page  # Referência inicial à página do app
 
         # Campos de entrada
         self.name_field = ft.TextField(label="Primeiro nome", width=300, hint_text="Ex.: João")
@@ -39,6 +37,14 @@ class RegisterPage(ft.Container):
             "Já tem uma conta? Entrar", on_click=self.back_to_login
         )
         self.error_text = ft.Text(value="", color=ft.colors.RED_600, visible=False, size=14)
+        # Indicador de carregamento
+        self.loading_indicator = ft.ProgressRing(
+            width=50,
+            height=50,
+            visible=False,
+            stroke_width=6,
+            color=ft.colors.BLUE_700
+        )
 
         # Layout
         self.content = ft.Column(
@@ -52,6 +58,7 @@ class RegisterPage(ft.Container):
                 self.confirm_password_field,
                 self.setor_field,
                 self.register_button,
+                self.loading_indicator,
                 self.error_text,
                 self.back_to_login_button,
             ],
@@ -65,10 +72,14 @@ class RegisterPage(ft.Container):
 
     def show_error(self, message: str, is_success: bool = False):
         """Exibe mensagem de erro ou sucesso na UI."""
-        self.error_text.value = message
-        self.error_text.color = ft.colors.GREEN_600 if is_success else ft.colors.RED_600
-        self.error_text.visible = True
-        self.page.update()
+        if self.page:  # Verifica se self.page é válido
+            self.error_text.value = message
+            self.error_text.color = ft.colors.GREEN_600 if is_success else ft.colors.RED_600
+            self.error_text.visible = True
+            self.loading_indicator.visible = False
+            self.page.update()
+        else:
+            logging.warning("Tentativa de atualizar RegisterPage com self.page inválido.")
 
     def validate_fields(self) -> tuple[bool, str]:
         """Valida os campos de entrada."""
@@ -85,11 +96,9 @@ class RegisterPage(ft.Container):
             if not value or value.strip() == "":
                 return False, f"{field_name} é obrigatório!"
 
-        # 🔹 Verifica se o setor foi selecionado corretamente
         if not self.setor_field.value:
             return False, "Setor é obrigatório!"
 
-        # 🔹 Verifica se as senhas coincidem
         if self.password_field.value != self.confirm_password_field.value:
             return False, "As senhas não correspondem!"
 
@@ -100,6 +109,15 @@ class RegisterPage(ft.Container):
         is_valid, error_message = self.validate_fields()
         if not is_valid:
             self.show_error(error_message)
+            return
+
+        # Mostra o indicador de carregamento
+        if self.page:
+            self.loading_indicator.visible = True
+            self.register_button.disabled = True
+            self.page.update()
+        else:
+            logging.error("self.page é None durante o início do registro.")
             return
 
         try:
@@ -120,10 +138,11 @@ class RegisterPage(ft.Container):
                 json_data=payload
             )
 
-            if isinstance(response, dict) and response.get("id"):  # ✅ Verifica corretamente
+            if isinstance(response, dict) and response.get("id"):
                 self.show_error("Registro bem-sucedido! Retornando ao login... 😊👌", is_success=True)
                 await asyncio.sleep(2)
-                self.app.show_login_page()
+                # Delega a transição para o app, evitando manipulação direta da página
+                await self.app.show_login_page()  # Ajustado para assíncrono
             else:
                 error_msg = response.get("detail", "Erro ao registrar: resposta inesperada")
                 self.show_error(error_msg)
@@ -132,14 +151,23 @@ class RegisterPage(ft.Container):
         except Exception as ex:
             logger.error(f"[ERROR] Erro ao registrar: {ex}")
             self.show_error(f"Erro ao registrar: {str(ex)}")
-
-
+        finally:
+            # Oculta o indicador e reativa o botão
+            if self.page:
+                self.loading_indicator.visible = False
+                self.register_button.disabled = False
+                self.page.update()
+            else:
+                logging.warning("self.page é None no finally do registro.")
 
     def register(self, e):
         """Inicia o processo de registro de forma assíncrona."""
         logger.info("[INFO] Iniciando processo de registro...")
         self.error_text.visible = False
-        self.page.run_task(self.perform_register)
+        if self.page:
+            self.page.run_task(self.perform_register)
+        else:
+            logging.error("self.page é None ao iniciar o registro.")
 
     def back_to_login(self, e):
         """Retorna à página de login."""
