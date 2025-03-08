@@ -223,7 +223,7 @@ class ContadorPerplan(ft.Column):
                 self.movimentos_container.controls.remove(movimento_row)
                 self.page.update()
 
-        adicionar_movimento_button = ft.FilledButton(
+        adicionar_movimento_button = ft.ElevatedButton(
             text="Adicionar Movimento",
             icon=ft.icons.ADD,
             width=float('inf'),
@@ -231,7 +231,7 @@ class ContadorPerplan(ft.Column):
             on_click=adicionar_campo_movimento
         )
 
-        criar_sessao_button = ft.FilledButton(
+        criar_sessao_button = ft.ElevatedButton(
             text="Criar Sessão",
             on_click=self.criar_sessao,
             width=float('inf'),
@@ -566,15 +566,19 @@ class ContadorPerplan(ft.Column):
                 self.session.rollback()
 
 
-    def recuperar_contagens(self):
+    def recover_active_countings(self):
         try:
             contagens_db = self.session.query(Contagem).filter_by(sessao=self.sessao).all()
             self.contagens.clear()
             for contagem in contagens_db:
                 key = (contagem.veiculo, contagem.movimento)
                 self.contagens[key] = contagem.count
-                if key in self.labels and self.labels[key].page:  
-                    self.update_labels(contagem.veiculo, contagem.movimento)
+                if key in self.labels:
+                    label_count, label_bind = self.labels[key]
+                    if label_count.page: 
+                        self.update_labels(contagem.veiculo, contagem.movimento)
+                    else:
+                        logging.warning(f"[WARNING] Label para {key} não tem atributo page. Aguardando criação.")
                 else:
                     logging.warning(f"[WARNING] Label não encontrada para {key}. Aguardando criação.")
             logging.info(f"✅ Contagens recuperadas: {self.contagens}")
@@ -703,12 +707,12 @@ class ContadorPerplan(ft.Column):
         try:
             with self.session_lock:
                 for cat in categorias:
-                    print(f"[DEBUG] Salvando no banco: {cat}")  # <-- Adiciona este print
+                    print(f"[DEBUG] Salvando no banco: {cat}")
 
                     nova_categoria = Categoria(
-                        padrao=cat["pattern_type"],  # <-- Verifique se o campo está correto
+                        padrao=cat["pattern_type"],
                         veiculo=cat["veiculo"],
-                        movimento=cat["movimento"],  # <-- Se necessário, ajuste como obter o movimento correto
+                        movimento=cat["movimento"],
                         bind=cat.get("bind", "N/A")
                     )
                     self.session.add(nova_categoria)
@@ -1218,7 +1222,7 @@ class ContadorPerplan(ft.Column):
             await self.load_categories_api(self.padrao_dropdown.value)
             self.load_local_categories()
 
-            self.recuperar_contagens()
+            self.recover_active_countings()
             self.setup_aba_contagem()
 
             self.tabs.selected_index = 1

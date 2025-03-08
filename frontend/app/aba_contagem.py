@@ -86,7 +86,7 @@ def setup_aba_contagem(self):
         )
         tab.controls.extend([
             session_info, 
-            ft.Row([self.toggle_button], alignment=ft.MainAxisAlignment.CENTER, spacing=20),  # 🔹 Mantendo apenas um switch
+            ft.Row([self.toggle_button], alignment=ft.MainAxisAlignment.CENTER, spacing=20),
             action_buttons, 
             status_container, 
             self.movimento_tabs
@@ -95,7 +95,6 @@ def setup_aba_contagem(self):
     tab.visible = True
     self.atualizar_borda_contagem()
     self.page.update()
-
 
 def toggle_listener(self, e):
     if self.listener_switch.value:
@@ -137,7 +136,6 @@ def resetar_todas_contagens(self, e):
         self.page.overlay.append(snackbar)
         snackbar.open = True
         self.page.update()
-
 
 
 def atualizar_borda_contagem(self):
