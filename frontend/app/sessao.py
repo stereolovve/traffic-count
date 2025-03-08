@@ -12,7 +12,7 @@ from openpyxl import Workbook
 
 from datetime import datetime
 from typing import Optional
-from utils.config import API_URL, APP_DATA_DIR
+from utils.config import API_URL
 from utils.api import async_api_request
 
 logging.getLogger(__name__).setLevel(logging.ERROR)

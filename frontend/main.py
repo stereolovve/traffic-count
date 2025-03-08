@@ -5,22 +5,22 @@ from dotenv import load_dotenv
 import os
 import json
 import asyncio
-import re
 from pathlib import Path
 from app.contador import ContadorPerplan
-from utils.config import API_URL, EXCEL_BASE_DIR, APP_DATA_DIR
+from utils.config import API_URL, EXCEL_BASE_DIR, DESKTOP_DIR, LOG_FILE, AUTH_TOKENS_FILE
 from utils.api import async_api_request
 from loginregister.register import RegisterPage
 from loginregister.login import LoginPage
 
-
 load_dotenv()
 
-LOG_FILE = APP_DATA_DIR / "log.txt"
 logging.basicConfig(
     level=logging.ERROR,
-    format='%(asctime)s - %(levelname)s - %(module)s:%(funcName)s - %(message)s',
-    handlers=[logging.FileHandler(LOG_FILE), logging.StreamHandler()]
+    format="%(asctime)s - %(levelname)s - %(module)s:%(funcName)s - %(message)s",
+    handlers=[
+        logging.FileHandler(LOG_FILE),  # 📄 Agora o log fica na pasta "Contador"
+        logging.StreamHandler()
+    ]
 )
 
 class MyApp:
@@ -40,11 +40,9 @@ class MyApp:
             response = await async_api_request(f"{API_URL}/api/user/preferences/", headers=headers)
             
             self.user_preferences = response
-
             logging.info("✅ Preferências carregadas com sucesso!")
         except Exception as ex:
             logging.error(f"Erro ao carregar preferências: {ex}")
-
 
     async def verificar_token(self):
         if not self.tokens or 'access' not in self.tokens:
@@ -65,9 +63,29 @@ class MyApp:
             logging.error(f"Erro ao verificar token: {ex}")
             return False
 
+    def save_tokens(self):
+        try:
+            with open(AUTH_TOKENS_FILE, "w") as f:
+                json.dump({"access": self.tokens.get("access"), "username": self.username}, f)
+            logging.info(f"✅ Tokens salvos em: {AUTH_TOKENS_FILE}")
+        except Exception as ex:
+            logging.error(f"❌ Erro ao salvar tokens: {ex}")
+
+    def load_tokens(self):
+        if AUTH_TOKENS_FILE.exists():
+            try:
+                with open(AUTH_TOKENS_FILE, "r") as f:
+                    saved_data = json.load(f)
+                self.tokens = {"access": saved_data.get("access")}
+                self.username = saved_data.get("username")
+                logging.info(f"🔑 Tokens carregados de: {AUTH_TOKENS_FILE}")
+                return True
+            except (json.JSONDecodeError, ValueError, KeyError) as ex:
+                logging.error(f"❌ Erro ao carregar tokens: {ex}")
+                AUTH_TOKENS_FILE.unlink()
+        return False
 
     async def switch_to_main_app(self, force_contador=False):
-
         await self.load_user_preferences()
 
         self.page.controls.clear()
@@ -80,7 +98,7 @@ class MyApp:
         self.page.update()
 
         await self.contador.carregar_padroes_selecionados()
-        await self.contador.update_binds() 
+        await self.contador.update_binds()
 
         self.contador.start_listener()
         self.page.on_close = lambda e: self.contador.stop_listener()
@@ -91,7 +109,6 @@ class MyApp:
             self.page.update()
 
         logging.debug("[DEBUG] UI principal configurada com abas separadas")
-
 
     def show_login_page(self):
         self.page.controls.clear()
@@ -130,26 +147,15 @@ async def main(page: ft.Page):
     page.window.center()
 
     app = MyApp(page)
-    tokens_path = APP_DATA_DIR / "auth_tokens.json"
 
-    if tokens_path.exists():
-        try:
-            with open(tokens_path, "r") as f:
-                saved_data = json.load(f)
-            app.tokens = {"access": saved_data.get("access")}
-            app.username = saved_data.get("username")
-            print(f"🔑 Token carregado ao iniciar: {app.tokens}")
-
-            if await app.verificar_token():
-                print("✅ Token válido, iniciando app diretamente...")
-                await app.switch_to_main_app()
-                return
-            else:
-                print("❌ Token inválido!")
-                app.show_login_page()
-        except (json.JSONDecodeError, ValueError, KeyError) as ex:
-            logging.error(f"Erro ao carregar tokens salvos: {ex}")
-            tokens_path.unlink()
+    if app.load_tokens():
+        print("🔑 Token carregado ao iniciar")
+        if await app.verificar_token():
+            print("✅ Token válido, iniciando app diretamente...")
+            await app.switch_to_main_app()
+            return
+        else:
+            print("❌ Token inválido!")
             app.show_login_page()
     else:
         app.show_login_page()

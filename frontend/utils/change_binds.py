@@ -6,7 +6,7 @@ import asyncio
 import threading
 from pathlib import Path
 import json
-from utils.config import API_URL, APP_DATA_DIR
+from utils.config import API_URL, DESKTOP_DIR
 from utils.api import async_api_request
 
 logging.getLogger(__name__).setLevel(logging.ERROR)
@@ -17,7 +17,7 @@ class BindManager:
         self.contador = contador
 
     async def load_tokens(self):
-        tokens_path = APP_DATA_DIR / "auth_tokens.json"
+        tokens_path = DESKTOP_DIR / "auth_tokens.json"
         if tokens_path.exists():
             try:
                 with open(tokens_path, "r") as f:

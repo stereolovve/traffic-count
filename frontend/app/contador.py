@@ -8,7 +8,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from app import aba_contagem, aba_historico, listener, sessao, aba_config
 from utils.initializer import inicializar_variaveis, configurar_numpad_mappings
 from openpyxl import Workbook
-from utils.config import API_URL, EXCEL_BASE_DIR, APP_DATA_DIR
+from utils.config import API_URL, EXCEL_BASE_DIR, DESKTOP_DIR
 from loginregister.login import LoginPage
 from utils.period import format_period
 from loginregister.register import RegisterPage
@@ -325,8 +325,10 @@ class ContadorPerplan(ft.Column):
     def criar_sessao(self, e):
         def _carregar_sessao():
             sessao.criar_sessao(self, e)
+
             async def setup_session():
                 await self.carregar_padroes_selecionados()
+                await self.load_categories_api(self.padrao_dropdown.value)
                 await self.update_binds()
 
             self.page.run_task(setup_session)
@@ -334,7 +336,8 @@ class ContadorPerplan(ft.Column):
             self.load_local_categories()
             self.setup_aba_contagem()
 
-        threading.Thread(target=_carregar_sessao, daemon=True).start() 
+        threading.Thread(target=_carregar_sessao, daemon=True).start()
+
 
 
     def load_local_categories(self, padrao=None):
@@ -351,6 +354,7 @@ class ContadorPerplan(ft.Column):
                 self.categorias = (
                     self.session.query(Categoria)
                     .filter(Categoria.padrao == padrao_atual)
+                    .order_by(Categoria.id)
                     .all()
                 )
                 self.session.commit()
@@ -1282,7 +1286,6 @@ class ContadorPerplan(ft.Column):
     async def load_categories_api(self, pattern_type):
         try:
             movimentos = self.details.get("Movimentos", [])
-
             if not movimentos:
                 logging.warning("[WARNING] Nenhum movimento definido")
                 return
@@ -1306,16 +1309,18 @@ class ContadorPerplan(ft.Column):
                 nova_categoria = Categoria(
                     padrao=cat["pattern_type"],
                     veiculo=cat["veiculo"],
-                    movimento=movimento,  # Ajuste se necessário
+                    movimento=movimento,
                     bind=cat.get("bind", "N/A")
                 )
                 categorias_a_salvar.append(nova_categoria)
 
-            # Agora, salvamos todas as categorias no banco
             self.save_categories_in_local(categorias_a_salvar)
+            self.setup_aba_contagem()
+            self.page.update()  # Removido o 'await'
 
         except Exception as ex:
             logging.error(f"[ERROR] Erro em load_categories_api: {ex}")
+
 
 
     def save_categories_in_local(self, categorias):
@@ -1377,15 +1382,15 @@ class ContadorPerplan(ft.Column):
             binds_usuario = response
 
             self.binds = {item["veiculo"]: item["bind"] for item in binds_usuario}
-            self.page.update()
+            self.setup_aba_contagem()
+            self.page.update()  # Removido o 'await'
 
         except Exception as ex:
             logging.error(f"[ERROR] Erro ao carregar padrões do usuário: {ex}")
-
-
+            
     def logout_user(self, e):
         try:
-            tokens_path = APP_DATA_DIR / "auth_tokens.json"
+            tokens_path = DESKTOP_DIR / "auth_tokens.json"
             if tokens_path.exists():
                 tokens_path.unlink()
                 logging.info("[✅] Tokens apagados no logout.")

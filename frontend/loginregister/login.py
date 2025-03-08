@@ -3,7 +3,7 @@ import flet as ft
 import logging
 import json
 from pathlib import Path
-from utils.config import API_URL, APP_DATA_DIR
+from utils.config import API_URL, DESKTOP_DIR
 from utils.api import async_api_request
 
 
@@ -76,7 +76,7 @@ class LoginPage(ft.Container):
                 self.app.username = username
 
                 # Salva tokens no disco
-                tokens_path = APP_DATA_DIR / "auth_tokens.json"
+                tokens_path = DESKTOP_DIR / "auth_tokens.json"
                 with open(tokens_path, "w") as f:
                     json.dump({
                         "username": username,
