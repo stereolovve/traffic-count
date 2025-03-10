@@ -4,8 +4,10 @@ import os
 from utils.config import EXCEL_BASE_DIR
 
 def setup_aba_relatorio(contador):
+    """Configura a aba Relatório com uma UI/UX amigável e rolagem"""
 
     def load_data():
+        """Carrega os dados diretamente da planilha Excel da sessão ativa"""
         try:
             if not contador.sessao:
                 return ft.Container(
@@ -115,15 +117,14 @@ def setup_aba_relatorio(contador):
             )
 
             tabela_container = ft.Container(
-            content=ft.Row(
-                controls=[tabela_relatorio],
-                scroll=ft.ScrollMode.ALWAYS 
-            ),
-            padding=10,
-            expand=True,
-            border_radius=10,
-        )
-
+                content=ft.Row(
+                    controls=[tabela_relatorio],
+                    scroll=ft.ScrollMode.ALWAYS 
+                ),
+                padding=10,
+                expand=True,
+                border_radius=10,
+            )
 
             return tabela_container
 
@@ -142,12 +143,14 @@ def setup_aba_relatorio(contador):
             )
 
     def atualizar_relatorio(e):
+        """Atualiza os dados da aba Relatório"""
         if not contador.page:
             print("[ERROR] Página não disponível para atualizar o relatório.")
             return
 
         novo_relatorio = load_data()
-        conteudo_aba.controls[1].content = novo_relatorio
+        # Substitui o controle inteiro no ft.Column interno
+        conteudo_aba.controls[1].controls[0] = novo_relatorio
         contador.page.update()
 
     atualizar_button = ft.ElevatedButton(
