@@ -10,9 +10,8 @@ class RegisterPage(ft.Container):
     def __init__(self, app):
         super().__init__()
         self.app = app
-        self.page = app.page  # Referência inicial à página do app
+        self.page = app.page  
 
-        # Campos de entrada
         self.name_field = ft.TextField(label="Primeiro nome", width=300, hint_text="Ex.: João")
         self.last_name_field = ft.TextField(label="Sobrenome", width=300, hint_text="Ex.: Silva")
         self.username_field = ft.TextField(label="Usuário", width=300, hint_text="Ex.: joao.silva")
@@ -29,7 +28,6 @@ class RegisterPage(ft.Container):
             ],
             width=300
         )
-        # Botões
         self.register_button = ft.ElevatedButton(
             "Registrar", on_click=self.register, width=150, bgcolor=ft.colors.BLUE_700, color=ft.colors.WHITE
         )
@@ -37,7 +35,7 @@ class RegisterPage(ft.Container):
             "Já tem uma conta? Entrar", on_click=self.back_to_login
         )
         self.error_text = ft.Text(value="", color=ft.colors.RED_600, visible=False, size=14)
-        # Indicador de carregamento
+
         self.loading_indicator = ft.ProgressRing(
             width=50,
             height=50,
@@ -46,7 +44,6 @@ class RegisterPage(ft.Container):
             color=ft.colors.BLUE_700
         )
 
-        # Layout
         self.content = ft.Column(
             controls=[
                 ft.Text("Registrar", size=30, weight=ft.FontWeight.BOLD, text_align=ft.TextAlign.CENTER),
@@ -71,8 +68,7 @@ class RegisterPage(ft.Container):
         self.alignment = ft.alignment.center
 
     def show_error(self, message: str, is_success: bool = False):
-        """Exibe mensagem de erro ou sucesso na UI."""
-        if self.page:  # Verifica se self.page é válido
+        if self.page: 
             self.error_text.value = message
             self.error_text.color = ft.colors.GREEN_600 if is_success else ft.colors.RED_600
             self.error_text.visible = True
@@ -82,7 +78,6 @@ class RegisterPage(ft.Container):
             logging.warning("Tentativa de atualizar RegisterPage com self.page inválido.")
 
     def validate_fields(self) -> tuple[bool, str]:
-        """Valida os campos de entrada."""
         fields = {
             "Primeiro nome": self.name_field.value.strip(),
             "Sobrenome": self.last_name_field.value.strip(),

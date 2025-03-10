@@ -36,7 +36,7 @@ def setup_aba_contagem(self):
         controls=[
             ft.ElevatedButton("💾 Salvar", bgcolor="lightblue", on_click=self.save_contagens),
             ft.ElevatedButton("🛑 Finalizar", bgcolor="RED", on_click=self.confirmar_finalizar_sessao),
-            ft.ElevatedButton("🔄 Resetar", bgcolor="ORANGE", on_click=self.resetar_todas_contagens),
+            ft.ElevatedButton("🔄 Resetar", bgcolor="ORANGE", on_click=self.confirm_reset_all_countings),
             ft.ElevatedButton("📝 Observação", bgcolor="PURPLE", on_click=self.abrir_dialogo_observacao),
         ]
     )
@@ -93,7 +93,7 @@ def setup_aba_contagem(self):
         ])
 
     tab.visible = True
-    self.atualizar_borda_contagem()
+    self.update_edge()
     self.page.update()
 
 def toggle_listener(self, e):
@@ -110,7 +110,7 @@ def toggle_listener(self, e):
     self.page.update()
 
 
-def resetar_todas_contagens(self, e):
+def reset_all_countings(self, e):
     try:
         current_movimento = self.movimento_tabs.tabs[self.movimento_tabs.selected_index].text
         for veiculo in [v for v, m in self.contagens.keys() if m == current_movimento]:
@@ -138,7 +138,7 @@ def resetar_todas_contagens(self, e):
         snackbar.open = True
         self.page.update()
 
-def confirmar_resetar_todas_contagens(self, e):
+def confirm_reset_all_countings(self, e):
     def close_dialog(e):
         dialog.open = False
         self.page.update()
@@ -146,21 +146,21 @@ def confirmar_resetar_todas_contagens(self, e):
     def confirm_reset(e):
         dialog.open = False
         self.page.update()
-        self.resetar_todas_contagens(e)
+        self.reset_all_countings(e)
 
     dialog = ft.AlertDialog(
         title=ft.Text("Confirmar Reset"),
         content=ft.Text("Tem certeza de que deseja resetar todas as contagens? Esta ação não pode ser desfeita."),
         actions=[
+            ft.TextButton("Confirmar", on_click=confirm_reset),
             ft.TextButton("Cancelar", on_click=close_dialog),
-            ft.TextButton("Confirmar", on_click=confirm_reset, bgcolor="RED", color="WHITE"),
         ],
     )
     self.page.overlay.append(dialog)
     dialog.open = True
     self.page.update()
 
-def atualizar_borda_contagem(self):
+def update_edge(self):
     if not hasattr(self, "tabs") or len(self.tabs.tabs) < 2:
         logging.warning("[WARNING] Tentando atualizar a borda antes da inicialização completa das abas.")
         return
@@ -172,9 +172,9 @@ def atualizar_borda_contagem(self):
         return
 
     if hasattr(self, "contagem_ativa") and self.contagem_ativa:
-        aba_contador.bgcolor = ft.colors.GREEN_100  # Verde quando ativo
+        aba_contador.bgcolor = ft.colors.GREEN_100
     else:
-        aba_contador.bgcolor = ft.colors.RED_100  # Vermelho quando desativado
+        aba_contador.bgcolor = ft.colors.RED_100
 
     try:
         aba_contador.update()

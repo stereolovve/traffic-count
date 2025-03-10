@@ -111,7 +111,7 @@ class ContadorPerplan(ft.Column):
         else:
             self.tabs.tabs[1].content.visible = False 
 
-        self.atualizar_borda_contagem()
+        self.update_edge()
     
     # ------------------------ ABA INICIO ------------------------
     def setup_aba_inicio(self):
@@ -640,11 +640,11 @@ class ContadorPerplan(ft.Column):
         self.listener_switch.update()
         self.page.update()
 
-    def resetar_todas_contagens(self, e):
-        aba_contagem.resetar_todas_contagens(self, e)
+    def reset_all_countings(self, e):
+        aba_contagem.reset_all_countings(self, e)
 
-    def confirmar_resetar_todas_contagens(self, e):
-        aba_contagem.confirmar_resetar_todas_contagens(self, e)
+    def confirm_reset_all_countings(self, e):
+        aba_contagem.confirm_reset_all_countings(self, e)
 
     def create_moviment_content(self, movimento):
         logging.debug(f"[DEBUG] Criando conteúdo para o movimento: {movimento}")
@@ -723,7 +723,7 @@ class ContadorPerplan(ft.Column):
             logging.error(f"[ERROR] Erro ao salvar categorias no banco: {ex}")
             self.session.rollback()
 
-    def verificar_categorias_no_banco(self):
+    def check_categories_in_db(self):
         try:
             categorias = self.session.query(Categoria).all()
             return categorias
@@ -746,8 +746,8 @@ class ContadorPerplan(ft.Column):
         self.page.update()
 
 
-    def atualizar_borda_contagem(self):
-        aba_contagem.atualizar_borda_contagem(self)
+    def update_edge(self):
+        aba_contagem.update_edge(self)
 
     def increment(self, veiculo, movimento):
         try:
@@ -794,7 +794,7 @@ class ContadorPerplan(ft.Column):
 
     def abrir_edicao_contagem(self, veiculo, movimento):
         self.contagem_ativa = False
-        self.atualizar_borda_contagem()
+        self.update_edge()
         self.page.update()
 
         def on_submit(e):
@@ -973,7 +973,6 @@ class ContadorPerplan(ft.Column):
                 self.page.update()
 
         threading.Thread(target=salvar, daemon=True).start()
-
 
 
     def abrir_dialogo_observacao(self, e):
@@ -1347,13 +1346,11 @@ class ContadorPerplan(ft.Column):
 
                 self.session.commit()
                 logging.debug("[DEBUG] Commit realizado! Verificando banco de dados...")
-                self.verificar_categorias_no_banco()
+                self.check_categories_in_db()
 
         except Exception as ex:
             logging.error(f"[ERROR] Erro ao salvar categorias no banco: {ex}")
             self.session.rollback()
-
-
 
     async def carregar_padroes_selecionados(self, e=None):
         try:

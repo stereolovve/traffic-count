@@ -13,7 +13,6 @@ class LoginPage(ft.Container):
         self.app = app
         self.page = app.page
 
-        # UI Components
         self.username_field = ft.TextField(label="Usuário", width=300)
         self.password_field = ft.TextField(
             label="Senha",
@@ -23,7 +22,6 @@ class LoginPage(ft.Container):
         self.login_button = ft.ElevatedButton("Entrar", on_click=self.login)
         self.register_button = ft.TextButton("Não tem uma conta? Registrar", on_click=self.show_register)
         self.error_text = ft.Text(value="", color="red", visible=False)
-        # Indicador de carregamento
         self.loading_indicator = ft.ProgressRing(
             width=50,
             height=50,
@@ -32,7 +30,6 @@ class LoginPage(ft.Container):
             color=ft.colors.BLUE_700
         )
 
-        # Container content with centered layout
         self.content = ft.Container(
             content=ft.Column(
                 [
@@ -40,7 +37,7 @@ class LoginPage(ft.Container):
                     self.username_field,
                     self.password_field,
                     self.login_button,
-                    self.loading_indicator,  # Adiciona o indicador ao layout
+                    self.loading_indicator,
                     self.error_text,
                     self.register_button,
                 ],
@@ -55,26 +52,22 @@ class LoginPage(ft.Container):
         )
 
     def build(self):
-        """Builds the login UI."""
         return self.content
 
     def show_error(self, message: str, is_success: bool = False):
-        """Displays an error or success message in the UI."""
-        if self.page and self in self.page.controls:  # Verifica se o controle está na página
+        if self.page and self in self.page.controls: 
             self.error_text.value = message
             self.error_text.color = "green" if is_success else "red"
             self.error_text.visible = True
-            self.loading_indicator.visible = False  # Oculta o indicador ao mostrar mensagem
+            self.loading_indicator.visible = False 
             self.page.update()
         else:
             logging.warning("Tentativa de atualizar LoginPage fora do contexto da página.")
 
     async def perform_login(self, username, password):
-        """Realiza a operação de login de forma assíncrona."""
-        # Mostra o indicador de carregamento
         if self.page:
             self.loading_indicator.visible = True
-            self.login_button.disabled = True  # Desativa o botão para evitar cliques múltiplos
+            self.login_button.disabled = True
             self.page.update()
         else:
             logging.error("self.page é None durante o início do login.")
