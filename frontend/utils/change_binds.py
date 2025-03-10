@@ -6,7 +6,7 @@ import asyncio
 import threading
 from pathlib import Path
 import json
-from utils.config import API_URL, DESKTOP_DIR
+from utils.config import API_URL,DESKTOP_DIR
 from utils.api import async_api_request
 
 logging.getLogger(__name__).setLevel(logging.ERROR)
@@ -85,26 +85,25 @@ def abrir_configuracao_binds(page, contador):
 
     padrao_dropdown = ft.Dropdown(
         label="Selecione um Tipo de Padrão",
-        options=[],
-        on_change=lambda e: executar_async(carregar_categorias_e_atualizar(e.control.value))
+        options=[]
     )
 
-    binds_container = ft.Column(spacing=10, scroll=ft.ScrollMode.AUTO)
+    binds_container = ft.Column(spacing=10, scroll=ft.ScrollMode.AUTO, expand=True)
 
     async def carregar_padroes_e_atualizar():
         padroes = await bind_manager.carregar_padroes()
 
         if isinstance(padroes, list) and padroes:
             padrao_dropdown.options = [ft.dropdown.Option(str(p)) for p in padroes]
-            padrao_dropdown.value = padroes[0]
+            padrao_dropdown.value = padroes[0] 
+
+            executar_async(carregar_categorias_e_atualizar(padroes[0]))
         else:
             logging.error("Erro: `padroes` não é uma lista válida.")
             padrao_dropdown.options = [ft.dropdown.Option("Nenhum padrão encontrado")]
 
         padrao_dropdown.update()
         page.update()
-
-    executar_async(carregar_padroes_e_atualizar())
 
     async def carregar_categorias_e_atualizar(tipo_padrao):
         categorias = await bind_manager.carregar_categorias(tipo_padrao)
@@ -136,11 +135,13 @@ def abrir_configuracao_binds(page, contador):
                     ],
                     alignment=ft.MainAxisAlignment.SPACE_BETWEEN
                 ))
+
         else:
             binds_container.controls.append(
                 ft.Text("Nenhuma categoria encontrada.", color="RED")
             )
 
+        binds_container.update()
         page.update()
 
     async def salvar_bind_e_atualizar(veiculo, novo_bind, tipo_padrao):
@@ -155,8 +156,7 @@ def abrir_configuracao_binds(page, contador):
                 contador.atualizar_binds_na_ui()
         else:
             snackbar = ft.SnackBar(
-                ft.Text(f"❌ Erro ao atualizar bind para {veiculo}."),
-                bgcolor="RED"
+                ft.Text(f"❌ Erro ao atualizar bind para {veiculo}."), bgcolor="RED"
             )
 
         page.overlay.append(snackbar)
@@ -167,14 +167,20 @@ def abrir_configuracao_binds(page, contador):
         page.dialog.open = False
         page.update()
 
+    padrao_dropdown.on_change = lambda e: executar_async(carregar_categorias_e_atualizar(e.control.value))
+
     dialog = ft.AlertDialog(
         title=ft.Text("Configuração de Binds"),
-        content=ft.Column([
-            subtitulo,
-            padrao_dropdown,
-            ft.Divider(),
-            binds_container,
-        ], spacing=15),
+        content=ft.Container(
+            content=ft.Column([
+                subtitulo,
+                padrao_dropdown,
+                ft.Divider(),
+                binds_container,
+            ], spacing=15, scroll=ft.ScrollMode.AUTO),
+            height=500,
+            expand=True
+        ),
         actions=[
             ft.TextButton("Fechar", on_click=lambda e: fechar_dialogo())
         ],
@@ -184,3 +190,6 @@ def abrir_configuracao_binds(page, contador):
     page.dialog = dialog
     page.dialog.open = True
     page.update()
+
+    executar_async(carregar_padroes_e_atualizar())
+

@@ -92,7 +92,6 @@ class LoginPage(ft.Container):
                 self.app.tokens = {"access": response["access"], "refresh": response["refresh"]}
                 self.app.username = username
 
-                # Salva tokens no disco
                 tokens_path = DESKTOP_DIR / "auth_tokens.json"
                 with open(tokens_path, "w") as f:
                     json.dump({
@@ -101,12 +100,9 @@ class LoginPage(ft.Container):
                         "refresh": response["refresh"]
                     }, f)
 
-                print(f"🔑 Token salvo com sucesso: {self.app.tokens}")
 
-                # Carregar preferências do usuário
                 await self.app.load_user_preferences()
 
-                # Mostra mensagem de sucesso e redireciona
                 snackbar = ft.SnackBar(ft.Text("Login realizado com sucesso!"), bgcolor="GREEN")
                 if self.page:
                     self.page.overlay.append(snackbar)
@@ -115,7 +111,7 @@ class LoginPage(ft.Container):
                 else:
                     logging.warning("self.page é None ao mostrar snackbar de sucesso no login.")
 
-                await self.app.switch_to_main_app()  # Aguarda a troca de tela
+                await self.app.switch_to_main_app() 
             else:
                 raise ValueError("Credenciais inválidas!")
 
@@ -125,7 +121,6 @@ class LoginPage(ft.Container):
             logging.error(f"Erro ao fazer login: {ex}")
             self.show_error(f"Erro ao conectar: {str(ex)}")
         finally:
-            # Oculta o indicador e reativa o botão, independentemente do resultado
             if self.page:
                 self.loading_indicator.visible = False
                 self.login_button.disabled = False
@@ -134,7 +129,6 @@ class LoginPage(ft.Container):
                 logging.warning("self.page é None no finally do login.")
 
     def login(self, e):
-        """Handles the login button click, scheduling the async login operation."""
         username = self.username_field.value
         password = self.password_field.value
 
@@ -151,5 +145,4 @@ class LoginPage(ft.Container):
             logging.error("self.page é None ao iniciar o login.")
 
     def show_register(self, e):
-        print("🔄 Alternando para tela de registro...")
         self.app.show_register_page()

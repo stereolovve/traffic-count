@@ -109,6 +109,7 @@ def toggle_listener(self, e):
     self.listener_switch.update()
     self.page.update()
 
+
 def resetar_todas_contagens(self, e):
     try:
         current_movimento = self.movimento_tabs.tabs[self.movimento_tabs.selected_index].text
@@ -137,15 +138,46 @@ def resetar_todas_contagens(self, e):
         snackbar.open = True
         self.page.update()
 
+def confirmar_resetar_todas_contagens(self, e):
+    def close_dialog(e):
+        dialog.open = False
+        self.page.update()
+
+    def confirm_reset(e):
+        dialog.open = False
+        self.page.update()
+        self.resetar_todas_contagens(e)
+
+    dialog = ft.AlertDialog(
+        title=ft.Text("Confirmar Reset"),
+        content=ft.Text("Tem certeza de que deseja resetar todas as contagens? Esta ação não pode ser desfeita."),
+        actions=[
+            ft.TextButton("Cancelar", on_click=close_dialog),
+            ft.TextButton("Confirmar", on_click=confirm_reset, bgcolor="RED", color="WHITE"),
+        ],
+    )
+    self.page.overlay.append(dialog)
+    dialog.open = True
+    self.page.update()
 
 def atualizar_borda_contagem(self):
-    if self.contagem_ativa:
-        self.page.window.bgcolor = "green"
-        if hasattr(self, "toggle_button"):
-            self.toggle_button.bgcolor = "lightgreen"
+    if not hasattr(self, "tabs") or len(self.tabs.tabs) < 2:
+        logging.warning("[WARNING] Tentando atualizar a borda antes da inicialização completa das abas.")
+        return
+
+    aba_contador = self.tabs.tabs[1].content
+
+    if not aba_contador or not hasattr(aba_contador, "bgcolor"):
+        logging.warning("[WARNING] Aba Contador ainda não foi completamente carregada.")
+        return
+
+    if hasattr(self, "contagem_ativa") and self.contagem_ativa:
+        aba_contador.bgcolor = ft.colors.GREEN_100  # Verde quando ativo
     else:
-        self.page.window.bgcolor = "red"
-        if hasattr(self, "toggle_button"):
-            self.toggle_button.bgcolor = "orange"
-    
-    self.page.update()
+        aba_contador.bgcolor = ft.colors.RED_100  # Vermelho quando desativado
+
+    try:
+        aba_contador.update()
+    except AssertionError:
+        logging.error("[ERROR] Tentativa de atualização antes de adicionar o controle à página.")
+

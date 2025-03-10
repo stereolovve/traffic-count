@@ -30,7 +30,6 @@ async def async_api_request(url: str, method: str = "GET", json_data=None, heade
 
             response.raise_for_status()
 
-            # Retorna a resposta JSON
             json_response = response.json()
             logging.debug(f"[API DEBUG] Resposta bem-sucedida para {url}: {json_response}")
             return json_response

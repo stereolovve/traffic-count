@@ -24,7 +24,6 @@ def on_key_press(self, key):
                 if 0 <= index < len(self.movimento_tabs.tabs):
                     self.movimento_tabs.selected_index = index
                     self.page.update()
-                    print(f"[DEBUG] 🔄 Mudando para aba {index}")
                 return
 
             char = None

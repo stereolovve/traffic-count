@@ -105,13 +105,11 @@ class RegisterPage(ft.Container):
         return True, ""
 
     async def perform_register(self):
-        """Realiza o registro do usuário."""
         is_valid, error_message = self.validate_fields()
         if not is_valid:
             self.show_error(error_message)
             return
 
-        # Mostra o indicador de carregamento
         if self.page:
             self.loading_indicator.visible = True
             self.register_button.disabled = True
@@ -130,8 +128,6 @@ class RegisterPage(ft.Container):
                 "setor": self.setor_field.value,
             }
 
-            print(f"🔍 Enviando payload para API: {payload}")
-
             response = await async_api_request(
                 url=f"{API_URL}/api/register/",
                 method="POST",
@@ -141,8 +137,7 @@ class RegisterPage(ft.Container):
             if isinstance(response, dict) and response.get("id"):
                 self.show_error("Registro bem-sucedido! Retornando ao login... 😊👌", is_success=True)
                 await asyncio.sleep(2)
-                # Delega a transição para o app, evitando manipulação direta da página
-                await self.app.show_login_page()  # Ajustado para assíncrono
+                await self.app.show_login_page()
             else:
                 error_msg = response.get("detail", "Erro ao registrar: resposta inesperada")
                 self.show_error(error_msg)
@@ -152,7 +147,6 @@ class RegisterPage(ft.Container):
             logger.error(f"[ERROR] Erro ao registrar: {ex}")
             self.show_error(f"Erro ao registrar: {str(ex)}")
         finally:
-            # Oculta o indicador e reativa o botão
             if self.page:
                 self.loading_indicator.visible = False
                 self.register_button.disabled = False
@@ -161,7 +155,6 @@ class RegisterPage(ft.Container):
                 logging.warning("self.page é None no finally do registro.")
 
     def register(self, e):
-        """Inicia o processo de registro de forma assíncrona."""
         logger.info("[INFO] Iniciando processo de registro...")
         self.error_text.visible = False
         if self.page:
@@ -170,6 +163,5 @@ class RegisterPage(ft.Container):
             logging.error("self.page é None ao iniciar o registro.")
 
     def back_to_login(self, e):
-        """Retorna à página de login."""
         logger.info("[INFO] Alternando para tela de login...")
         self.app.show_login_page()

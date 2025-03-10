@@ -119,7 +119,8 @@ class ContadorPerplan(ft.Column):
         tab.controls.clear()
 
         hoje_str = datetime.now().strftime("%d-%m-%Y")
-
+        user_label = ft.Text(f"Usuário logado: {self.username}", size=16, weight=ft.FontWeight.BOLD, color="BLUE")
+        tab.controls.append(user_label)
         self.codigo_ponto_input = ft.TextField(
             label="Código do Ponto",
             hint_text="Ex: ER2403",
@@ -273,12 +274,10 @@ class ContadorPerplan(ft.Column):
             else:
                 tipos_list = [str(tipos)] 
 
-            print(f"Padrões carregados da API: {tipos_list}")
             self.padrao_dropdown.options = [ft.dropdown.Option(str(t)) for t in tipos_list]
 
             if tipos_list and not self.padrao_dropdown.value:
                 self.padrao_dropdown.value = str(tipos_list[0])
-                print(f"Padrão default definido: {self.padrao_dropdown.value}")
 
             self.page.update()
         except Exception as ex:
@@ -323,20 +322,19 @@ class ContadorPerplan(ft.Column):
 
     # ------------------------ SESSÃO ------------------------
     def criar_sessao(self, e):
-        def _carregar_sessao():
+        async def _carregar_sessao():
             sessao.criar_sessao(self, e)
 
-            async def setup_session():
-                await self.carregar_padroes_selecionados()
-                await self.load_categories_api(self.padrao_dropdown.value)
-                await self.update_binds()
+            await self.carregar_padroes_selecionados()
+            await self.load_categories_api(self.padrao_dropdown.value)
+            await self.update_binds()
 
-            self.page.run_task(setup_session)
+            self.load_local_categories()  # Garantir que o banco local seja carregado
+            self.setup_aba_contagem()  # Atualizar UI após todas as categorias serem carregadas
+            self.page.update()  # Atualizar a página para refletir os dados
 
-            self.load_local_categories()
-            self.setup_aba_contagem()
+        self.page.run_task(_carregar_sessao)  # Executar de forma assíncrona
 
-        threading.Thread(target=_carregar_sessao, daemon=True).start()
 
 
 
@@ -709,7 +707,6 @@ class ContadorPerplan(ft.Column):
         try:
             with self.session_lock:
                 for cat in categorias:
-                    print(f"[DEBUG] Salvando no banco: {cat}")
 
                     nova_categoria = Categoria(
                         padrao=cat["pattern_type"],
@@ -729,7 +726,6 @@ class ContadorPerplan(ft.Column):
     def verificar_categorias_no_banco(self):
         try:
             categorias = self.session.query(Categoria).all()
-            print(f"[DEBUG] Categorias no banco após commit: {[(c.veiculo, c.movimento) for c in categorias]}")
             return categorias
         except Exception as ex:
             logging.error(f"[ERROR] Erro ao buscar categorias do banco: {ex}")
@@ -1197,7 +1193,6 @@ class ContadorPerplan(ft.Column):
 
             self.sessao = sessao_ativa.sessao  
             self.details = json.loads(sessao_ativa.details) 
-            print(f"[DEBUG] Sessão carregada: {self.sessao}, Details: {self.details}")
 
             if "current_timeslot" in self.details:
                 self.current_timeslot = datetime.strptime(self.details["current_timeslot"], "%H:%M")
@@ -1302,15 +1297,12 @@ class ContadorPerplan(ft.Column):
             url = f"{API_URL}/api/padroes-api/?pattern_type={pattern_type}&movimento={movimento_atual}"
             response = await self.api_get(url)
 
-            print(f"[DEBUG] Resposta da API para categorias ({pattern_type}): {response}")
-
             if not response:
                 logging.warning(f"[WARNING] Nenhuma categoria retornada pela API para {pattern_type}")
                 return
 
             categorias_a_salvar = []
             for cat in response:
-                print(f"[DEBUG] Categoria recebida: {cat}")
                 movimento = cat.get("movimento", movimento_atual)
                 nova_categoria = Categoria(
                     padrao=cat["pattern_type"],
@@ -1322,11 +1314,9 @@ class ContadorPerplan(ft.Column):
 
             self.save_categories_in_local(categorias_a_salvar)
             self.setup_aba_contagem()
-            self.page.update()  # Removido o 'await'
-
+            self.page.update() 
         except Exception as ex:
             logging.error(f"[ERROR] Erro em load_categories_api: {ex}")
-
 
 
     def save_categories_in_local(self, categorias):
@@ -1389,7 +1379,7 @@ class ContadorPerplan(ft.Column):
 
             self.binds = {item["veiculo"]: item["bind"] for item in binds_usuario}
             self.setup_aba_contagem()
-            self.page.update()  # Removido o 'await'
+            self.page.update() 
 
         except Exception as ex:
             logging.error(f"[ERROR] Erro ao carregar padrões do usuário: {ex}")
