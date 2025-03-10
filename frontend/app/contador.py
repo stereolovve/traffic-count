@@ -11,6 +11,8 @@ from openpyxl import Workbook
 from utils.config import API_URL, EXCEL_BASE_DIR, DESKTOP_DIR
 from loginregister.login import LoginPage
 from utils.period import format_period
+from app.aba_ajuda import setup_aba_ajuda
+from app.aba_relatorio import setup_aba_relatorio
 from loginregister.register import RegisterPage
 from pynput import keyboard
 import pandas as pd
@@ -71,7 +73,6 @@ class ContadorPerplan(ft.Column):
     def setup_ui(self):
         self.tabs = ft.Tabs(
             selected_index=0,  
-            animation_duration=300,
             tabs=[
                 ft.Tab(
                     text="Início",
@@ -104,6 +105,8 @@ class ContadorPerplan(ft.Column):
         self.setup_aba_contagem()
         self.setup_aba_historico()
         self.setup_aba_config()
+        setup_aba_ajuda(self)
+        setup_aba_relatorio(self)
 
         if hasattr(self, "sessao") and self.sessao:
             self.tabs.selected_index = 1 
@@ -569,20 +572,29 @@ class ContadorPerplan(ft.Column):
         try:
             contagens_db = self.session.query(Contagem).filter_by(sessao=self.sessao).all()
             self.contagens.clear()
+
             for contagem in contagens_db:
                 key = (contagem.veiculo, contagem.movimento)
+                
+                # Se a última contagem salva era zero, não exibir valores antigos
+                if contagem.count == 0:
+                    logging.info(f"[INFO] Contagem zerada detectada para {contagem.veiculo} - {contagem.movimento}, ignorando.")
+                    continue
+
                 self.contagens[key] = contagem.count
+
                 if key in self.labels:
                     label_count, label_bind = self.labels[key]
-                    if label_count.page: 
-                        self.update_labels(contagem.veiculo, contagem.movimento)
-                    else:
-                        logging.warning(f"[WARNING] Label para {key} não tem atributo page. Aguardando criação.")
+                    label_count.value = str(self.contagens[key])
+                    label_count.update()
                 else:
                     logging.warning(f"[WARNING] Label não encontrada para {key}. Aguardando criação.")
+
             logging.info(f"✅ Contagens recuperadas: {self.contagens}")
+        
         except Exception as ex:
             logging.error(f"[ERROR] Erro ao recuperar contagens: {ex}")
+
 
 
     def atualizar_binds(self):
@@ -952,6 +964,12 @@ class ContadorPerplan(ft.Column):
 
                 logging.info(f"✅ Salvamento realizado com sucesso: {arquivo_sessao}")
 
+                # **🚀 Removendo contagens antigas do banco de dados após salvar**
+                with self.session_lock:
+                    self.session.query(Contagem).filter_by(sessao=self.sessao).delete()
+                    self.session.commit()
+
+                # Resetando os valores exibidos na interface
                 for key in self.contagens:
                     self.contagens[key] = 0
                     if key in self.labels:
@@ -973,6 +991,7 @@ class ContadorPerplan(ft.Column):
                 self.page.update()
 
         threading.Thread(target=salvar, daemon=True).start()
+
 
 
     def abrir_dialogo_observacao(self, e):
