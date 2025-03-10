@@ -576,7 +576,6 @@ class ContadorPerplan(ft.Column):
             for contagem in contagens_db:
                 key = (contagem.veiculo, contagem.movimento)
                 
-                # Se a última contagem salva era zero, não exibir valores antigos
                 if contagem.count == 0:
                     logging.info(f"[INFO] Contagem zerada detectada para {contagem.veiculo} - {contagem.movimento}, ignorando.")
                     continue
@@ -594,7 +593,6 @@ class ContadorPerplan(ft.Column):
         
         except Exception as ex:
             logging.error(f"[ERROR] Erro ao recuperar contagens: {ex}")
-
 
 
     def atualizar_binds(self):
@@ -964,12 +962,10 @@ class ContadorPerplan(ft.Column):
 
                 logging.info(f"✅ Salvamento realizado com sucesso: {arquivo_sessao}")
 
-                # **🚀 Removendo contagens antigas do banco de dados após salvar**
                 with self.session_lock:
                     self.session.query(Contagem).filter_by(sessao=self.sessao).delete()
                     self.session.commit()
 
-                # Resetando os valores exibidos na interface
                 for key in self.contagens:
                     self.contagens[key] = 0
                     if key in self.labels:
@@ -991,7 +987,6 @@ class ContadorPerplan(ft.Column):
                 self.page.update()
 
         threading.Thread(target=salvar, daemon=True).start()
-
 
 
     def abrir_dialogo_observacao(self, e):

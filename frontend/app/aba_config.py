@@ -86,15 +86,13 @@ def ajustar_opacidade(self, e):
         logger.error(f"Erro ao ajustar opacidade: {ex}")
 
 def abrir_configurar_binds(self):
-    """Abre a configuração de binds e carrega as preferências do usuário se existirem."""
     padrao_atual = self.padrao_dropdown.value
     binds_salvas = self.user_preferences.get(padrao_atual, {})
 
     for movimento, tecla in binds_salvas.items():
-        self.atualizar_bind_movimento(movimento, tecla)  # Aplicar no Flet
+        self.atualizar_bind_movimento(movimento, tecla)
 
 async def save_user_preferences(self, padrao, binds):
-    """Salva as preferências do usuário na API."""
     try:
         headers = {"Authorization": f"Bearer {self.tokens['access']}"}
         response = await async_api_request(

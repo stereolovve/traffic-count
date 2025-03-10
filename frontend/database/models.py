@@ -6,9 +6,9 @@ import os
 from sqlalchemy.orm import relationship
 Base = declarative_base()
 
-db_path = os.path.join(os.getenv('USERPROFILE'), 'dados.db')
+db_path = os.path.join(os.getenv('USERPROFILE'), 'banco_dados_contador.db')
 
-engine = create_engine('sqlite:///dados.db')
+engine = create_engine('sqlite:///banco_dados_contador.db')
 
 Session = sessionmaker(bind=engine)
 
@@ -38,7 +38,7 @@ class Sessao(Base):
     criada_em = Column(DateTime, default=datetime.now)
     ativa = Column(Boolean)
 
-    contagens = relationship("Contagem", back_populates="sessao_obj")  # Relacionamento com Contagem
+    contagens = relationship("Contagem", back_populates="sessao_obj")
 
     def __repr__(self):
         return f"<Sessao(sessao='{self.sessao}', ativa={self.ativa})>"
@@ -50,10 +50,10 @@ class Contagem(Base):
     sessao = Column(String, ForeignKey('sessoes.sessao'), nullable=False)
     veiculo = Column(String, nullable=False)
     movimento = Column(String, nullable=False)
-    count = Column(Integer, default=0)  # Contagem do período
-    contagem_total = Column(Integer, default=0)  # Contagem total da sessão
+    count = Column(Integer, default=0)
+    contagem_total = Column(Integer, default=0)
 
-    sessao_obj = relationship("Sessao", back_populates="contagens")  # Relacionamento com Sessao
+    sessao_obj = relationship("Sessao", back_populates="contagens")
 
     def __repr__(self):
         return f"<Contagem(sessao='{self.sessao}', veiculo='{self.veiculo}', movimento='{self.movimento}')>"
@@ -63,12 +63,12 @@ class Historico(Base):
     __tablename__ = 'historico'
     id = Column(Integer, primary_key=True, autoincrement=True)
     sessao = Column(String, ForeignKey('sessoes.sessao'))
-    categoria_id = Column(Integer, ForeignKey('categorias.id'))  # Referencia o ID da Categoria
+    categoria_id = Column(Integer, ForeignKey('categorias.id'))
     movimento = Column(String)
     timestamp = Column(DateTime, default=datetime.now)
     acao = Column(String)
 
-    categoria = relationship("Categoria", back_populates="historicos")  # Relacionamento com Categoria
+    categoria = relationship("Categoria", back_populates="historicos")
 
     def __repr__(self):
         return f"<Historico(sessao='{self.sessao}', categoria_id={self.categoria_id}, movimento='{self.movimento}')>"
@@ -76,37 +76,3 @@ class Historico(Base):
 
 def init_db():
     Base.metadata.create_all(engine)
-
-#initializer
-import os
-from database.models import Session, Contagem, init_db
-import logging
-import json
-
-
-def __init__(self, page):
-    super().__init__()
-    self.page = page
-    self.inicializar_variaveis()
-    self.configurar_numpad_mappings()
-    self.setup_ui()
-    self.load_active_session()
-
-def inicializar_variaveis(self):
-    self.sessao = None
-    self.session = Session()
-    self.details = {"Movimentos": []}  # Inicializar com Movimentos vazio
-    self.contagens = {}
-    self.binds = {}
-    self.categorias = []
-    self.labels = {}
-    self.listener = None
-    self.contagem_ativa = False
-    self.historico_page_size = 30  # Número de registros a serem carregados por vez
-
-def configurar_numpad_mappings(self):
-    self.numpad_mappings = {
-        96: "np0", 97: "np1", 98: "np2", 99: "np3", 100: "np4",
-        101: "np5", 102: "np6", 103: "np7", 104: "np8", 105: "np9",
-        106: "np*", 110: "np,", 111: "np/"
-    }

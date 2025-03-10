@@ -1,3 +1,4 @@
+#initializer
 import os
 from database.models import Session, Contagem, init_db
 import logging
@@ -15,7 +16,7 @@ def __init__(self, page):
 def inicializar_variaveis(self):
     self.sessao = None
     self.session = Session()
-    self.details = {"Movimentos": []}  # Inicializar com Movimentos vazio
+    self.details = {"Movimentos": []}
     self.contagens = {}
     self.binds = {}
     self.categorias = []
