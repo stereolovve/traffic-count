@@ -11,6 +11,16 @@ def setup_aba_contagem(self):
     self.contagem_ativa = False
     self.labels.clear()
 
+    # Container externo para a borda
+    aba_container = ft.Container(
+        content=ft.Column(),
+        border=ft.border.all(4, ft.colors.RED_700),  # Borda mais grossa e cor mais escura
+        padding=10,
+        bgcolor=ft.colors.GREY_200,  # Fundo claro para contraste
+    )
+    aba_contador = aba_container.content  # O Column interno
+
+    # Configuração dos controles
     session_info = ft.Container(
         content=ft.Row(
             alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
@@ -76,7 +86,7 @@ def setup_aba_contagem(self):
     movimentos = self.details.get("Movimentos", [])
     if not movimentos:
         logging.warning("[WARNING] Nenhum movimento encontrado em self.details['Movimentos']")
-        tab.controls.append(ft.Text("⚠ Nenhum movimento disponível", color="red"))
+        aba_contador.controls.append(ft.Text("⚠ Nenhum movimento disponível", color="red"))
     else:
         self.movimento_tabs = ft.Tabs(
             selected_index=0,
@@ -84,17 +94,18 @@ def setup_aba_contagem(self):
             tabs=[ft.Tab(text=mov, content=self.create_moviment_content(mov)) for mov in movimentos],
             expand=1,
         )
-        tab.controls.extend([
-            session_info, 
+        aba_contador.controls.extend([
+            session_info,
             ft.Row([self.toggle_button], alignment=ft.MainAxisAlignment.CENTER, spacing=20),
-            action_buttons, 
-            status_container, 
+            action_buttons,
+            status_container,
             self.movimento_tabs
         ])
 
-    tab.visible = True
-    self.update_edge()
-    self.page.update()
+    tab.controls.append(aba_container)
+    tab.visible = True  # Garanta que a aba esteja visível
+    self.page.update()  # Renderiza a página
+    
 
 def toggle_listener(self, e):
     if self.listener_switch.value:
@@ -162,22 +173,22 @@ def confirm_reset_all_countings(self, e):
 
 def update_edge(self):
     if not hasattr(self, "tabs") or len(self.tabs.tabs) < 2:
-        logging.warning("[WARNING] Tentando atualizar a borda antes da inicialização completa das abas.")
+        logging.warning("[WARNING] Tabs não inicializadas.")
         return
 
-    aba_contador = self.tabs.tabs[1].content
-
-    if not aba_contador or not hasattr(aba_contador, "bgcolor"):
-        logging.warning("[WARNING] Aba Contador ainda não foi completamente carregada.")
+    # Acesse o Container externo
+    aba_container = self.tabs.tabs[1].content.controls[0]
+    
+    # Verifique se o controle está na página
+    if aba_container.page is None:
+        logging.warning("[WARNING] aba_container ainda não está associado à página.")
         return
 
+    # Atualize a borda com base no estado
     if hasattr(self, "contagem_ativa") and self.contagem_ativa:
-        aba_contador.bgcolor = ft.colors.GREEN_100
+        aba_container.border = ft.border.all(4, ft.colors.GREEN_700)  # Borda verde escura e grossa
     else:
-        aba_contador.bgcolor = ft.colors.RED_100
+        aba_container.border = ft.border.all(4, ft.colors.RED_700)    # Borda vermelha escura e grossa
 
-    try:
-        aba_contador.update()
-    except AssertionError:
-        logging.error("[ERROR] Tentativa de atualização antes de adicionar o controle à página.")
-
+    aba_container.update()
+    self.page.update()

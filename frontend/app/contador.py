@@ -184,7 +184,6 @@ class ContadorPerplan(ft.Column):
             expand=True,
         )
 
-        # 🔹 Container para os campos principais
         input_container = ft.Container(
             content=ft.Column(
                 controls=[
@@ -332,11 +331,11 @@ class ContadorPerplan(ft.Column):
             await self.load_categories_api(self.padrao_dropdown.value)
             await self.update_binds()
 
-            self.load_local_categories()  # Garantir que o banco local seja carregado
-            self.setup_aba_contagem()  # Atualizar UI após todas as categorias serem carregadas
-            self.page.update()  # Atualizar a página para refletir os dados
+            self.load_local_categories() 
+            self.setup_aba_contagem() 
+            self.page.update() 
 
-        self.page.run_task(_carregar_sessao)  # Executar de forma assíncrona
+        self.page.run_task(_carregar_sessao)
 
 
 
@@ -374,14 +373,12 @@ class ContadorPerplan(ft.Column):
 
 
     def atualizar_binds_na_ui(self):
-        """Atualiza os binds exibidos na interface do usuário após uma alteração."""
         for veiculo, bind in self.binds.items():
             for movimento in self.details.get("Movimentos", []):
                 key = (veiculo, movimento)
                 if key in self.labels:  
-                    # 🛠️ Garante que está atualizando a label_bind e não a label_count
                     if isinstance(self.labels[key], list) and len(self.labels[key]) >= 2:
-                        label_bind = self.labels[key][1]  # A label de bind está na segunda posição
+                        label_bind = self.labels[key][1]  
                         label_bind.value = f"({bind})"
                         label_bind.update()
 
@@ -411,7 +408,7 @@ class ContadorPerplan(ft.Column):
                 return
 
             self.binds.clear()
-            for cat in response:  # ✅ Correto!
+            for cat in response:
                 veiculo = cat["veiculo"]
                 bind = cat["bind"]
                 self.binds[veiculo] = bind
@@ -753,6 +750,7 @@ class ContadorPerplan(ft.Column):
             logging.info("❌ Contagem e Listener desativados")
 
         self.toggle_button.update()
+        self.update_edge()  # Atualiza a borda ao mudar o estado
         self.page.update()
 
 

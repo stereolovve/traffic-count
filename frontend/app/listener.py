@@ -14,8 +14,13 @@ def on_key_press(self, key):
     
     def _processar_tecla():
         try:
-            if hasattr(key, 'name') and key.name in ['shift_r', 'caps_lock', 'up', 'down']:
+            if hasattr(key, 'name') and key.name in ['shift_r', 'caps_lock', 'up']:
                 self.movimento_tabs.selected_index = (self.movimento_tabs.selected_index + 1) % len(self.movimento_tabs.tabs)
+                self.page.update()
+                return
+            
+            if hasattr(key, 'name') and key.name in ['down']:
+                self.movimento_tabs.selected_index = (self.movimento_tabs.selected_index - 1) % len(self.movimento_tabs.tabs)
                 self.page.update()
                 return
             
@@ -36,21 +41,16 @@ def on_key_press(self, key):
 
             current_movimento = self.movimento_tabs.tabs[self.movimento_tabs.selected_index].text
 
-            # **Ajuste aqui:** Verifica se `char` está nos binds atualizados
             if char in self.binds.values():
-                veiculo = [k for k, v in self.binds.items() if v == char][0]  # Encontra a chave (veículo)
-                self.increment(veiculo, current_movimento)  # 🔥 Chama a função corretamente
+                veiculo = [k for k, v in self.binds.items() if v == char][0]
+                self.increment(veiculo, current_movimento)  
             else:
                 pass
 
         except Exception as ex:
             logging.error(f"Erro ao pressionar tecla: {ex}")
 
-    # 🚀 Processa cada tecla pressionada em uma thread separada
     threading.Thread(target=_processar_tecla, daemon=True).start()
-
-
-
 
         
 def finalizar_sessao(self):
