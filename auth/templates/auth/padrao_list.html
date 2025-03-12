@@ -1,42 +1,49 @@
-<h1>Padrões de Contagem</h1>
+<!-- Listagem de Padrões de Contagem -->
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Padrões de Contagem</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-6">
+    <div class="max-w-5xl mx-auto bg-white p-6 rounded-lg shadow-lg">
+        <h1 class="text-2xl font-bold text-center text-gray-800">Padrões de Contagem</h1>
+        <div class="flex justify-between items-center mt-6">
+            <p class="text-gray-600">Gerencie seus padrões de contagem de forma simples e eficiente.</p>
+            <a href="{% url 'padrao_create' %}" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">Criar Novo</a>
+        </div>
 
-<p>
-  <a href="{% url 'padrao_create' %}" 
-     style="padding:8px; background-color: #28a745; color:#fff; text-decoration: none; border-radius:4px;">
-    Criar Novo
-  </a>
-</p>
-
-{% if padroes %}
-<table style="border-collapse: collapse; width: 100%;">
-  <thead>
-    <tr style="background-color: #f2f2f2;">
-      <th style="text-align: left; padding: 8px;">Tipo do Padrão</th>
-      <th style="text-align: left; padding: 8px;">Veículo</th>
-      <th style="text-align: left; padding: 8px;">Bind</th>
-      <th style="text-align: left; padding: 8px;">Ações</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for padrao in padroes %}
-    <tr style="border-bottom: 1px solid #ddd;">
-      <td style="padding: 8px;">{{ padrao.pattern_type }}</td>
-      <td style="padding: 8px;">{{ padrao.veiculo }}</td>
-      <td style="padding: 8px;">{{ padrao.bind }}</td>
-      <td style="padding: 8px;">
-        <a href="{% url 'padrao_edit' padrao.pk %}" 
-           style="margin-right: 8px; color:#007bff; text-decoration: none;">
-          Editar
-        </a>
-        <a href="{% url 'padrao_delete' padrao.pk %}" 
-           style="color:#dc3545; text-decoration: none;">
-          Deletar
-        </a>
-      </td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
-{% else %}
-<p>Nenhum padrão de contagem cadastrado ainda.</p>
-{% endif %}
+        {% if padroes %}
+        <div class="overflow-x-auto mt-6">
+            <table class="w-full border border-gray-300 rounded-lg">
+                <thead>
+                    <tr class="bg-gray-200 text-gray-700 uppercase text-sm">
+                        <th class="p-4 text-left">Tipo do Padrão</th>
+                        <th class="p-4 text-left">Veículo</th>
+                        <th class="p-4 text-left">Bind</th>
+                        <th class="p-4 text-left">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for padrao in padroes %}
+                    <tr class="border-t bg-white hover:bg-gray-50 transition">
+                        <td class="p-4 border-b">{{ padrao.pattern_type }}</td>
+                        <td class="p-4 border-b">{{ padrao.veiculo }}</td>
+                        <td class="p-4 border-b">{{ padrao.bind }}</td>
+                        <td class="p-4 border-b flex space-x-4">
+                            <a href="{% url 'padrao_edit' padrao.pk %}" class="text-blue-500 hover:underline">✏️ Editar</a>
+                            <a href="{% url 'padrao_delete' padrao.pk %}" class="text-red-500 hover:underline">🗑️ Deletar</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-gray-600 mt-6 text-center">Nenhum padrão de contagem cadastrado ainda.</p>
+        {% endif %}
+    </div>
+</body>
+</html>

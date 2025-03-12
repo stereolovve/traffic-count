@@ -1,54 +1,25 @@
-<!-- templates/home.html -->
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f9;
-        }
-        .header {
-            background-color: #007bff;
-            color: white;
-            padding: 1rem;
-            text-align: center;
-        }
-        .menu {
-            display: flex;
-            justify-content: center;
-            margin: 2rem 0;
-        }
-        .menu-item {
-            background-color: white;
-            padding: 1.5rem;
-            margin: 0 1rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            width: 150px;
-            text-decoration: none;
-            color: #333;
-            transition: transform 0.2s;
-        }
-        .menu-item:hover {
-            transform: scale(1.05);
-            background-color: #e6e6ff;
-        }
-    </style>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-    <div class="header">
-        <h1>Bem-vindo ao Dashboard</h1>
-    </div>
-    <div class="menu">
-        <a href="/admin/" class="menu-item">Admin</a>
-        <a href="#" class="menu-item">Relatórios</a>
-        <a href="/padroes" class="menu-item">Padroes</a>
+<body class="bg-gray-100">
+    <header class="bg-blue-600 text-white p-4 text-center shadow-lg">
+        <h1 class="text-2xl font-semibold">Bem-vindo ao Dashboard</h1>
+    </header>
+
+    <nav class="flex justify-center space-x-4 mt-6">
+        <a href="/admin/" class="bg-white p-4 rounded-lg shadow-md w-40 text-center text-blue-600 hover:bg-blue-500 hover:text-white transition">Admin</a>
+        <a href="#" class="bg-white p-4 rounded-lg shadow-md w-40 text-center text-gray-700 hover:bg-gray-300 transition">Relatórios</a>
+        <a href="/api/padroes" class="bg-white p-4 rounded-lg shadow-md w-40 text-center text-green-600 hover:bg-green-500 hover:text-white transition">Padrões</a>
+    </nav>
+
+    <div class="max-w-4xl mx-auto mt-8 bg-white p-6 rounded-lg shadow-lg">
+        <h2 class="text-xl font-semibold mb-4">Últimas Atualizações</h2>
+        <p class="text-gray-600">Nenhuma atualização recente.</p>
     </div>
 </body>
 </html>
