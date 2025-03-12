@@ -11,43 +11,34 @@ def setup_aba_contagem(self):
     self.contagem_ativa = False
     self.labels.clear()
 
-    # Container externo para a borda
-    aba_container = ft.Container(
-        content=ft.Column(),
-        border=ft.border.all(4, ft.colors.RED_700),  # Borda mais grossa e cor mais escura
-        padding=10,
-        bgcolor=ft.colors.GREY_200,  # Fundo claro para contraste
-    )
-    aba_contador = aba_container.content  # O Column interno
-
-    # Configuração dos controles
-    session_info = ft.Container(
+    self.session_info = ft.Container(
         content=ft.Row(
             alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
             controls=[
-                ft.Text(f"👤 Usuário: {self.username}", size=14, weight=ft.FontWeight.W_500, color="BLUE"),
-                ft.Text(f"📌 Sessão: {self.sessao if self.sessao else 'Nenhuma'}", size=14, weight=ft.FontWeight.W_500, color="BLUE"),
+                ft.Text(f"👤 Usuário: {self.username}", size=14, weight=ft.FontWeight.W_500),
+                ft.Text(f"📌 Sessão: {self.sessao if self.sessao else 'Nenhuma'}", size=14, weight=ft.FontWeight.W_500),
             ],
         ),
         padding=ft.padding.symmetric(horizontal=10, vertical=5),
-        bgcolor=ft.colors.SURFACE_VARIANT,
+        bgcolor="RED",
         border_radius=8,
     )
 
     self.toggle_button = ft.Switch(
-        label="🟢 Ativar Contagem",
+        tooltip="🟢 Ativar Contagem",
         value=False,
-        on_change=self.toggle_contagem,
+        on_change=self.toggle_contagem
     )
 
     action_buttons = ft.Row(
         alignment=ft.MainAxisAlignment.CENTER,
         spacing=10,
         controls=[
-            ft.ElevatedButton("💾 Salvar", bgcolor="lightblue", on_click=self.save_contagens),
-            ft.ElevatedButton("🛑 Finalizar", bgcolor="RED", on_click=self.confirmar_finalizar_sessao),
-            ft.ElevatedButton("🔄 Resetar", bgcolor="ORANGE", on_click=self.confirm_reset_all_countings),
-            ft.ElevatedButton("📝 Observação", bgcolor="PURPLE", on_click=self.abrir_dialogo_observacao),
+            self.toggle_button,
+            ft.IconButton(icon=ft.icons.SAVE, icon_color="BLUE", tooltip="Salvar", on_click=self.save_contagens),
+            ft.IconButton(icon=ft.icons.CLOSE, icon_color="RED", tooltip="Finalizar", on_click=self.confirmar_finalizar_sessao),
+            ft.IconButton(icon=ft.icons.RESTART_ALT, icon_color="ORANGE", tooltip="Resetar", on_click=self.confirm_reset_all_countings),
+            ft.IconButton(icon=ft.icons.INFO, icon_color="PURPLE", tooltip="Observação", on_click=self.abrir_dialogo_observacao),
         ]
     )
 
@@ -56,7 +47,7 @@ def setup_aba_contagem(self):
     
     self.last_save_label = ft.Text(
         value=f"⏳ Último salvamento: {self.last_save_time.strftime('%H:%M:%S')}",
-        size=14, weight=ft.FontWeight.W_500, color="GRAY"
+        size=14, weight=ft.FontWeight.W_500
     )
 
     if not hasattr(self, "current_timeslot") or self.current_timeslot is None:
@@ -67,16 +58,16 @@ def setup_aba_contagem(self):
     
     self.period_label = ft.Text(
         value=f"🕒 Período: {periodo_inicio} - {periodo_fim}",
-        size=14, weight=ft.FontWeight.W_500, color="DARKGRAY"
+        size=14, weight=ft.FontWeight.W_500
     )
 
-    status_container = ft.Container(
+    self.status_container = ft.Container(
         content=ft.Row(
             controls=[self.last_save_label, self.period_label],
             spacing=15,
             alignment=ft.MainAxisAlignment.CENTER
         ),
-        bgcolor=ft.colors.SURFACE_VARIANT,
+        bgcolor="RED",
         padding=ft.padding.symmetric(horizontal=12, vertical=6),
         border_radius=8,
         margin=ft.margin.only(top=10, bottom=10),
@@ -86,26 +77,23 @@ def setup_aba_contagem(self):
     movimentos = self.details.get("Movimentos", [])
     if not movimentos:
         logging.warning("[WARNING] Nenhum movimento encontrado em self.details['Movimentos']")
-        aba_contador.controls.append(ft.Text("⚠ Nenhum movimento disponível", color="red"))
+        tab.controls.append(ft.Text("⚠ Nenhum movimento disponível", color="red"))
     else:
         self.movimento_tabs = ft.Tabs(
             selected_index=0,
-            animation_duration=100,
+            animation_duration=0,
             tabs=[ft.Tab(text=mov, content=self.create_moviment_content(mov)) for mov in movimentos],
             expand=1,
         )
-        aba_contador.controls.extend([
-            session_info,
-            ft.Row([self.toggle_button], alignment=ft.MainAxisAlignment.CENTER, spacing=20),
-            action_buttons,
-            status_container,
+        tab.controls.extend([
+            self.session_info, 
+            action_buttons, 
+            self.status_container, 
             self.movimento_tabs
         ])
 
-    tab.controls.append(aba_container)
-    tab.visible = True  # Garanta que a aba esteja visível
-    self.page.update()  # Renderiza a página
-    
+    tab.visible = True
+    self.page.update()
 
 def toggle_listener(self, e):
     if self.listener_switch.value:
@@ -169,26 +157,4 @@ def confirm_reset_all_countings(self, e):
     )
     self.page.overlay.append(dialog)
     dialog.open = True
-    self.page.update()
-
-def update_edge(self):
-    if not hasattr(self, "tabs") or len(self.tabs.tabs) < 2:
-        logging.warning("[WARNING] Tabs não inicializadas.")
-        return
-
-    # Acesse o Container externo
-    aba_container = self.tabs.tabs[1].content.controls[0]
-    
-    # Verifique se o controle está na página
-    if aba_container.page is None:
-        logging.warning("[WARNING] aba_container ainda não está associado à página.")
-        return
-
-    # Atualize a borda com base no estado
-    if hasattr(self, "contagem_ativa") and self.contagem_ativa:
-        aba_container.border = ft.border.all(4, ft.colors.GREEN_700)  # Borda verde escura e grossa
-    else:
-        aba_container.border = ft.border.all(4, ft.colors.RED_700)    # Borda vermelha escura e grossa
-
-    aba_container.update()
     self.page.update()

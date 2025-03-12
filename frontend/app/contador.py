@@ -75,22 +75,14 @@ class ContadorPerplan(ft.Column):
             selected_index=0,  
             tabs=[
                 ft.Tab(
-                    text="Início",
-                    content=ft.Column(expand=True)
-                ),
+                    text="Início", content=ft.Column(expand=True)),
                 ft.Tab(
-                    text="Contador",
-                    content=ft.Column(expand=True)
-                ),
+                    text="Contador", content=ft.Column(expand=True)),
                 ft.Tab(
-                    text="Histórico",
-                    content=ft.Column(expand=True)
-                ),
+                    text="Histórico", content=ft.Column(expand=True)),
                 ft.Tab(
                     text="",
-                    icon=ft.icons.SETTINGS,
-                    content=ft.Column(expand=True)
-                ),
+                    icon=ft.icons.SETTINGS, content=ft.Column(expand=True)),
             ],
             expand=1, 
         )
@@ -113,8 +105,6 @@ class ContadorPerplan(ft.Column):
             self.tabs.tabs[1].content.visible = True
         else:
             self.tabs.tabs[1].content.visible = False 
-
-        self.update_edge()
     
     # ------------------------ ABA INICIO ------------------------
     def setup_aba_inicio(self):
@@ -287,7 +277,6 @@ class ContadorPerplan(ft.Column):
             self.padrao_dropdown.options = [ft.dropdown.Option("Erro na API")]
             self.page.update()
 
-
     def validar_campos(self):
         campos_obrigatorios = [
             (self.codigo_ponto_input, "Código"),
@@ -337,9 +326,6 @@ class ContadorPerplan(ft.Column):
 
         self.page.run_task(_carregar_sessao)
 
-
-
-
     def load_local_categories(self, padrao=None):
         padrao_atual = padrao or self.padrao_dropdown.value
 
@@ -371,7 +357,6 @@ class ContadorPerplan(ft.Column):
 
         return self.categorias
 
-
     def atualizar_binds_na_ui(self):
         for veiculo, bind in self.binds.items():
             for movimento in self.details.get("Movimentos", []):
@@ -383,8 +368,6 @@ class ContadorPerplan(ft.Column):
                         label_bind.update()
 
         self.page.update()
-
-
 
     async def update_binds(self):
         try:
@@ -418,9 +401,6 @@ class ContadorPerplan(ft.Column):
 
         except Exception as ex:
             logging.error(f"[ERROR] Erro ao carregar binds do usuário: {ex}")
-
-
-
 
     def _inicializar_arquivo_excel(self):
         try:
@@ -564,7 +544,6 @@ class ContadorPerplan(ft.Column):
             with self.session_lock:
                 self.session.rollback()
 
-
     def recover_active_countings(self):
         try:
             contagens_db = self.session.query(Contagem).filter_by(sessao=self.sessao).all()
@@ -591,7 +570,6 @@ class ContadorPerplan(ft.Column):
         except Exception as ex:
             logging.error(f"[ERROR] Erro ao recuperar contagens: {ex}")
 
-
     def atualizar_binds(self):
         for veiculo, bind in self.binds.items():
             if veiculo in self.labels:
@@ -599,7 +577,6 @@ class ContadorPerplan(ft.Column):
                 self.labels[veiculo].update()
         
         self.page.update()
-
 
     def atualizar_bind_todos_movimentos(self, veiculo, novo_bind):
         if not novo_bind:
@@ -677,7 +654,6 @@ class ContadorPerplan(ft.Column):
         self.page.update()
         return content
 
-
     def create_category_control(self, veiculo, bind, movimento):
 
         if bind == "N/A":
@@ -736,26 +712,41 @@ class ContadorPerplan(ft.Column):
             return categorias
         except Exception as ex:
             logging.error(f"[ERROR] Erro ao buscar categorias do banco: {ex}")
-
-    def toggle_contagem(self, e):
-        if self.toggle_button.value:
-            self.start_listener()
-            self.contagem_ativa = True
-            self.toggle_button.label = "✅ Contagem Ativada"
-            logging.info("✅ Contagem e Listener ativados")
+    def update_session_info_color(self):
+        if self.contagem_ativa:
+            self.session_info.bgcolor = "GREEN"
         else:
-            self.stop_listener()
-            self.contagem_ativa = False
-            self.toggle_button.label = "🚫 Contagem Desativada"
-            logging.info("❌ Contagem e Listener desativados")
-
-        self.toggle_button.update()
-        self.update_edge()  # Atualiza a borda ao mudar o estado
+            self.session_info.bgcolor = "RED"
+        self.session_info.update()
         self.page.update()
 
+    def update_status_container_color(self):
+        if self.contagem_ativa:
+            self.status_container.bgcolor = "GREEN"
+        else:
+            self.status_container.bgcolor = "RED"
+        self.status_container.update()
+        self.page.update()
 
-    def update_edge(self):
-        aba_contagem.update_edge(self)
+    def toggle_contagem(self, e):
+        if not hasattr(self, "toggle_button"):
+            logging.error("[ERROR] toggle_button não foi inicializado.")
+            return
+
+        self.contagem_ativa = self.toggle_button.value 
+
+        if self.contagem_ativa:
+            logging.info("✅ Contagem ativada!")  
+            self.start_listener()
+        else:
+            logging.info("❌ Contagem desativada!")  
+            self.stop_listener()
+
+        self.update_session_info_color()
+        self.update_status_container_color()
+        self.toggle_button.update()
+        self.page.update()
+
 
     def increment(self, veiculo, movimento):
         try:
@@ -802,7 +793,6 @@ class ContadorPerplan(ft.Column):
 
     def abrir_edicao_contagem(self, veiculo, movimento):
         self.contagem_ativa = False
-        self.update_edge()
         self.page.update()
 
         def on_submit(e):
