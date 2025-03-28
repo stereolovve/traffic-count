@@ -40,7 +40,7 @@ class BindManager:
             logging.error("❌ Falha ao recuperar token! Abortando requisição.")
             return []
         
-        response = await async_api_request(f"{API_URL}/api/tipos-de-padrao/", headers=headers)
+        response = await async_api_request(f"{API_URL}/padroes/tipos-de-padrao/", headers=headers)
         return response if isinstance(response, list) else []
 
     async def carregar_categorias(self, tipo_padrao):
@@ -48,7 +48,7 @@ class BindManager:
         if not headers:
             return []
         
-        response = await async_api_request(f"{API_URL}/api/merged-binds/?pattern_type={tipo_padrao}", headers=headers)
+        response = await async_api_request(f"{API_URL}/padroes/merged-binds/?pattern_type={tipo_padrao}", headers=headers)
         return response if isinstance(response, list) else []
 
     async def salvar_bind(self, tipo_padrao, veiculo, novo_bind):
@@ -58,7 +58,7 @@ class BindManager:
         
         dados = {"pattern_type": tipo_padrao, "veiculo": veiculo, "bind": novo_bind}
         response = await async_api_request(
-            f"{API_URL}/api/user-padroes/", 
+            f"{API_URL}/padroes/user-padroes/", 
             method="POST", 
             headers=headers,
             json_data=dados 

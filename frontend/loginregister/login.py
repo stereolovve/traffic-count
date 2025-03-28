@@ -76,7 +76,7 @@ class LoginPage(ft.Container):
         try:
             payload = {"username": username, "password": password}
             response = await async_api_request(
-                url=f"{API_URL}/api/login/",
+                url=f"{API_URL}/auth/login/",
                 method="POST",
                 json_data=payload
             )

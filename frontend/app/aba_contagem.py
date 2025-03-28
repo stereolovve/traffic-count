@@ -36,7 +36,7 @@ def setup_aba_contagem(self):
         controls=[
             self.toggle_button,
             ft.IconButton(icon=ft.icons.SAVE, icon_color="BLUE", tooltip="Salvar", on_click=self.save_contagens),
-            ft.IconButton(icon=ft.icons.CLOSE, icon_color="RED", tooltip="Finalizar", on_click=self.confirmar_finalizar_sessao),
+            ft.IconButton(icon=ft.icons.CLOSE, icon_color="RED", tooltip="Finalizar", on_click=self.show_dialog_end_session),
             ft.IconButton(icon=ft.icons.RESTART_ALT, icon_color="ORANGE", tooltip="Resetar", on_click=self.confirm_reset_all_countings),
             ft.IconButton(icon=ft.icons.INFO, icon_color="PURPLE", tooltip="Observação", on_click=self.abrir_dialogo_observacao),
         ]

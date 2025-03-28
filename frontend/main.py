@@ -37,7 +37,7 @@ class MyApp:
             return
         try:
             headers = {"Authorization": f"Bearer {self.tokens['access']}"}
-            response = await async_api_request(f"{API_URL}/api/user/preferences/", headers=headers)
+            response = await async_api_request(f"{API_URL}/padroes/user/preferences/", headers=headers)
             
             self.user_preferences = response
             logging.info("✅ Preferências carregadas com sucesso!")
@@ -50,7 +50,7 @@ class MyApp:
             return False
         try:
             headers = {"Authorization": f"Bearer {self.tokens['access']}"}
-            response = await async_api_request(f"{API_URL}/api/user/", headers=headers)
+            response = await async_api_request(f"{API_URL}/padroes/user/info/", headers=headers)
 
             if "error" in response:
                 print(f"❌ Token inválido! Erro: {response['error']}")

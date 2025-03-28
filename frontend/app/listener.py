@@ -53,29 +53,3 @@ def on_key_press(self, key):
     threading.Thread(target=_processar_tecla, daemon=True).start()
 
         
-def finalizar_sessao(self):
-    try:
-        contagens_a_remover = self.session.query(Contagem).filter_by(sessao=self.sessao).all()
-        for contagem in contagens_a_remover:
-            self.session.delete(contagem)
-
-        sessao_a_remover = self.session.query(Sessao).filter_by(sessao=self.sessao).first()
-        if sessao_a_remover:
-            self.session.delete(sessao_a_remover)
-
-        self.session.commit()
-
-        self.contagens.clear()
-        self.binds.clear()
-        self.labels.clear()
-        self.sessao = None
-        self.page.overlay.append(ft.SnackBar(ft.Text("Sessão finalizada e removida!")))
-        self.page.update()
-
-        self.restart_app()
-
-    except Exception as ex:
-        logging.error(f"Erro ao finalizar e remover sessão: {ex}")
-        self.page.overlay.append(ft.SnackBar(ft.Text(f"Erro ao finalizar sessão: {ex}")))
-        self.session.rollback()
-        self.page.update()

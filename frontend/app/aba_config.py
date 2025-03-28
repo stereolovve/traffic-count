@@ -1,17 +1,11 @@
 #aba_config.py
 import flet as ft
 from utils.change_binds import abrir_configuracao_binds
-
+from utils.api import async_api_request
 def setup_aba_config(self):
     tab = self.tabs.tabs[3].content
     tab.controls.clear()
 
-    # Avatar com inicial do usuário
-    avatar = ft.CircleAvatar(
-        content=ft.Text(self.username[0].upper() if self.username else "U"),
-        radius=40,
-        bgcolor=ft.colors.BLUE_200
-    )
     username_text = ft.Text(
         f"Conectado como: {self.username}",
         weight=ft.FontWeight.W_400,
@@ -20,7 +14,7 @@ def setup_aba_config(self):
     )
 
     profile_container = ft.Column(
-        controls=[avatar, username_text],
+        controls=[username_text],
         alignment=ft.MainAxisAlignment.CENTER,
         spacing=5
     )
@@ -96,7 +90,7 @@ async def save_user_preferences(self, padrao, binds):
     try:
         headers = {"Authorization": f"Bearer {self.tokens['access']}"}
         response = await async_api_request(
-            url=f"{API_URL}/api/user/preferences/",
+            url=f"{API_URL}/padroes/user/preferences/",
             method="POST",
             headers=headers,
             data={"padrao": padrao, "binds": binds}

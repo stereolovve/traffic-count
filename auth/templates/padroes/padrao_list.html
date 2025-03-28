@@ -1,4 +1,5 @@
 <!-- Listagem de Padrões de Contagem -->
+{% load static %}
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -6,10 +7,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Padrões de Contagem</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="shortcut icon" type="image/png" href="{% static 'img/icone.png' %}">
 </head>
 <body class="bg-gray-100 p-6">
     <div class="max-w-5xl mx-auto bg-white p-6 rounded-lg shadow-lg">
-        <h1 class="text-2xl font-bold text-center text-gray-800">Padrões de Contagem</h1>
+        <div class="flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-gray-800">Padrões de Contagem</h1>
+            <a href="{% url 'home' %}" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                <i class="fas fa-home"></i> Voltar para Home
+            </a>
+        </div>
         <div class="flex justify-between items-center mt-6">
             <p class="text-gray-600">Gerencie seus padrões de contagem de forma simples e eficiente.</p>
             <a href="{% url 'padrao_create' %}" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">Criar Novo</a>

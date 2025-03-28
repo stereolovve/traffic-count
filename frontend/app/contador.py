@@ -15,9 +15,9 @@ from app.aba_ajuda import setup_aba_ajuda
 from app.aba_relatorio import setup_aba_relatorio
 from loginregister.register import RegisterPage
 from pynput import keyboard
+from time import sleep
 import pandas as pd
 from datetime import datetime, timedelta, time
-from functools import lru_cache
 import threading, os, re, httpx, openpyxl
 from utils.change_binds import abrir_configuracao_binds, BindManager
 from openpyxl.utils.dataframe import dataframe_to_rows
@@ -255,9 +255,9 @@ class ContadorPerplan(ft.Column):
         try:
             headers = {"Authorization": f"Bearer {self.tokens['access']}"} if self.tokens and 'access' in self.tokens else {}
 
-            url = f"{API_URL}/api/tipos-de-padrao/"
+            url = f"{API_URL}/padroes/tipos-de-padrao/"
             response = await async_api_request(url, method="GET", headers=headers)
-            tipos = response  # ✅ CORRETO!
+            tipos = response
 
             if isinstance(tipos, dict):
                 tipos_list = list(tipos.values()) if tipos else list(tipos.keys())
@@ -323,8 +323,97 @@ class ContadorPerplan(ft.Column):
             self.load_local_categories() 
             self.setup_aba_contagem() 
             self.page.update() 
-
+            await self.send_session_to_django()
         self.page.run_task(_carregar_sessao)
+
+    async def send_session_to_django(self):
+        try:
+            headers = {
+                "Authorization": f"Bearer {self.tokens['access']}" if self.tokens and 'access' in self.tokens else "",
+                "Content-Type": "application/json"
+            }
+
+            payload = {
+                "sessao": self.sessao,
+                "codigo": self.details.get("Código"),
+                "ponto": self.details.get("Ponto"),
+                "data": self.details.get("Data do Ponto"),
+                "horario_inicio": self.details.get("HorarioInicio"),
+                "usuario": self.username,
+                "ativa": self.session.query(Sessao).filter_by(sessao=self.sessao).first().ativa if self.sessao else True,
+                "movimentos": self.details.get("Movimentos", [])  # <-- ESSENCIAL!
+            }
+
+
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                response = await client.post(f"{API_URL}/contagens/registrar-sessao/", json=payload, headers=headers)
+
+            if response.status_code in [200, 201]:
+                logging.info("✅ Detalhes da sessão enviados ao Django com sucesso!")
+            else:
+                logging.error(f"❌ Falha ao enviar detalhes da sessão: {response.text}")
+
+        except Exception as ex:
+            logging.error(f"[ERROR] ao enviar detalhes da sessão: {ex}")
+
+    async def send_count_to_django(self):
+        try:
+            headers = {
+                "Authorization": f"Bearer {self.tokens['access']}" if self.tokens and 'access' in self.tokens else "",
+                "Content-Type": "application/json"
+            }
+
+            contagens_list = [
+                {"veiculo": veiculo, "movimento": movimento, "count": self.contagens.get((veiculo, movimento), 0)}
+                for (veiculo, movimento) in self.contagens
+            ]
+
+            # Obter o período atual
+            periodo_atual = None
+            if hasattr(self, "current_timeslot") and self.current_timeslot:
+                periodo_atual = self.current_timeslot.strftime("%H:%M")
+
+            payload = {
+                "sessao": self.sessao,
+                "usuario": self.username,
+                "contagens": contagens_list,
+                "current_timeslot": periodo_atual  # Incluir o período atual no payload
+            }
+            
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                response = await client.post(f"{API_URL}/contagens/get/", json=payload, headers=headers)
+
+            if response.status_code == 201:
+                logging.info("✅ Contagens enviadas com sucesso para Django!")
+            else:
+                logging.error(f"❌ Erro ao enviar contagens: {response.text}")
+
+        except Exception as ex:
+            logging.error(f"❌ Erro ao enviar contagens para Django: {ex}")
+
+    async def notificar_finalizacao_django(self):
+        try:
+            headers = {
+                "Authorization": f"Bearer {self.tokens['access']}" if self.tokens and 'access' in self.tokens else "",
+                "Content-Type": "application/json"
+            }
+
+            payload = {
+                "sessao": self.sessao,
+                "ativa": False
+            }
+
+            async with httpx.AsyncClient() as client:
+                response = await client.post(f"{API_URL}/contagens/finalizar-sessao/", headers=headers, json=payload)
+
+            if response.status_code == 200:
+                logging.info("Sessão finalizada no Django com sucesso!")
+            else:
+                logging.error(f"Erro ao finalizar sessão no Django: {response.status_code} - {response.text}")
+
+        except Exception as e:
+            logging.error(f"Exceção ao notificar Django: {e}")
+    
 
     def load_local_categories(self, padrao=None):
         padrao_atual = padrao or self.padrao_dropdown.value
@@ -384,7 +473,7 @@ class ContadorPerplan(ft.Column):
                 return
 
             padrao_atual_str = str(padrao_atual)
-            response = await async_api_request(f"{API_URL}/api/merged-binds/?pattern_type={padrao_atual_str}", headers=headers)
+            response = await async_api_request(f"{API_URL}/padroes/merged-binds/?pattern_type={padrao_atual_str}", headers=headers)
 
             if "error" in response:
                 logging.error(f"[ERROR] Erro na API ao carregar binds: {response['error']}")
@@ -451,16 +540,16 @@ class ContadorPerplan(ft.Column):
             logging.error(f"Erro ao inicializar arquivo Excel: {ex}")
             raise
 
-    def confirmar_finalizar_sessao(self, e):
+    def show_dialog_end_session(self, e):
         def close_dialog(e):
             dialog.open = False
             self.page.update()
 
-        def end_and_close(e):
+        async def end_and_close(e):
             try:
                 dialog.open = False
                 self.page.update()
-                self.end_session()
+                await self.end_session()
             except Exception as ex:
                 logging.error(f"Erro ao finalizar sessão: {ex}")
 
@@ -476,28 +565,37 @@ class ContadorPerplan(ft.Column):
         dialog.open = True
         self.page.update()
 
-    def end_session(self):
+    async def end_session(self):
         try:
-            self.finalizar_sessao()
+            await self.notificar_finalizacao_django()
+            # Atualiza status da sessão local
+            sessao_concluida = self.session.query(Sessao).filter_by(sessao=self.sessao).first()
+            if sessao_concluida:
+                sessao_concluida.ativa = False 
+                self.session.commit()
 
+            # Zera contagens
             for veiculo, movimento in list(self.contagens.keys()):
                 self.contagens[(veiculo, movimento)] = 0
                 self.update_labels(veiculo, movimento)
                 self.save_to_db(veiculo, movimento)
 
+            # Limpa variáveis de sessão
             self.sessao = None
             self.details = {"Movimentos": []}
             self.contagens = {}
             self.binds = {}
             self.labels = {}
 
-            self.page.overlay.append(ft.SnackBar(ft.Text("Sessão finalizada!")))
+            # Feedback visual
+            self.page.overlay.append(ft.SnackBar(ft.Text("Sessão finalizada com sucesso!"), bgcolor="BLUE"))
             self.page.update()
 
             self.restart_app()
+
         except Exception as ex:
-            logging.error(f"Erro ao finalizar sessão: {ex}")
-            self.page.overlay.append(ft.SnackBar(ft.Text(f"Erro ao finalizar sessão: {ex}")))
+            logging.error(f"Erro ao encerrar sessão: {ex}")
+            self.page.overlay.append(ft.SnackBar(ft.Text(f"Erro ao encerrar sessão: {ex}"), bgcolor="RED"))
             self.page.update()
 
     def restart_app(self):
@@ -747,7 +845,6 @@ class ContadorPerplan(ft.Column):
         self.toggle_button.update()
         self.page.update()
 
-
     def increment(self, veiculo, movimento):
         try:
             categoria = self.session.query(Categoria).filter_by(
@@ -789,7 +886,6 @@ class ContadorPerplan(ft.Column):
 
         except Exception as ex:
             logging.error(f"Erro ao decrementar: {ex}")
-
 
     def abrir_edicao_contagem(self, veiculo, movimento):
         self.contagem_ativa = False
@@ -865,13 +961,15 @@ class ContadorPerplan(ft.Column):
     def save_contagens(self, e):
         try:
             now = datetime.now()
+            
             if hasattr(self, "last_save_time") and self.last_save_time is not None:
                 time_since_last_save = now - self.last_save_time
                 if time_since_last_save < timedelta(minutes=5):
                     def on_confirm_save(e):
                         dialog.open = False
                         self.page.update()
-                        self._perform_save(now)
+                        self.page.run_task(self.send_count_to_django)
+                        self._perform_save(now)  
 
                     def on_cancel_save(e):
                         dialog.open = False
@@ -888,8 +986,9 @@ class ContadorPerplan(ft.Column):
                     self.page.overlay.append(dialog)
                     dialog.open = True
                     self.page.update()
-                    return
+                    return 
 
+            self.page.run_task(self.send_count_to_django)
             self._perform_save(now)
 
         except Exception as ex:
@@ -900,7 +999,7 @@ class ContadorPerplan(ft.Column):
             self.page.update()
 
     def _perform_save(self, now):
-        def salvar():
+        async def salvar():
             try:
                 horario_atual = self.current_timeslot
                 nome_pesquisador = re.sub(r'[<>:"/\\|?*]', '', self.username)
@@ -948,7 +1047,7 @@ class ContadorPerplan(ft.Column):
 
                 self.save_session()
 
-                logging.info(f"✅ Salvamento realizado com sucesso: {arquivo_sessao}")
+                logging.info(f"Salvamento realizado com sucesso: {arquivo_sessao}")
 
                 with self.session_lock:
                     self.session.query(Contagem).filter_by(sessao=self.sessao).delete()
@@ -961,21 +1060,20 @@ class ContadorPerplan(ft.Column):
                         label_count.value = "0"
                         label_count.update()
 
-                snackbar = ft.SnackBar(ft.Text("✅ Contagens salvas com sucesso!"), bgcolor="GREEN")
+                snackbar = ft.SnackBar(ft.Text("Contagens salvas e enviadas com sucesso!"), bgcolor="GREEN")
                 self.page.overlay.append(snackbar)
                 snackbar.open = True
                 self.page.update()
 
             except Exception as ex:
-                logging.error(f"❌ Erro ao salvar contagens: {ex}")
+                logging.error(f"Erro ao salvar contagens: {ex}")
 
-                snackbar = ft.SnackBar(ft.Text("❌ Erro ao salvar contagens."), bgcolor="RED")
+                snackbar = ft.SnackBar(ft.Text("Erro ao salvar contagens."), bgcolor="RED")
                 self.page.overlay.append(snackbar)
                 snackbar.open = True
                 self.page.update()
 
-        threading.Thread(target=salvar, daemon=True).start()
-
+        self.page.run_task(salvar)
 
     def abrir_dialogo_observacao(self, e):
         def on_confirm(ev):
@@ -1258,32 +1356,6 @@ class ContadorPerplan(ft.Column):
             logging.error(f"Erro ao salvar sessão: {ex}")
             self.session.rollback()
 
-    def finalizar_sessao(self):
-        try:
-            sessao_concluida = self.session.query(Sessao).filter_by(sessao=self.sessao).first()
-            if sessao_concluida:
-                sessao_concluida.ativa = False 
-                self.session.commit()
-
-            self.sessao = None
-            self.details = {"Movimentos": []}
-            self.contagens = {}
-            self.binds = {}
-            self.labels = {}
-
-            snackbar = ft.SnackBar(ft.Text("Sessão finalizada com sucesso!"), bgcolor="BLUE")
-            self.page.overlay.append(snackbar)
-            snackbar.open = True
-
-            self.restart_app()
-
-        except SQLAlchemyError as ex:
-            logging.error(f"Erro ao finalizar sessão: {ex}")
-            self.session.rollback()
-            snackbar = ft.SnackBar(ft.Text(f"Erro ao finalizar sessão: {ex}"), bgcolor="RED")
-            self.page.overlay.append(snackbar)
-            snackbar.open = True
-
 
     async def load_categories_api(self, pattern_type):
         try:
@@ -1294,8 +1366,8 @@ class ContadorPerplan(ft.Column):
 
             movimentos = [str(mov).strip().upper() for mov in movimentos if str(mov).strip()]
             self.details["Movimentos"] = movimentos
-            movimento_atual = self.details.get("Movimentos", ["A"])
-            url = f"{API_URL}/api/padroes-api/?pattern_type={pattern_type}&movimento={movimento_atual}"
+            movimento_atual = self.details.get("Movimentos", ["A"])[0]  # Pegar o primeiro movimento
+            url = f"{API_URL}/padroes/padroes-api/?pattern_type={pattern_type}"  # Remover filtro de movimento
             response = await self.api_get(url)
 
             if not response:
@@ -1304,21 +1376,21 @@ class ContadorPerplan(ft.Column):
 
             categorias_a_salvar = []
             for cat in response:
-                movimento = cat.get("movimento", movimento_atual)
-                nova_categoria = Categoria(
-                    padrao=cat["pattern_type"],
-                    veiculo=cat["veiculo"],
-                    movimento=movimento,
-                    bind=cat.get("bind", "N/A")
-                )
-                categorias_a_salvar.append(nova_categoria)
+                # Criar uma categoria para cada movimento
+                for movimento in movimentos:
+                    nova_categoria = Categoria(
+                        padrao=cat["pattern_type"],
+                        veiculo=cat["veiculo"],
+                        movimento=movimento,
+                        bind=cat.get("bind", "N/A")
+                    )
+                    categorias_a_salvar.append(nova_categoria)
 
             self.save_categories_in_local(categorias_a_salvar)
             self.setup_aba_contagem()
             self.page.update() 
         except Exception as ex:
             logging.error(f"[ERROR] Erro em load_categories_api: {ex}")
-
 
     def save_categories_in_local(self, categorias):
         try:
@@ -1357,6 +1429,7 @@ class ContadorPerplan(ft.Column):
     async def carregar_padroes_selecionados(self, e=None):
         try:
             padrao_selecionado = self.padrao_dropdown.value
+
             if not padrao_selecionado:
                 logging.warning("[WARNING] Nenhum padrão selecionado! Usando padrão default se disponível.")
                 if self.padrao_dropdown.options:
@@ -1364,19 +1437,15 @@ class ContadorPerplan(ft.Column):
                     padrao_selecionado = default_option.key if hasattr(default_option, 'key') else str(default_option)
                     self.padrao_dropdown.value = padrao_selecionado
 
-            if not padrao_selecionado:
-                print("[DEBUG] Nenhum padrão disponível, abortando.")
-                return
-
             padrao_selecionado_str = str(padrao_selecionado)
-            api_url = f"{API_URL}/api/merged-binds/?pattern_type={padrao_selecionado_str}"
+            api_url = f"{API_URL}/padroes/merged-binds/?pattern_type={padrao_selecionado_str}"
+            
             bind_manager = BindManager()
             headers = await bind_manager.get_authenticated_headers()
-
             response = await async_api_request(api_url, method="GET", headers=headers)
-            binds_usuario = response
 
-            self.binds = {item["veiculo"]: item["bind"] for item in binds_usuario}
+            self.binds = {item["veiculo"]: item["bind"] for item in response}
+            
             self.setup_aba_contagem()
             self.page.update() 
 

@@ -19,12 +19,16 @@ from django.contrib import admin
 from django.urls import path, include
 from django.http import HttpResponse
 from django.shortcuts import render
+from contagens import views
+from padroes import views
 
 def home(request):
     return render(request, 'auth/home.html')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include('autenticacao.urls')),
-    path('', home),
+    path('auth/', include('autenticacao.urls')),
+    path('', home, name='home'),
+    path('contagens/', include('contagens.urls')),
+    path('padroes/', include('padroes.urls')),
 ]

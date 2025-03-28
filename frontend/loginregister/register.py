@@ -124,7 +124,7 @@ class RegisterPage(ft.Container):
             }
 
             response = await async_api_request(
-                url=f"{API_URL}/api/register/",
+                url=f"{API_URL}/auth/register/",
                 method="POST",
                 json_data=payload
             )

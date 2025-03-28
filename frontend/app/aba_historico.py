@@ -39,7 +39,7 @@ def carregar_historico(self, e):
         
         self.historico_lista.controls.clear()
         for registro in registros:
-            if registro.acao == "edição manual":
+            if registro.acao == "edicao manual":
                 cor = "purple"
             elif registro.acao == "salvamento":
                 cor = "blue"

@@ -1,0 +1,244 @@
+<!-- auth/templates/contagens/sessoes.html -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sessões Ativas</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'contagens/styles.css' %}">
+    <link rel="shortcut icon" type="image/png" href="{% static 'img/icone.png' %}">
+
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 20px;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 90%;
+            margin: auto;
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        form label {
+            font-size: 14px;
+            color: #333;
+        }
+        form input[type="text"],
+        form input[type="date"],
+        form select {
+            padding: 6px 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+            margin-left: 5px;
+        }
+        form button {
+            padding: 8px 16px;
+            background: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        form button:hover {
+            background: #0056b3;
+            transform: scale(1.03);
+        }
+        .home-button {
+            display: inline-block;
+            background: #007BFF;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 5px;
+            font-size: 14px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: 0.3s;
+            margin-bottom: 20px;
+        }
+        .home-button:hover {
+            background: #0056b3;
+            transform: scale(1.05);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        th, td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: left;
+            font-size: 14px;
+        }
+        th {
+            background: #007BFF;
+            color: white;
+            text-transform: uppercase;
+        }
+        tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #e8f0ff;
+            transition: 0.3s ease-in-out;
+        }
+        .details-link {
+            display: inline-block;
+            background: #28a745;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 5px;
+            font-size: 14px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        .details-link:hover {
+            background: #218838;
+            transform: scale(1.05);
+        }
+        .badge {
+            background: #007BFF;
+            color: white;
+            padding: 4px 8px;
+            font-size: 12px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .badge-success {
+            background-color: #28a745;
+        }
+        .badge-danger {
+            background-color: #dc3545;
+        }
+        .empty-row {
+            text-align: center;
+            font-weight: bold;
+            color: #888;
+            padding: 20px;
+        }
+        /* Responsivo */
+        @media (max-width: 768px) {
+            table {
+                font-size: 12px;
+            }
+            th, td {
+                padding: 8px;
+            }
+            .details-link {
+                padding: 5px 10px;
+                font-size: 12px;
+            }
+            form {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2><i class="fas fa-list"></i> Sessões</h2>
+        <a href="{% url 'home' %}" class="home-button"><i class="fas fa-home"></i> Voltar para Home</a>
+        <form method="get">
+            <label>Status:
+                <select name="status">
+                    <option value="">Todos</option>
+                    <option value="ativas">Ativas</option>
+                    <option value="finalizadas">Finalizadas</option>
+                </select>
+            </label>
+            <label>Pesquisador:
+                <input type="text" name="usuario" placeholder="Nome de usuário">
+            </label>
+            <label>Código:
+                <input type="text" name="codigo" placeholder="Código">
+            </label>
+            <label>Ponto:
+                <input type="text" name="ponto" placeholder="Ponto">
+            </label>
+            <label>Data:
+                <input type="date" name="data">
+            </label>
+            <button type="submit">Filtrar</button>
+        </form>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nome da Sessão</th>
+                    <th>Código</th>
+                    <th>Ponto</th>
+                    <th>Data</th>
+                    <th>Horário</th>
+                    <th>Status</th>
+                    <th>Movimentos</th>
+                    <th>Criado Por</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sessao in sessoes %}
+                <tr>
+                    <td><span class="badge">#{{ sessao.sessao_id }}</span></td>
+                    <td>{{ sessao.sessao.sessao }}</td>
+                    <td>{{ sessao.sessao.codigo }}</td>
+                    <td>{{ sessao.sessao.ponto }}</td>
+                    <td>{{ sessao.sessao.data|default:"-" }}</td>
+                    <td>{{ sessao.sessao.horario_inicio }}</td>
+                    <td>
+                        {% if sessao.sessao.ativa %}
+                            <span class="badge badge-success">Ativa</span>
+                        {% else %}
+                            <span class="badge badge-danger">Finalizada</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if sessao.movimentos %}
+                            {% for movimento in sessao.movimentos %}
+                                <span class="badge">{{ movimento }}</span>
+                            {% endfor %}
+                        {% else %}
+                            <span style="color: gray;">Nenhum</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ sessao.sessao.criado_por.username }}</td>
+                    <td>
+                        <a href="{% url 'detalhes_sessao' sessao.sessao_id %}" class="details-link">
+                            <i class="fas fa-eye"></i> Ver Detalhes
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="10" class="empty-row">Nenhuma sessão ativa encontrada.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
