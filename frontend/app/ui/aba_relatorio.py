@@ -3,11 +3,64 @@ import pandas as pd
 import os
 from utils.config import EXCEL_BASE_DIR
 
-def setup_aba_relatorio(contador):
+class AbaRelatorio(ft.Column):
+    def __init__(self, contador):
+        super().__init__()
+        self.contador = contador
+        self.scroll = ft.ScrollMode.AUTO
+        self.spacing = 10
 
-    def load_data():
+        # Criar os componentes da UI
+        self.titulo = ft.Text(
+            "Relatório da Sessão",
+            size=20,
+            weight=ft.FontWeight.BOLD,
+            text_align=ft.TextAlign.CENTER
+        )
+
+        self.atualizar_button = ft.ElevatedButton(
+            text="Atualizar Relatório",
+            icon=ft.icons.REFRESH,
+            on_click=self.atualizar_relatorio,
+            style=ft.ButtonStyle(
+                shape=ft.RoundedRectangleBorder(radius=8),
+                padding=10
+            )
+        )
+
+        self.barra_superior = ft.Container(
+            content=ft.Row(
+                controls=[self.titulo, self.atualizar_button],
+                alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                vertical_alignment=ft.CrossAxisAlignment.CENTER
+            ),
+            padding=10,
+            border_radius=ft.BorderRadius(top_left=10, top_right=10, bottom_left=0, bottom_right=0)
+        )
+
+        # Carregar dados iniciais
+        tabela_relatorio = self.load_data()
+        
+        # Montar a estrutura da aba
+        self.conteudo_aba = ft.Column(
+            controls=[
+                self.barra_superior,
+                ft.Column(
+                    controls=[tabela_relatorio],
+                    scroll=ft.ScrollMode.AUTO,
+                    expand=True
+                )
+            ],
+            spacing=0,
+            expand=True
+        )
+
+        # Adicionar o conteúdo à aba
+        self.controls = [self.conteudo_aba]
+
+    def load_data(self):
         try:
-            if not contador.sessao:
+            if not self.contador.sessao:
                 return ft.Container(
                     content=ft.Text(
                         "Nenhuma sessão ativa. Inicie uma sessão para visualizar o relatório.",
@@ -21,9 +74,9 @@ def setup_aba_relatorio(contador):
                     border_radius=10
                 )
 
-            nome_pesquisador = contador.username  
-            codigo = ''.join(c for c in contador.details.get('Código', '') if c.isalnum())
-            arquivo_sessao = os.path.join(EXCEL_BASE_DIR, nome_pesquisador, codigo, f"{contador.sessao}.xlsx")
+            nome_pesquisador = self.contador.username  
+            codigo = ''.join(c for c in self.contador.details.get('Código', '') if c.isalnum())
+            arquivo_sessao = os.path.join(EXCEL_BASE_DIR, nome_pesquisador, codigo, f"{self.contador.sessao}.xlsx")
 
             if not os.path.exists(arquivo_sessao):
                 diretorio_base = os.path.join(EXCEL_BASE_DIR, nome_pesquisador, codigo)
@@ -140,65 +193,17 @@ def setup_aba_relatorio(contador):
                 border_radius=10
             )
 
-    def atualizar_relatorio(e):
-        if not contador.page:
+    def atualizar_relatorio(self, e):
+        if not self.contador.page:
             print("[ERROR] Página não disponível para atualizar o relatório.")
             return
 
-        novo_relatorio = load_data()
-        conteudo_aba.controls[1].controls[0] = novo_relatorio
-        contador.page.update()
+        novo_relatorio = self.load_data()
+        self.conteudo_aba.controls[1].controls[0] = novo_relatorio
+        self.contador.page.update()
 
-    atualizar_button = ft.ElevatedButton(
-        text="Atualizar Relatório",
-        icon=ft.icons.REFRESH,
-        on_click=atualizar_relatorio,
-        style=ft.ButtonStyle(
-            shape=ft.RoundedRectangleBorder(radius=8),
-            padding=10
-        )
-    )
-
-    titulo = ft.Text(
-        "Relatório da Sessão",
-        size=20,
-        weight=ft.FontWeight.BOLD,
-        text_align=ft.TextAlign.CENTER
-    )
-
-    barra_superior = ft.Container(
-        content=ft.Row(
-            controls=[titulo, atualizar_button],
-            alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
-            vertical_alignment=ft.CrossAxisAlignment.CENTER
-        ),
-        padding=10,
-        border_radius=ft.BorderRadius(top_left=10, top_right=10, bottom_left=0, bottom_right=0)
-    )
-
-    tabela_relatorio = load_data()
-    conteudo_aba = ft.Column(
-        controls=[
-            barra_superior,
-            ft.Column(
-                controls=[tabela_relatorio],
-                scroll=ft.ScrollMode.AUTO,
-                expand=True
-            )
-        ],
-        spacing=0,
-        expand=True
-    )
-
-    for tab in contador.tabs.tabs:
-        if tab.text == "Relatório":
-            tab.content = conteudo_aba
-            contador.page.update()
-            return
-
-    contador.tabs.tabs.append(ft.Tab(
-        text="Relatório",
-        content=conteudo_aba,
-        icon=ft.icons.TABLE_CHART
-    ))
-    contador.page.update()
+        for tab in self.contador.tabs.tabs:
+            if tab.text == "Relatório":
+                tab.content = self.conteudo_aba
+                break
+        self.contador.page.update()

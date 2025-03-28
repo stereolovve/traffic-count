@@ -5,14 +5,16 @@ import asyncio
 import json
 from database.models import Session, Categoria, Sessao, Contagem, Historico, init_db
 from sqlalchemy.exc import SQLAlchemyError
-from app import aba_contagem, aba_historico, listener, sessao, aba_config
+from app import aba_contagem, listener, sessao
 from utils.initializer import inicializar_variaveis, configurar_numpad_mappings
 from openpyxl import Workbook
 from utils.config import API_URL, EXCEL_BASE_DIR, DESKTOP_DIR
 from loginregister.login import LoginPage
 from utils.period import format_period
-from app.aba_ajuda import setup_aba_ajuda
-from app.aba_relatorio import setup_aba_relatorio
+from app.ui.aba_ajuda import AbaAjuda
+from app.ui.aba_relatorio import AbaRelatorio
+from app.ui.aba_config import AbaConfig
+from app.ui.aba_historico import AbaHistorico
 from loginregister.register import RegisterPage
 from pynput import keyboard
 from time import sleep
@@ -79,10 +81,16 @@ class ContadorPerplan(ft.Column):
                 ft.Tab(
                     text="Contador", content=ft.Column(expand=True)),
                 ft.Tab(
-                    text="Histórico", content=ft.Column(expand=True)),
+                    text="Histórico", content=AbaHistorico(self)),
                 ft.Tab(
                     text="",
-                    icon=ft.icons.SETTINGS, content=ft.Column(expand=True)),
+                    icon=ft.icons.SETTINGS, content=AbaConfig(self)),
+                ft.Tab(
+                    text="",
+                    icon=ft.icons.HELP, content=AbaAjuda(self)),
+                ft.Tab(
+                    text="Relatório",
+                    icon=ft.icons.TABLE_CHART, content=AbaRelatorio(self)),
             ],
             expand=1, 
         )
@@ -95,10 +103,7 @@ class ContadorPerplan(ft.Column):
 
         self.setup_aba_inicio()
         self.setup_aba_contagem()
-        self.setup_aba_historico()
-        self.setup_aba_config()
-        setup_aba_ajuda(self)
-        setup_aba_relatorio(self)
+        
 
         if hasattr(self, "sessao") and self.sessao:
             self.tabs.selected_index = 1 
@@ -1140,120 +1145,7 @@ class ContadorPerplan(ft.Column):
         self.period_label.value = f"Período atual: {periodo_inicio} - {periodo_fim}"
         self.period_label.update()
 
-
-    # ------------------- ABA HISTÓRICO -----------------------------
-    def setup_aba_historico(self):
-        tab = self.tabs.tabs[2].content
-        tab.controls.clear()
-
-        header = ft.Row(
-            alignment=ft.MainAxisAlignment.CENTER,
-            controls=[
-                ft.Container(content=ft.Text("Histórico de Contagens", weight=ft.FontWeight.W_400, size=15))
-            ]
-        )
-
-        self.historico_lista = ft.ListView(spacing=10, padding=20, auto_scroll=True)
-
-        carregar_historico_button = ft.ElevatedButton(
-            text="Carregar próximos 30 registros",
-            on_click=self.carregar_historico
-        )
-
-        tab.controls.extend([
-            header,
-            carregar_historico_button,
-            self.historico_lista
-        ])
-        self.page.update()
-
-    def carregar_historico(self, e):
-        aba_historico.carregar_historico(self, e)
-
-    # ------------------- ABA CONFIGURACOES -----------------------------
-    def setup_aba_config(self):
-        tab = self.tabs.tabs[3].content
-        tab.controls.clear()
-
-        avatar = ft.CircleAvatar(radius=40)
-
-        username_text = ft.Text(
-            f"Conectado como: {self.username}",
-            weight=ft.FontWeight.W_400,
-            size=15,
-            text_align=ft.TextAlign.CENTER
-        )
-
-        profile_container = ft.Column(
-            controls=[
-                ft.Container(avatar, alignment=ft.alignment.center),
-                ft.Container(username_text, alignment=ft.alignment.center),
-            ],
-            spacing=5,
-            horizontal_alignment=ft.CrossAxisAlignment.CENTER
-        )
-
-        self.modo_claro_escuro = ft.Switch(label="Modo claro", on_change=self.theme_changed)
-
-        opacity = ft.Slider(
-            value=100, min=20, max=100, divisions=20, label="Opacidade",
-            on_change=self.ajustar_opacidade
-        )
-
-        config_button = ft.ElevatedButton(
-            text="Configurar Binds", 
-            on_click=lambda e: abrir_configuracao_binds(self.page, self),
-            icon=ft.icons.SETTINGS
-        )
-
-        logout_button = ft.ElevatedButton(
-            text="Sair",
-            bgcolor="RED",
-            color="WHITE",
-            on_click=self.logout_user,
-            icon=ft.icons.LOGOUT
-        )
-
-        config_layout = ft.Column(
-            controls=[
-                profile_container,
-                ft.Divider(),
-                ft.Text("Aparência", weight=ft.FontWeight.BOLD, size=16),
-                self.modo_claro_escuro,
-                ft.Divider(),
-                ft.Text("Transparência da Janela", weight=ft.FontWeight.BOLD, size=16),
-                opacity,
-                ft.Divider(),
-                ft.Text("Configurações Avançadas", weight=ft.FontWeight.BOLD, size=16),
-                config_button,
-                ft.Divider(),
-                ft.Text("Deslogar:", weight=ft.FontWeight.BOLD, size=16),
-                logout_button
-            ],
-            spacing=20,
-            horizontal_alignment=ft.CrossAxisAlignment.STRETCH,
-            scroll=ft.ScrollMode.AUTO
-        )
-
-        tab.controls.append(config_layout)
-        self.page.update()
-
-    def theme_changed(self, e):
-        self.page.theme_mode = (
-            ft.ThemeMode.DARK if self.page.theme_mode == ft.ThemeMode.LIGHT else ft.ThemeMode.LIGHT
-        )
-        self.modo_claro_escuro.label = "Modo claro" if self.page.theme_mode == ft.ThemeMode.LIGHT else "Modo escuro"
-        self.page.update()
-
-    def ajustar_opacidade(self, e):
-        try:
-            nova_opacidade = e.control.value / 100
-            self.page.window.opacity = nova_opacidade
-            self.page.update()
-        except Exception as ex:
-            logging.error(f"Erro ao ajustar opacidade: {ex}")
             
-
     # ------------------- LISTENER -----------------------------
     def on_key_press(self, key):
         listener.on_key_press(self, key)
