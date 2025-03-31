@@ -30,6 +30,7 @@ class MyApp:
         self.username = None
         self.user_preferences = {}
         self.contador = None
+        self.bgcolor = "#1a1a1a"  # Adicionando a cor de fundo padrão
 
     async def load_user_preferences(self):
         if not self.tokens:
@@ -85,30 +86,22 @@ class MyApp:
                 AUTH_TOKENS_FILE.unlink()
         return False
 
-    async def switch_to_main_app(self, force_contador=False):
-        await self.load_user_preferences()
-
-        self.page.controls.clear()
-        self.contador = ContadorPerplan(self.page, username=self.username, app=self)
-        self.page.add(self.contador)
-        self.page.window.width = 800
-        self.page.window.height = 700
-        self.page.window.always_on_top = True
-        self.page.scroll = ft.ScrollMode.AUTO
-        self.page.update()
-
-        await self.contador.carregar_padroes_selecionados()
-        await self.contador.update_binds()
-
-        self.contador.start_listener()
-        self.page.on_close = lambda e: self.contador.stop_listener()
-
-        if force_contador and hasattr(self.contador, 'tabs'):
-            self.contador.tabs.selected_index = 1
-            self.contador.tabs.tabs[1].content.visible = True
+    async def switch_to_main_app(self):
+        try:
+            self.page.views.clear()
+            self.contador = ContadorPerplan(self.page, self.username, self)
+            self.page.views.append(
+                ft.View(
+                    "/",
+                    [self.contador],
+                    padding=20,
+                    bgcolor=self.bgcolor
+                )
+            )
+            await self.contador.atualizar_binds()
             self.page.update()
-
-        logging.debug("[DEBUG] UI principal configurada com abas separadas")
+        except Exception as ex:
+            logging.error(f"[ERROR] Erro ao mudar para app principal: {ex}")
 
     def show_login_page(self):
         self.page.controls.clear()
@@ -149,9 +142,7 @@ async def main(page: ft.Page):
     app = MyApp(page)
 
     if app.load_tokens():
-        print("🔑 Token carregado ao iniciar")
         if await app.verificar_token():
-            print("✅ Token válido, iniciando app diretamente...")
             await app.switch_to_main_app()
             return
         else:

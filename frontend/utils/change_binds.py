@@ -64,6 +64,7 @@ class BindManager:
             json_data=dados 
         )
         return "error" not in response
+
 def executar_async(coroutine):
     try:
         loop = asyncio.get_running_loop()
@@ -153,7 +154,7 @@ def abrir_configuracao_binds(page, contador):
 
             if hasattr(contador, "binds"):
                 contador.binds[veiculo] = novo_bind
-                contador.atualizar_binds_na_ui()
+                await contador.atualizar_binds()
         else:
             snackbar = ft.SnackBar(
                 ft.Text(f"❌ Erro ao atualizar bind para {veiculo}."), bgcolor="RED"
