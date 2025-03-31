@@ -19,8 +19,6 @@ class AbaContagem(ft.Column):
             logging.warning("⚠️ Contador não possui um page válido - isso pode causar erros!")
             self.page = None
         
-        self.scroll = ft.ScrollMode.AUTO
-        self.spacing = 10
         
         # Atributos que serão inicializados no setup_ui
         self.session_info = None
@@ -40,18 +38,12 @@ class AbaContagem(ft.Column):
             self.contador.contagem_ativa = False
             self.contador.labels.clear()
 
-            # Container principal com altura e largura mínimas
-            main_container = ft.Container(
-                content=ft.Column(
-                    controls=[],
-                    spacing=10,
-                    expand=True,
-                ),
-                expand=True,
-                width=float('inf'),  # Largura total
+            # Criar um ScrollableColumn para conter todo o conteúdo
+            main_content = ft.Column(
+                controls=[],
             )
 
-            # Informações da sessão
+            # Informações da sessão (fixo no topo)
             self.session_info = ft.Container(
                 content=ft.Row(
                     alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
@@ -64,7 +56,7 @@ class AbaContagem(ft.Column):
                 padding=ft.padding.symmetric(horizontal=10, vertical=5),
                 bgcolor="RED",
                 border_radius=8,
-                width=float('inf'),  # Força largura total
+                width=float('inf'),
             )
 
             self.toggle_button = ft.Switch(
@@ -159,25 +151,31 @@ class AbaContagem(ft.Column):
                             content=ft.Container(
                                 content=self.create_moviment_content(mov),
                                 padding=10,
-                                expand=True,
                             )
                         ) for mov in movimentos
-                    ],
-                    expand=True
-                )
+                    ]                
+                    )
                 
-                # Adicionar todos os elementos ao container principal
-                main_container.content.controls.extend([
+                # Adicionar todos os elementos ao main_content
+                main_content.controls.extend([
                     self.session_info,
                     action_buttons,
                     self.status_container,
                     self.movimento_tabs
                 ])
             else:
-                # Mensagem de erro/aviso se não houver movimentos ou categorias
-                main_container.content.controls.append(
+                main_content.controls.append(
                     ft.Text("⚠ Aguardando carregamento das categorias...", color="yellow")
                 )
+
+            # Criar um container principal que permite scroll
+            main_container = ft.Container(
+                content=ft.Column(
+                    controls=[main_content],
+                ),
+                padding=10,
+            )
+
 
             # Adicionar o container principal à aba
             self.controls.append(main_container)
@@ -270,7 +268,10 @@ class AbaContagem(ft.Column):
     def create_moviment_content(self, movimento):
         logging.debug(f"[DEBUG] Criando conteúdo para o movimento: {movimento}")
 
-        content = ft.Column()
+        # Criar uma coluna scrollable para o conteúdo do movimento
+        content = ft.Column(
+            spacing=10,
+        )
         
         # Verificar se temos categorias no contador
         if not self.contador.categorias:

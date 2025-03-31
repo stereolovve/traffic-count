@@ -95,9 +95,15 @@ class MyApp:
                     "/",
                     [self.contador],
                     padding=20,
-                    bgcolor=self.bgcolor
+                    bgcolor=self.bgcolor,
+                    scroll=ft.ScrollMode.AUTO,
                 )
             )
+            self.page.window.min_width = 800
+            self.page.window.min_height = 600
+            self.page.scroll = ft.ScrollMode.AUTO
+            self.page.expand = True
+            
             await self.contador.atualizar_binds()
             self.page.update()
         except Exception as ex:
@@ -135,9 +141,21 @@ async def main(page: ft.Page):
     page.title = "Contador Perplan"
     page.window.width = 800
     page.window.height = 600
+    page.window.min_width = 800
+    page.window.min_height = 600
     page.window.always_on_top = True
     page.scroll = ft.ScrollMode.AUTO
+    page.expand = True
     page.window.center()
+    
+    page.theme = ft.Theme(
+        scrollbar_theme=ft.ScrollbarTheme(
+            thickness=10,
+            radius=5,
+            main_axis_margin=2,
+            cross_axis_margin=2,
+        )
+    )
 
     app = MyApp(page)
 
