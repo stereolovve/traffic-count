@@ -254,15 +254,10 @@ class AbaInicio(ft.Column):
                 self.page.update()
 
     async def iniciar_criacao_sessao(self, e):
-        """
-        Coleta os dados do formulário e envia para o contador criar a sessão.
-        """
         try:
-            # 1. Validar campos
             if not self.validar_campos():
                 return
 
-            # 2. Coletar dados do formulário
             session_data = {
                 "pesquisador": self.contador.username,
                 "codigo": self.codigo_ponto_input.value.strip(),
@@ -277,7 +272,6 @@ class AbaInicio(ft.Column):
                 "padrao": self.padrao_dropdown.value
             }
 
-            # 3. Chamar o método de criação no contador
             await self.contador.criar_sessao(session_data)
 
         except Exception as ex:

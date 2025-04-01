@@ -13,7 +13,6 @@ def on_key_press(self, key):
     
     def _processar_tecla():
         try:
-            # Verificar se temos acesso aos componentes necessários
             if not hasattr(self, 'ui_components') or 'contagem' not in self.ui_components:
                 return
             
@@ -21,7 +20,6 @@ def on_key_press(self, key):
             if not hasattr(aba_contagem, 'movimento_tabs') or not aba_contagem.movimento_tabs:
                 return
 
-            # Processar teclas de navegação
             if hasattr(key, 'name'):
                 if key.name in ['shift_r', 'caps_lock', 'up']:
                     aba_contagem.movimento_tabs.selected_index = (
@@ -44,7 +42,6 @@ def on_key_press(self, key):
                         self.page.update()
                     return
 
-            # Processar teclas normais
             char = None
             if hasattr(key, 'vk') and key.vk in self.numpad_mappings:
                 char = self.numpad_mappings[key.vk]

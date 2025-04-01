@@ -10,6 +10,7 @@ from app.contador import ContadorPerplan
 from utils.config import API_URL, EXCEL_BASE_DIR, DESKTOP_DIR, LOG_FILE, AUTH_TOKENS_FILE
 from utils.api import async_api_request
 from loginregister.register import RegisterPage
+
 from loginregister.login import LoginPage
 
 load_dotenv()
@@ -18,7 +19,7 @@ logging.basicConfig(
     level=logging.ERROR,
     format="%(asctime)s - %(levelname)s - %(module)s:%(funcName)s - %(message)s",
     handlers=[
-        logging.FileHandler(LOG_FILE),  # 📄 Agora o log fica na pasta "Contador"
+        logging.FileHandler(LOG_FILE),
         logging.StreamHandler()
     ]
 )
@@ -30,7 +31,6 @@ class MyApp:
         self.username = None
         self.user_preferences = {}
         self.contador = None
-        self.bgcolor = "#1a1a1a"  # Adicionando a cor de fundo padrão
 
     async def load_user_preferences(self):
         if not self.tokens:
@@ -95,7 +95,6 @@ class MyApp:
                     "/",
                     [self.contador],
                     padding=20,
-                    bgcolor=self.bgcolor,
                     scroll=ft.ScrollMode.AUTO,
                 )
             )

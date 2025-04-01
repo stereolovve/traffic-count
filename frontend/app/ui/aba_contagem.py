@@ -4,6 +4,8 @@ import logging
 from datetime import datetime, timedelta
 from pynput import keyboard
 import asyncio
+from database.models import Contagem
+
 
 logging.getLogger(__name__).setLevel(logging.DEBUG)
 
@@ -12,7 +14,6 @@ class AbaContagem(ft.Column):
         super().__init__()
         self.contador = contador
         
-        # Usar a página do contador como referência
         if hasattr(contador, 'page') and contador.page is not None:
             self.page = contador.page
         else:
@@ -20,7 +21,6 @@ class AbaContagem(ft.Column):
             self.page = None
         
         
-        # Atributos que serão inicializados no setup_ui
         self.session_info = None
         self.toggle_button = None
         self.last_save_label = None
@@ -29,7 +29,6 @@ class AbaContagem(ft.Column):
         self.movimento_tabs = None
         self.listener_switch = None
         
-        # Inicializar a UI
         self.setup_ui()
 
     def setup_ui(self):
@@ -75,9 +74,9 @@ class AbaContagem(ft.Column):
                         ft.IconButton(icon=ft.icons.SAVE, icon_color="BLUE", tooltip="Salvar", 
                                     on_click=self.contador.save_contagens),
                         ft.IconButton(icon=ft.icons.CLOSE, icon_color="RED", tooltip="Finalizar", 
-                                    on_click=self.contador.show_dialog_end_session),
+                                    on_click=self.contador.session_manager.show_dialog_end_session),
                         ft.IconButton(icon=ft.icons.RESTART_ALT, icon_color="ORANGE", tooltip="Resetar", 
-                                    on_click=self.confirm_reset_all_countings),
+                                    on_click=lambda _: self.show_reset_dialog()),
                         ft.IconButton(icon=ft.icons.INFO, icon_color="PURPLE", tooltip="Observação", 
                                     on_click=self.contador.abrir_dialogo_observacao),
                     ]
@@ -204,76 +203,80 @@ class AbaContagem(ft.Column):
         self.listener_switch.update()
         self.page.update()
 
-    def reset_all_countings(self, e):
-        try:
-            current_movimento = self.movimento_tabs.tabs[self.movimento_tabs.selected_index].text
-            for veiculo in [v for v, m in self.contador.contagens.keys() if m == current_movimento]:
-                # Primeiro encontrar a categoria correta
-                categoria = next(
-                    (c for c in self.contador.categorias 
-                     if c.veiculo == veiculo and c.movimento == current_movimento), 
-                    None
-                )
-                
-                if categoria:
-                    self.contador.contagens[(veiculo, current_movimento)] = 0
-                    self.update_labels(veiculo, current_movimento)
-                    self.contador.save_to_db(veiculo, current_movimento)
-                    # Passar o ID da categoria em vez do veículo
-                    self.contador.salvar_historico(categoria.id, current_movimento, "reset")
-                else:
-                    logging.warning(f"Categoria não encontrada para {veiculo} - {current_movimento}")
-
-            snackbar = ft.SnackBar(
-                ft.Text(f"✅ Contagens do movimento '{current_movimento}' foram resetadas."),
-                bgcolor="BLUE"
-            )
-            self.page.overlay.append(snackbar)
-            snackbar.open = True
-            self.page.update()
-
-            logging.info(f"[INFO] Contagens resetadas para movimento '{current_movimento}'")
-
-        except Exception as ex:
-            logging.error(f"[ERROR] Erro ao resetar contagens do movimento '{current_movimento}': {ex}")
-            snackbar = ft.SnackBar(
-                ft.Text(f"❌ Erro ao resetar contagens do movimento '{current_movimento}'."), bgcolor="RED"
-            )
-            self.page.overlay.append(snackbar)
-            snackbar.open = True
-            self.page.update()
-
-    def confirm_reset_all_countings(self, e):
+    def show_reset_dialog(self):
         def close_dialog(e):
             dialog.open = False
-            self.page.update()
+            self.contador.page.update()
 
         def confirm_reset(e):
             dialog.open = False
-            self.page.update()
-            self.reset_all_countings(e)
+            self.contador.page.update()
+            current_tab = self.movimento_tabs.tabs[self.movimento_tabs.selected_index]
+            movimento = current_tab.text
+            
+            self.reset_all_countings(movimento)
 
         dialog = ft.AlertDialog(
             title=ft.Text("Confirmar Reset"),
-            content=ft.Text("Tem certeza de que deseja resetar todas as contagens? Esta ação não pode ser desfeita."),
+            content=ft.Text("Tem certeza de que deseja resetar todas as contagens desta aba? Esta ação não pode ser desfeita."),
             actions=[
                 ft.TextButton("Confirmar", on_click=confirm_reset),
                 ft.TextButton("Cancelar", on_click=close_dialog),
             ],
         )
-        self.page.overlay.append(dialog)
+        self.contador.page.overlay.append(dialog)
         dialog.open = True
-        self.page.update()
+        self.contador.page.update()
+
+    def reset_all_countings(self, movimento):
+        try:
+            logging.info(f"Resetando contagens para o movimento: {movimento}")
+            
+            with self.contador.session_lock:
+                self.contador.session.query(Contagem).filter_by(
+                    sessao=self.contador.sessao,
+                    movimento=movimento
+                ).delete()
+                self.contador.session.commit()
+
+            for key in list(self.contador.contagens.keys()):
+                if key[1] == movimento:
+                    self.contador.contagens[key] = 0
+                    if key in self.contador.labels:
+                        label_count, _ = self.contador.labels[key]
+                        label_count.value = "0"
+                        label_count.update()
+
+            self.contador.page.update()
+            
+            snackbar = ft.SnackBar(
+                content=ft.Text(f"Contagens do movimento {movimento} foram resetadas com sucesso!"),
+                bgcolor="green"
+            )
+            self.contador.page.overlay.append(snackbar)
+            snackbar.open = True
+            self.contador.page.update()
+            
+            # Adicionar registro no histórico para o reset
+            self.contador.salvar_historico(None, movimento, "reset")
+
+            logging.info(f"✅ Contagens do movimento {movimento} resetadas com sucesso!")
+
+        except Exception as ex:
+            logging.error(f"[ERROR] Erro ao resetar contagens do movimento '{movimento}': {ex}")
+            snackbar = ft.SnackBar(
+                content=ft.Text(f"Erro ao resetar contagens: {str(ex)}"),
+                bgcolor="red"
+            )
+            self.contador.page.overlay.append(snackbar)
+            snackbar.open = True
+            self.contador.page.update()
 
     def create_moviment_content(self, movimento):
-        logging.debug(f"[DEBUG] Criando conteúdo para o movimento: {movimento}")
-
-        # Criar uma coluna scrollable para o conteúdo do movimento
         content = ft.Column(
             spacing=10,
         )
         
-        # Verificar se temos categorias no contador
         if not self.contador.categorias:
             logging.warning("[WARNING] Nenhuma categoria disponível no contador")
             content.controls.append(ft.Text("⚠ Aguardando carregamento das categorias...", color="yellow"))
@@ -296,10 +299,8 @@ class AbaContagem(ft.Column):
         return content
 
     def create_category_control(self, veiculo, bind, movimento):
-        # Simplificar - usar sempre o valor atual dos binds do contador
         bind = self.contador.binds.get(veiculo, "N/A")
         
-        # Encontrar a categoria para ter acesso ao ID
         categoria = next(
             (c for c in self.contador.categorias 
              if c.veiculo == veiculo and c.movimento == movimento),
@@ -312,7 +313,6 @@ class AbaContagem(ft.Column):
 
         label_veiculo = ft.Text(f"{veiculo}", size=15, width=100)
         
-        # Exibir o bind real ou um texto informativo
         label_bind = ft.Text(
             f"({bind})" if bind != "N/A" else "(Sem bind)", 
             color="cyan" if bind != "N/A" else "red", 
@@ -441,7 +441,6 @@ class AbaContagem(ft.Column):
             logging.warning(f"[WARNING] Label não encontrada para {key}. Aguardando criação.")
 
     def _get_page(self):
-        """Retorna uma página válida, seja a própria ou a do contador"""
         if hasattr(self, 'page') and self.page is not None:
             return self.page
         elif hasattr(self.contador, 'page') and self.contador.page is not None:
