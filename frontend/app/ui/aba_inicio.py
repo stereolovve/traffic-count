@@ -272,7 +272,7 @@ class AbaInicio(ft.Column):
                 "padrao": self.padrao_dropdown.value
             }
 
-            await self.contador.criar_sessao(session_data)
+            await self.contador.create_session(session_data)
 
         except Exception as ex:
             logging.error(f"Erro ao preparar dados da sessão: {ex}")

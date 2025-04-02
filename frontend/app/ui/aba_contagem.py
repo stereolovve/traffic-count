@@ -4,8 +4,7 @@ import logging
 from datetime import datetime, timedelta
 from pynput import keyboard
 import asyncio
-from database.models import Contagem
-
+from database.models import Contagem, Categoria, Historico
 
 logging.getLogger(__name__).setLevel(logging.DEBUG)
 
@@ -78,7 +77,7 @@ class AbaContagem(ft.Column):
                         ft.IconButton(icon=ft.icons.RESTART_ALT, icon_color="ORANGE", tooltip="Resetar", 
                                     on_click=lambda _: self.show_reset_dialog()),
                         ft.IconButton(icon=ft.icons.INFO, icon_color="PURPLE", tooltip="Observação", 
-                                    on_click=self.contador.abrir_dialogo_observacao),
+                                    on_click=self.abrir_dialogo_observacao),
                     ]
                 ),
                 height=50  # Altura fixa para os botões
@@ -257,8 +256,7 @@ class AbaContagem(ft.Column):
             snackbar.open = True
             self.contador.page.update()
             
-            # Adicionar registro no histórico para o reset
-            self.contador.salvar_historico(None, movimento, "reset")
+            self.contador.history_manager.salvar_historico(None, movimento, "reset")
 
             logging.info(f"✅ Contagens do movimento {movimento} resetadas com sucesso!")
 
@@ -345,7 +343,7 @@ class AbaContagem(ft.Column):
                         ft.PopupMenuItem(
                             text="Editar Contagem", 
                             icon=ft.icons.EDIT, 
-                            on_click=lambda e: self.contador.abrir_edicao_contagem(veiculo, movimento)
+                            on_click=lambda e: self.abrir_edicao_contagem(veiculo, movimento)
                         )
                     ]
                 )
@@ -448,3 +446,113 @@ class AbaContagem(ft.Column):
         else:
             logging.error("❌ Nenhuma página válida encontrada!")
             return None
+
+    def abrir_dialogo_observacao(self, e):
+        def on_confirm(ev):
+            self.contador.period_observacao = textfield.value
+            dialog.open = False
+            self.contador.page.update()
+
+            snackbar = ft.SnackBar(ft.Text("✅ Observação salva!"), bgcolor="PURPLE")
+            self.contador.page.overlay.append(snackbar)
+            snackbar.open = True
+            self.contador.page.update()
+
+        textfield = ft.TextField(label="Observação do período", multiline=True, width=300)
+        dialog = ft.AlertDialog(
+            title=ft.Text("Inserir Observação"),
+            content=textfield,
+            actions=[
+                ft.TextButton("Confirmar", on_click=on_confirm),
+                ft.TextButton("Cancelar", on_click=lambda _: self.contador.close_dialog(dialog)),
+            ],
+            on_dismiss=lambda _: self.contador.close_dialog(dialog),
+        )
+
+        self.contador.page.overlay.append(dialog)
+        dialog.open = True
+        self.contador.page.update()
+
+    def update_last_save_label(self, now=None):
+        """Atualiza o label de último salvamento"""
+        if not self.last_save_label:
+            return
+            
+        timestamp = now if now else (
+            self.contador.last_save_time 
+            if hasattr(self.contador, "last_save_time") 
+            else datetime.now()
+        )
+        self.last_save_label.value = f"⏳ Último salvamento: {timestamp.strftime('%H:%M:%S')}"
+        self.last_save_label.update()
+
+    def update_period_status(self):
+        """Atualiza o label de período"""
+        if not self.period_label:
+            return
+            
+        if not hasattr(self.contador, "current_timeslot") or self.contador.current_timeslot is None:
+            if "current_timeslot" in self.contador.details:
+                self.contador.current_timeslot = datetime.strptime(
+                    self.contador.details["current_timeslot"], 
+                    "%H:%M"
+                )
+            elif "HorarioInicio" in self.contador.details:
+                self.contador.current_timeslot = datetime.strptime(
+                    self.contador.details["HorarioInicio"], 
+                    "%H:%M"
+                )
+            else:
+                self.contador.current_timeslot = datetime.now().replace(second=0, microsecond=0)
+
+        periodo_inicio = self.contador.current_timeslot.strftime("%H:%M")
+        periodo_fim = (self.contador.current_timeslot + timedelta(minutes=15)).strftime("%H:%M")
+        self.period_label.value = f"🕒 Período: {periodo_inicio} - {periodo_fim}"
+        self.period_label.update()
+
+    def abrir_edicao_contagem(self, veiculo, movimento):
+        self.contagem_ativa = False
+        self.page.update()
+
+        def on_submit(e):
+            try:
+                nova_contagem = int(input_contagem.value)
+                self.contador.contagens[(veiculo, movimento)] = nova_contagem
+                self.update_labels(veiculo, movimento)
+                self.contador.save_to_db(veiculo, movimento)
+                
+                categoria = self.contador.session.query(Categoria).filter_by(
+                    padrao=self.contador.ui_components['inicio'].padrao_dropdown.value,
+                    veiculo=veiculo,
+                    movimento=movimento
+                ).first()
+                
+                self.contador.history_manager.salvar_historico(categoria.id if categoria else None, movimento, "edicao manual")
+                
+                snackbar = ft.SnackBar(
+                    ft.Text(f"Contagem de '{veiculo}' no movimento '{movimento}' foi atualizada para {nova_contagem}."),
+                    bgcolor="BLUE"
+                )
+                self.page.overlay.append(snackbar)
+                snackbar.open = True
+                dialog.open = False
+                self.contagem_ativa = True
+                self.page.update()
+
+            except ValueError:
+                logging.error("[ERROR] Valor de contagem inválido.")
+
+        input_contagem = ft.TextField(
+            label="Nova Contagem",
+            keyboard_type=ft.KeyboardType.NUMBER,
+            on_submit=on_submit
+        )
+        dialog = ft.AlertDialog(
+            title=ft.Text(f"Editar Contagem: {veiculo}"),
+            content=input_contagem,
+            actions=[ft.TextButton("Salvar", on_click=on_submit)],
+            on_dismiss=lambda e: None,
+        )
+        self.page.overlay.append(dialog)
+        dialog.open = True
+        self.page.update()

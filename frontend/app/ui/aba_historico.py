@@ -33,11 +33,9 @@ class AbaHistorico(ft.Column):
 
     def carregar_historico(self, e):
         try:
-            registros = self.contador.session.query(Historico)\
-                .filter_by(sessao=self.contador.sessao)\
-                .order_by(Historico.timestamp.desc())\
-                .limit(self.historico_page_size)\
-                .all()
+            registros = self.contador.history_manager.carregar_historico(
+                page_size=self.historico_page_size
+            )
             
             self.historico_lista.controls.clear()
             for registro in registros:
@@ -68,7 +66,7 @@ class AbaHistorico(ft.Column):
                 self.historico_lista.controls.append(ft.Text("Nenhum registro encontrado."))
 
             self.contador.page.update()
-        except SQLAlchemyError as ex:
+        except Exception as ex:
             logging.error(f"Erro ao carregar histórico: {ex}")
             self.historico_lista.controls.append(ft.Text("Erro ao carregar histórico."))
             self.contador.page.update()
