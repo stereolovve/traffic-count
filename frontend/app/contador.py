@@ -353,9 +353,6 @@ class ContadorPerplan(ft.Column):
     def _perform_save(self, now):
         async def salvar():
             try:
-                # Verificar se há uma sessão ativa
-                if not self.sessao:
-                    raise ValueError("Não há sessão ativa para salvar")
 
                 # 1. Configurar timeslot
                 if not hasattr(self, "current_timeslot") or self.current_timeslot is None:
@@ -454,17 +451,23 @@ class ContadorPerplan(ft.Column):
             
     def logout_user(self, e):
         try:
-            tokens_path = DESKTOP_DIR / "auth_tokens.json"
-            if tokens_path.exists():
-                tokens_path.unlink()
-                logging.info("[✅] Tokens apagados no logout.")
-
-            self.tokens = None
-            self.username = None
-            self.app.reset_app()
+            # Parar o listener se estiver ativo
+            if hasattr(self, 'listener') and self.listener:
+                self.stop_listener()
+                logging.info("Listener parado durante logout")
+                
+            # Chamar reset_app do app principal para voltar à tela de login
+            if hasattr(self, 'app') and self.app:
+                self.app.reset_app()  # Este método cuidará de todo o processo
+                logging.info("Processo de logout iniciado")
+            else:
+                logging.error("Referência ao app principal não encontrada")
+                # Fallback: mostra mensagem de erro
+                self.ui_manager.show_error_message("Erro no logout: referência ao app principal não encontrada")
 
         except Exception as ex:
             logging.error(f"Erro ao deslogar: {ex}")
+            self.ui_manager.show_error_message(f"Erro ao deslogar: {str(ex)}")
 
     def show_dialog_end_session(self, e):
         self.session_manager.show_dialog_end_session(e)

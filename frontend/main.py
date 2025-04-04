@@ -109,12 +109,8 @@ class MyApp:
             logging.error(f"[ERROR] Erro ao mudar para app principal: {ex}")
 
     def show_login_page(self):
-        self.page.controls.clear()
         login_page = LoginPage(self)
         self.page.add(login_page)
-        self.page.window.width = 400 
-        self.page.window.height = 500
-        self.page.window.center()
         self.page.update()
 
     def show_register_page(self):
@@ -123,18 +119,91 @@ class MyApp:
         self.page.update()
 
     def reset_app(self):
-        self.tokens = None
-        self.username = None
-        if not self.page:
-            logging.error("Página não está configurada ao tentar resetar o app.")
-            return
-        self.page.controls.clear()
-        self.show_login_page()
+        """Reset o estado da aplicação e volta para a tela de login"""
+        try:
+            # Remover tokens do arquivo
+            if AUTH_TOKENS_FILE.exists():
+                AUTH_TOKENS_FILE.unlink()
+                logging.info("Arquivo de tokens removido")
+            
+            # Limpar dados de autenticação
+            self.tokens = None
+            self.username = None
+            
+            # Usar o run_task do Flet para executar a corrotina
+            self.page.run_task(self._perform_switch_to_login)
+            
+        except Exception as ex:
+            logging.error(f"Erro ao resetar aplicação: {ex}")
+            # Fallback em caso de erro
+            self.page.controls.clear()
+            self.page.add(ft.Text("Erro ao fazer logout. Reinicie a aplicação."))
+            self.page.update()
+
+    async def _perform_switch_to_login(self):
+        """Implementação assíncrona da mudança para login"""
+        try:
+            # Limpar todas as views existentes
+            self.page.views.clear()
+            
+            # Criar e configurar a view de login
+            login_page = LoginPage(self)
+            self.page.views.append(
+                ft.View(
+                    "/login",
+                    [login_page],
+                    padding=20,
+                    scroll=ft.ScrollMode.AUTO,
+                )
+            )
+            
+            # Ajustar o tamanho da janela
+            self.page.window.width = 800
+            self.page.window.height = 600
+            
+            # Atualizar a página
+            self.page.update()
+            
+            logging.info("Interface alterada para tela de login")
+        except Exception as ex:
+            logging.error(f"Erro ao mudar para tela de login: {ex}")
 
     def load_active_session(self):
         if not self.contador:
             self.contador = ContadorPerplan(self.page, username=self.username, app=self)
         return self.contador.load_active_session()
+
+    async def switch_to_login_page(self):
+        """Muda o aplicativo para a tela de login"""
+        try:
+            # Limpar todas as views existentes
+            self.page.views.clear()
+            
+            # Limpar dados de autenticação
+            self.tokens = None
+            self.username = None
+            
+            # Criar e configurar a view de login
+            login_page = LoginPage(self)
+            self.page.views.append(
+                ft.View(
+                    "/login",
+                    [login_page],
+                    padding=20,
+                    scroll=ft.ScrollMode.AUTO,
+                )
+            )
+            
+            # Ajustar o tamanho da janela
+            self.page.window.width = 800
+            self.page.window.height = 600
+            
+            # Atualizar a página
+            self.page.update()
+            
+            logging.info("Interface alterada para tela de login")
+        except Exception as ex:
+            logging.error(f"Erro ao mudar para tela de login: {ex}")
          
 async def main(page: ft.Page):
     page.title = "Contador Perplan"
