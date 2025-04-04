@@ -12,9 +12,27 @@ class RegisterPage(ft.Container):
         self.app = app
         self.page = app.page  
 
-        self.name_field = ft.TextField(label="Primeiro nome", width=300, hint_text="Ex.: João")
-        self.last_name_field = ft.TextField(label="Sobrenome", width=300, hint_text="Ex.: Silva")
-        self.username_field = ft.TextField(label="Usuário", width=300, hint_text="Ex.: joao.silva")
+        self.name_field = ft.TextField(
+            label="Primeiro nome", 
+            width=300, 
+            hint_text="Ex.: João",
+            on_change=self.update_username
+        )
+        
+        self.last_name_field = ft.TextField(
+            label="Sobrenome", 
+            width=300, 
+            hint_text="Ex.: Silva",
+            on_change=self.update_username
+        )
+        
+        self.username_field = ft.TextField(
+            label="Usuário", 
+            width=300, 
+            hint_text="Ex.: joao.silva",
+            read_only=True,
+        )
+        
         self.email_field = ft.TextField(label="E-mail", width=300, hint_text="Ex.: joao@exemplo.com")
         self.password_field = ft.TextField(label="Senha", width=300, password=True, can_reveal_password=True)
         self.confirm_password_field = ft.TextField(label="Confirme a Senha", width=300, password=True, can_reveal_password=True)
@@ -132,7 +150,7 @@ class RegisterPage(ft.Container):
             if isinstance(response, dict) and response.get("id"):
                 self.show_error("Registro bem-sucedido! Retornando ao login... 😊👌", is_success=True)
                 await asyncio.sleep(2)
-                await self.app.show_login_page()
+                self.page.run_task(self.app._perform_switch_to_login)
             else:
                 error_msg = response.get("detail", "Erro ao registrar: resposta inesperada")
                 self.show_error(error_msg)
@@ -159,4 +177,44 @@ class RegisterPage(ft.Container):
 
     def back_to_login(self, e):
         logger.info("[INFO] Alternando para tela de login...")
-        self.app.show_login_page()
+        self.page.run_task(self.app._perform_switch_to_login)
+
+    def update_username(self, e):
+        """Atualiza o campo de usuário baseado no nome e sobrenome"""
+        try:
+            nome = self.name_field.value.strip().lower() if self.name_field.value else ""
+            sobrenome = self.last_name_field.value.strip().lower() if self.last_name_field.value else ""
+            
+            # Remover acentos e caracteres especiais
+            nome = self.remove_special_chars(nome)
+            sobrenome = self.remove_special_chars(sobrenome)
+            
+            # Criar o nome de usuário
+            if nome and sobrenome:
+                username = f"{nome}.{sobrenome}"
+            elif nome:
+                username = nome
+            elif sobrenome:
+                username = sobrenome
+            else:
+                username = ""
+            
+            # Atualizar o campo
+            self.username_field.value = username
+            self.page.update()
+        except Exception as ex:
+            logger.error(f"Erro ao atualizar nome de usuário: {ex}")
+
+    def remove_special_chars(self, text):
+        """Remove acentos e caracteres especiais de um texto"""
+        import unicodedata
+        import re
+        
+        # Normaliza para forma NFD e remove os diacríticos
+        normalized = unicodedata.normalize('NFD', text)
+        normalized = ''.join(c for c in normalized if not unicodedata.combining(c))
+        
+        # Remove caracteres que não são alfanuméricos ou pontos
+        normalized = re.sub(r'[^a-zA-Z0-9.]', '', normalized)
+        
+        return normalized

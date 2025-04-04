@@ -109,14 +109,42 @@ class MyApp:
             logging.error(f"[ERROR] Erro ao mudar para app principal: {ex}")
 
     def show_login_page(self):
-        login_page = LoginPage(self)
-        self.page.add(login_page)
-        self.page.update()
+        """Mostra a página de login usando a abordagem de views"""
+        try:
+            self.page.run_task(self._perform_switch_to_login)
+        except Exception as ex:
+            logging.error(f"Erro ao mostrar página de login: {ex}")
+            # Fallback simples em caso de erro
+            self.page.controls.clear()
+            login_page = LoginPage(self)
+            self.page.add(login_page)
+            self.page.update()
 
     def show_register_page(self):
-        self.page.controls.clear()
-        self.page.add(RegisterPage(self))
-        self.page.update()
+        """Mostra a página de registro usando a abordagem de views"""
+        try:
+            # Limpar views existentes
+            self.page.views.clear()
+            
+            # Criar e adicionar a página de registro
+            register_page = RegisterPage(self)
+            self.page.views.append(
+                ft.View(
+                    "/register",
+                    [register_page],
+                    padding=20,
+                    scroll=ft.ScrollMode.AUTO,
+                )
+            )
+            
+            # Atualizar a página
+            self.page.update()
+        except Exception as ex:
+            logging.error(f"Erro ao mostrar página de registro: {ex}")
+            # Fallback para o método antigo
+            self.page.controls.clear()
+            self.page.add(RegisterPage(self))
+            self.page.update()
 
     def reset_app(self):
         """Reset o estado da aplicação e volta para a tela de login"""
@@ -205,6 +233,30 @@ class MyApp:
         except Exception as ex:
             logging.error(f"Erro ao mudar para tela de login: {ex}")
          
+    async def _perform_switch_to_register(self):
+        """Implementação assíncrona da mudança para registro"""
+        try:
+            # Limpar todas as views existentes
+            self.page.views.clear()
+            
+            # Criar e configurar a view de registro
+            register_page = RegisterPage(self)
+            self.page.views.append(
+                ft.View(
+                    "/register",
+                    [register_page],
+                    padding=20,
+                    scroll=ft.ScrollMode.AUTO,
+                )
+            )
+            
+            # Atualizar a página
+            self.page.update()
+            
+            logging.info("Interface alterada para tela de registro")
+        except Exception as ex:
+            logging.error(f"Erro ao mudar para tela de registro: {ex}")
+
 async def main(page: ft.Page):
     page.title = "Contador Perplan"
     page.window.width = 800
