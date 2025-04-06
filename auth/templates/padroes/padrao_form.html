@@ -8,12 +8,25 @@
     <title>{% if form.instance.pk %}Editar Padrão{% else %}Novo Padrão{% endif %}</title>
     <link rel="shortcut icon" type="image/png" href="{% static 'img/icone.png' %}">
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
-    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-3xl">
+<body class="bg-gray-100 py-6">
+    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-4xl mx-auto">
         <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">{% if form.instance.pk %}Editar Padrão{% else %}Novo Padrão{% endif %}</h1>
-        <p class="text-gray-600 text-center mb-6">Preencha os detalhes abaixo para gerenciar o padrão.</p>
         
+        {% if messages %}
+        <div class="mb-6">
+            {% for message in messages %}
+            <div class="p-4 {% if message.tags == 'success' %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %} rounded-lg">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        {% if form.instance.pk %}
+        <!-- Modo de edição - formulário único -->
+        <p class="text-gray-600 text-center mb-6">Edite os detalhes do padrão selecionado.</p>
         <form method="post">
             {% csrf_token %}
             <div class="overflow-x-auto">
@@ -22,7 +35,7 @@
                         {% for field in form %}
                         <tr class="border-t bg-white hover:bg-gray-50 transition">
                             <td class="p-4 border-b font-semibold text-gray-700">{{ field.label }}</td>
-                            <td class="p-4 border-b">{{ field|safe }}</td>
+                            <td class="p-4 border-b">{{ field }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -30,7 +43,382 @@
             </div>
             <button type="submit" class="bg-green-600 text-white px-6 py-3 mt-6 rounded-lg hover:bg-green-700 transition w-full text-lg font-semibold">Salvar</button>
         </form>
+        {% else %}
+        <!-- Modo de criação - formulário múltiplo -->
+        <p class="text-gray-600 text-center mb-6">Preencha os detalhes abaixo para criar um ou mais padrões. Adicione linhas conforme necessário.</p>
+        
+        <div class="bg-yellow-50 p-4 rounded-lg mb-6">
+            <p class="text-yellow-800">
+                <i class="fas fa-info-circle mr-2"></i>
+                Preencha o tipo de padrão (aplicado a todos) e adicione os veículos desejados.
+            </p>
+        </div>
+        
+        <form method="post" id="multi-form">
+            {% csrf_token %}
+            
+            <div class="mb-4">
+                <label class="block text-gray-700 font-medium mb-2">Tipo de Padrão</label>
+                <div class="flex items-start space-x-4">
+                    <div class="flex-1">
+                        <select name="pattern_type" id="pattern-type-select" class="w-full p-2 border border-gray-300 rounded-md">
+                            <option value="">-- Selecione um tipo existente --</option>
+                            {% for tipo in tipos_padroes %}
+                                <option value="{{ tipo }}">{{ tipo }}</option>
+                            {% endfor %}
+                            <option value="padrao_perplan">padrao_perplan</option>
+                        </select>
+                    </div>
+                    <div class="text-center text-gray-500 pt-2">OU</div>
+                    <div class="flex-1">
+                        <input type="text" id="new-pattern-type" class="w-full p-2 border border-gray-300 rounded-md" placeholder="Digite um novo tipo de padrão">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="border-t border-b border-gray-200 py-4 mb-4">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-medium text-gray-700">Veículos</h2>
+                    <button type="button" id="add-row-btn" class="bg-blue-500 text-white px-3 py-1 rounded-md hover:bg-blue-600 transition">
+                        <i class="fas fa-plus mr-1"></i> Adicionar veículo
+                    </button>
+                </div>
+                
+                <div class="mb-4">
+                    <button type="button" id="add-common-set-btn" class="w-full bg-gray-100 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-200 transition">
+                        <i class="fas fa-plus-square mr-1"></i> Usar conjunto pré-definido
+                    </button>
+                </div>
+                
+                <table class="w-full mb-4">
+                    <thead>
+                        <tr class="bg-gray-100">
+                            <th class="p-2 text-left text-gray-600">#</th>
+                            <th class="p-2 text-left text-gray-600">Veículo</th>
+                            <th class="p-2 text-left text-gray-600">Bind</th>
+                            <th class="p-2 text-left text-gray-600">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="vehicles-container">
+                        <tr class="vehicle-row border-b">
+                            <td class="p-2 row-number">1</td>
+                            <td class="p-2">
+                                <input type="text" name="veiculo[]" class="w-full p-2 border border-gray-300 rounded-md" required placeholder="Ex: Carro">
+                            </td>
+                            <td class="p-2">
+                                <input type="text" name="bind[]" class="w-full p-2 border border-gray-300 rounded-md" required placeholder="Ex: C">
+                            </td>
+                            <td class="p-2">
+                                <button type="button" class="remove-row-btn text-red-500 hover:text-red-700 transition" disabled>
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <button type="submit" class="bg-green-600 text-white px-6 py-3 mt-6 rounded-lg hover:bg-green-700 transition w-full text-lg font-semibold">
+                <i class="fas fa-save mr-2"></i> Salvar todos
+            </button>
+        </form>
+        {% endif %}
+        
         <a href="{% url 'padrao_list' %}" class="block mt-6 text-blue-500 hover:underline text-center text-lg">Voltar</a>
     </div>
+    
+    <!-- Modal de conjuntos pré-definidos -->
+    <div id="common-sets-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-medium">Conjuntos comuns de veículos</h3>
+                <button id="close-modal-btn" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="space-y-2 mb-4">
+                <button class="common-set-btn w-full p-2 text-left border border-gray-300 rounded hover:bg-gray-100 transition" data-set="perplan">
+                    <span class="font-medium">Carros e Motos</span>
+                    <div class="text-sm text-gray-500">Carro (C), Moto (M)</div>
+                </button>
+                <button class="common-set-btn w-full p-2 text-left border border-gray-300 rounded hover:bg-gray-100 transition" data-set="perci">
+                    <span class="font-medium">Caminhões</span>
+                    <div class="text-sm text-gray-500">Caminhão 2e (K), Caminhão 3e (T), Caminhão 4e (Q), Caminhão 5+e (X)</div>
+                </button>
+                <button class="common-set-btn w-full p-2 text-left border border-gray-300 rounded hover:bg-gray-100 transition" data-set="simplificado">
+                    <span class="font-medium">Ônibus</span>
+                    <div class="text-sm text-gray-500">Ônibus (O), Micro-ônibus (N)</div>
+                </button>
+                <button class="common-set-btn w-full p-2 text-left border border-gray-300 rounded hover:bg-gray-100 transition" data-set="pedestres">
+                    <span class="font-medium">Conjunto Completo</span>
+                    <div class="text-sm text-gray-500">Carro, Moto, Caminhões (2e, 3e, 4e, 5+e), Ônibus, Micro-ônibus</div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Verificar se estamos na página de criação (não de edição)
+            const multiForm = document.getElementById('multi-form');
+            if (!multiForm) return;
+            
+            // Referências aos elementos
+            const vehiclesContainer = document.getElementById('vehicles-container');
+            const addRowBtn = document.getElementById('add-row-btn');
+            const addCommonSetBtn = document.getElementById('add-common-set-btn');
+            const modal = document.getElementById('common-sets-modal');
+            const closeModalBtn = document.getElementById('close-modal-btn');
+            const commonSetBtns = document.querySelectorAll('.common-set-btn');
+            const patternTypeSelect = document.getElementById('pattern-type-select');
+            const newPatternType = document.getElementById('new-pattern-type');
+            
+            // Contador para manter os números das linhas
+            let rowCounter = 1;
+            
+            // Adicionar nova linha
+            addRowBtn.addEventListener('click', function() {
+                rowCounter++;
+                addNewRow();
+                updateRowNumbers();
+                updateRemoveButtons();
+            });
+            
+            // Função para adicionar nova linha
+            function addNewRow() {
+                const newRow = document.createElement('tr');
+                newRow.className = 'vehicle-row border-b';
+                newRow.innerHTML = `
+                    <td class="p-2 row-number">${rowCounter}</td>
+                    <td class="p-2">
+                        <input type="text" name="veiculo[]" class="w-full p-2 border border-gray-300 rounded-md" required placeholder="Ex: Carro">
+                    </td>
+                    <td class="p-2">
+                        <input type="text" name="bind[]" class="w-full p-2 border border-gray-300 rounded-md" required placeholder="Ex: C">
+                    </td>
+                    <td class="p-2">
+                        <button type="button" class="remove-row-btn text-red-500 hover:text-red-700 transition">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                    <input type="hidden" name="order[]" value="${rowCounter * 10}">
+                `;
+                vehiclesContainer.appendChild(newRow);
+                
+                // Adicionar evento para remover linha
+                newRow.querySelector('.remove-row-btn').addEventListener('click', function() {
+                    newRow.remove();
+                    updateRowNumbers();
+                    updateRemoveButtons();
+                });
+            }
+            
+            // Atualizar números das linhas
+            function updateRowNumbers() {
+                const rows = vehiclesContainer.querySelectorAll('.vehicle-row');
+                rows.forEach((row, index) => {
+                    row.querySelector('.row-number').textContent = index + 1;
+                });
+            }
+            
+            // Atualizar estado dos botões de remoção (pelo menos uma linha deve permanecer)
+            function updateRemoveButtons() {
+                const removeButtons = vehiclesContainer.querySelectorAll('.remove-row-btn');
+                const hasMultipleRows = removeButtons.length > 1;
+                
+                removeButtons.forEach(button => {
+                    button.disabled = !hasMultipleRows;
+                    if (!hasMultipleRows) {
+                        button.classList.add('text-gray-400');
+                        button.classList.remove('text-red-500', 'hover:text-red-700');
+                    } else {
+                        button.classList.add('text-red-500', 'hover:text-red-700');
+                        button.classList.remove('text-gray-400');
+                    }
+                });
+            }
+            
+            // Abrir modal de conjuntos comuns
+            addCommonSetBtn.addEventListener('click', function() {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            });
+            
+            // Fechar modal
+            closeModalBtn.addEventListener('click', function() {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            });
+            
+            // Clicar fora do modal para fechar
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                }
+            });
+            
+            // Adicionar conjunto comum
+            commonSetBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const setType = this.getAttribute('data-set');
+                    addCommonSet(setType);
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                });
+            });
+            
+            // Função para adicionar conjunto comum
+            function addCommonSet(setType) {
+                // Limpar linhas existentes
+                vehiclesContainer.innerHTML = '';
+                rowCounter = 0;
+                
+                let patterns = [];
+                
+                switch (setType) {
+                    case 'perplan':
+                        patterns = [
+                            { veiculo: 'Leves', bind: '1', order: 10 },
+                            { veiculo: 'VUC', bind: '2', order: 20 },
+                            { veiculo: 'Caminhão 2e', bind: '3', order: 30 },
+                            { veiculo: 'Caminhão 3e', bind: '4', order: 40 },
+                            { veiculo: 'Caminhão 4e', bind: '5', order: 50 },
+                            { veiculo: 'Carreta 3e', bind: '6', order: 60 },
+                            { veiculo: 'Carreta 4e', bind: '7', order: 70 },
+                            { veiculo: 'Carreta 5e', bind: '8', order: 100 },
+                            { veiculo: 'Carreta 6e', bind: '9', order: 110 },
+                            { veiculo: 'Carreta 7e', bind: 'np1', order: 120 },
+                            { veiculo: 'Carreta 9e', bind: 'np2', order: 140 },
+                            { veiculo: 'Carreta 10e', bind: 'np3', order: 150 },
+                            { veiculo: 'Onibus', bind: 'np4', order: 160 },
+                            { veiculo: 'Micro-ônibus', bind: 'np5', order: 170 },
+                            { veiculo: 'Moto', bind: 'np0', order: 180 },
+                        ];
+                        break;
+                    case 'perci':
+                        patterns = [
+                        { veiculo: 'Leves', bind: '1', order: 10 },
+                            { veiculo: 'VUC', bind: '2', order: 20 },
+                            { veiculo: 'Pesados 2e', bind: '3', order: 30 },
+                            { veiculo: 'Pesados 3e', bind: '4', order: 40 },
+                            { veiculo: 'Pesados 4e', bind: '5', order: 50 },
+                            { veiculo: 'Pesados 5e', bind: '6', order: 60 },
+                            { veiculo: 'Pesados 6e', bind: '7', order: 70 },
+                            { veiculo: 'Pesados 7e', bind: 'np2', order: 140 },
+                            { veiculo: 'Pesados 9e', bind: 'np3', order: 150 },
+                            { veiculo: 'Pesados 10e', bind: 'np4', order: 160 },
+                            { veiculo: 'Onibus2e', bind: 'np5', order: 170 },
+                            { veiculo: 'Onibus3e', bind: 'np6', order: 180 },
+                            { veiculo: 'Moto', bind: 'np0', order: 180 },
+                        ];
+                        break;
+                    case 'simplificado':
+                        patterns = [
+                            { veiculo: 'Leves', bind: 'O', order: 10 },
+                            { veiculo: 'Caminhao', bind: 'N', order: 20 },
+                            { veiculo: 'Carreta', bind: 'N', order: 30 },
+                            { veiculo: 'Onibus', bind: 'N', order: 40 },
+                            { veiculo: 'Moto', bind: 'N', order: 50 },
+
+                        ];
+                        break;
+                    case 'pedestres':
+                        patterns = [
+                            { veiculo: 'Adulto', bind: 'A', order: 10 },
+                            { veiculo: 'Criança', bind: 'C', order: 20 },
+                            { veiculo: 'PCD', bind: 'P', order: 30 },
+                            { veiculo: 'Ciclista', bind: 'B', order: 40 },
+                            { veiculo: 'Ciclista empurrando', bind: 'E', order: 50 },
+                            { veiculo: 'Trav. Adulto', bind: 'T', order: 60 },
+                            { veiculo: 'Trav. Criança', bind: 'C', order: 70 },
+                            { veiculo: 'Trav. PCD', bind: '6', order: 80 },
+                            { veiculo: 'Onibus', bind: 'D', order: 90 },
+                            { veiculo: 'Embarque O.', bind: '1', order: 100 },
+                            { veiculo: 'Desembarque O.', bind: '2', order: 110 },
+                            { veiculo: 'Van.', bind: '3', order: 120 },
+                            { veiculo: 'Embarque V.', bind: '4', order: 130 },
+                            { veiculo: 'Desembarque V.', bind: '5', order: 140 }
+                            
+                        ];
+                        break;
+                }
+                
+                // Adicionar padrões
+                patterns.forEach(pattern => {
+                    rowCounter++;
+                    const newRow = document.createElement('tr');
+                    newRow.className = 'vehicle-row border-b';
+                    newRow.innerHTML = `
+                        <td class="p-2 row-number">${rowCounter}</td>
+                        <td class="p-2">
+                            <input type="text" name="veiculo[]" class="w-full p-2 border border-gray-300 rounded-md" required value="${pattern.veiculo}">
+                        </td>
+                        <td class="p-2">
+                            <input type="text" name="bind[]" class="w-full p-2 border border-gray-300 rounded-md" required value="${pattern.bind}">
+                        </td>
+                        <td class="p-2">
+                            <button type="button" class="remove-row-btn text-red-500 hover:text-red-700 transition">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                        <input type="hidden" name="order[]" value="${pattern.order}">
+                    `;
+                    vehiclesContainer.appendChild(newRow);
+                    
+                    // Adicionar evento para remover linha
+                    newRow.querySelector('.remove-row-btn').addEventListener('click', function() {
+                        newRow.remove();
+                        updateRowNumbers();
+                        updateRemoveButtons();
+                    });
+                });
+                
+                updateRemoveButtons();
+            }
+            
+            // Interação entre campo de seleção e campo de texto para tipo de padrão
+            patternTypeSelect.addEventListener('change', function() {
+                if (this.value) {
+                    newPatternType.value = '';
+                }
+            });
+
+            newPatternType.addEventListener('input', function() {
+                if (this.value) {
+                    patternTypeSelect.value = '';
+                }
+            });
+            
+            // Validação do formulário
+            multiForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Obter tipo de padrão
+                let patternType = patternTypeSelect.value;
+                if (!patternType && newPatternType.value) {
+                    patternType = newPatternType.value.trim();
+                }
+                
+                if (!patternType) {
+                    alert('Por favor, selecione ou digite um tipo de padrão.');
+                    return;
+                }
+                
+                // Criar campo oculto para o tipo de padrão
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = 'pattern_type_final';
+                hiddenInput.value = patternType;
+                multiForm.appendChild(hiddenInput);
+                
+                // Enviar formulário
+                this.submit();
+            });
+            
+            // Inicializar estado dos botões de remoção
+            updateRemoveButtons();
+        });
+    </script>
 </body>
 </html>

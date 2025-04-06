@@ -244,7 +244,11 @@ class AbaInicio(ft.Column):
 
             self.contador.binds = {item["veiculo"]: item["bind"] for item in response}
             
-            self.contador.setup_aba_contagem()
+            # Correção - usar o método correto para atualizar a aba de contagem
+            if 'contagem' in self.contador.ui_components:
+                self.contador.ui_components['contagem'].setup_ui()
+            
+            # Atualizar a UI
             self.page.update()
 
         except Exception as ex:

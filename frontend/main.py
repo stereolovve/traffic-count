@@ -98,8 +98,7 @@ class MyApp:
                     scroll=ft.ScrollMode.AUTO,
                 )
             )
-            self.page.window.min_width = 800
-            self.page.window.min_height = 600
+
             self.page.scroll = ft.ScrollMode.AUTO
             self.page.expand = True
             
@@ -114,7 +113,6 @@ class MyApp:
             self.page.run_task(self._perform_switch_to_login)
         except Exception as ex:
             logging.error(f"Erro ao mostrar página de login: {ex}")
-            # Fallback simples em caso de erro
             self.page.controls.clear()
             login_page = LoginPage(self)
             self.page.add(login_page)
@@ -123,10 +121,8 @@ class MyApp:
     def show_register_page(self):
         """Mostra a página de registro usando a abordagem de views"""
         try:
-            # Limpar views existentes
             self.page.views.clear()
             
-            # Criar e adicionar a página de registro
             register_page = RegisterPage(self)
             self.page.views.append(
                 ft.View(
@@ -137,11 +133,9 @@ class MyApp:
                 )
             )
             
-            # Atualizar a página
             self.page.update()
         except Exception as ex:
             logging.error(f"Erro ao mostrar página de registro: {ex}")
-            # Fallback para o método antigo
             self.page.controls.clear()
             self.page.add(RegisterPage(self))
             self.page.update()
@@ -149,21 +143,17 @@ class MyApp:
     def reset_app(self):
         """Reset o estado da aplicação e volta para a tela de login"""
         try:
-            # Remover tokens do arquivo
             if AUTH_TOKENS_FILE.exists():
                 AUTH_TOKENS_FILE.unlink()
                 logging.info("Arquivo de tokens removido")
             
-            # Limpar dados de autenticação
             self.tokens = None
             self.username = None
             
-            # Usar o run_task do Flet para executar a corrotina
             self.page.run_task(self._perform_switch_to_login)
             
         except Exception as ex:
             logging.error(f"Erro ao resetar aplicação: {ex}")
-            # Fallback em caso de erro
             self.page.controls.clear()
             self.page.add(ft.Text("Erro ao fazer logout. Reinicie a aplicação."))
             self.page.update()
@@ -171,10 +161,8 @@ class MyApp:
     async def _perform_switch_to_login(self):
         """Implementação assíncrona da mudança para login"""
         try:
-            # Limpar todas as views existentes
             self.page.views.clear()
             
-            # Criar e configurar a view de login
             login_page = LoginPage(self)
             self.page.views.append(
                 ft.View(
@@ -185,11 +173,9 @@ class MyApp:
                 )
             )
             
-            # Ajustar o tamanho da janela
             self.page.window.width = 800
             self.page.window.height = 600
             
-            # Atualizar a página
             self.page.update()
             
             logging.info("Interface alterada para tela de login")
@@ -261,8 +247,7 @@ async def main(page: ft.Page):
     page.title = "Contador Perplan"
     page.window.width = 800
     page.window.height = 600
-    page.window.min_width = 800
-    page.window.min_height = 600
+
     page.window.always_on_top = True
     page.scroll = ft.ScrollMode.AUTO
     page.expand = True

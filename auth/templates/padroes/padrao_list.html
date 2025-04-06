@@ -7,7 +7,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Padrões de Contagem</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="shortcut icon" type="image/png" href="{% static 'img/icone.png' %}">
+    <style>
+        .pattern-section {
+            transition: all 0.3s ease;
+        }
+        .drag-handle {
+            cursor: grab;
+        }
+        .drag-handle:active {
+            cursor: grabbing;
+        }
+        .dragging {
+            opacity: 0.5;
+            background-color: #f0f9ff;
+        }
+        .drop-indicator {
+            border: 2px dashed #3b82f6;
+            height: 2px;
+            margin: 8px 0;
+            display: none;
+        }
+    </style>
 </head>
 <body class="bg-gray-100 p-6">
     <div class="max-w-5xl mx-auto bg-white p-6 rounded-lg shadow-lg">
@@ -18,39 +40,259 @@
             </a>
         </div>
         <div class="flex justify-between items-center mt-6">
-            <p class="text-gray-600">Gerencie seus padrões de contagem de forma simples e eficiente.</p>
-            <a href="{% url 'padrao_create' %}" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">Criar Novo</a>
+            <p class="text-gray-600">Gerencie seus padrões de contagem de forma hierárquica e ordenada.</p>
+            <div>
+                <a href="{% url 'padrao_create' %}" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">
+                    <i class="fas fa-plus"></i> Criar Novo
+                </a>
+            </div>
+        </div>
+
+        <!-- Seletor de Tipo de Padrão -->
+        <div class="mt-6 bg-gray-50 p-4 rounded-lg">
+            <h2 class="text-lg font-semibold text-gray-700 mb-3">Selecione o tipo de padrão para reordenar</h2>
+            <div class="flex flex-wrap gap-2">
+                {% for tipo in tipos_padroes %}
+                <a href="?pattern_type={{ tipo }}" class="px-4 py-2 rounded-md {% if selected_type == tipo %}bg-blue-500 text-white{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %} transition">
+                    {{ tipo }}
+                </a>
+                {% endfor %}
+                <a href="{% url 'padrao_list' %}" class="px-4 py-2 rounded-md {% if not selected_type %}bg-blue-500 text-white{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %} transition">
+                    Todos
+                </a>
+            </div>
         </div>
 
         {% if padroes %}
-        <div class="overflow-x-auto mt-6">
-            <table class="w-full border border-gray-300 rounded-lg">
-                <thead>
-                    <tr class="bg-gray-200 text-gray-700 uppercase text-sm">
-                        <th class="p-4 text-left">Tipo do Padrão</th>
-                        <th class="p-4 text-left">Veículo</th>
-                        <th class="p-4 text-left">Bind</th>
-                        <th class="p-4 text-left">Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
+            {% if selected_type %}
+                <h3 class="mt-6 text-xl font-semibold text-blue-700">Padrões do tipo: {{ selected_type }}</h3>
+                <div class="mt-2 p-3 bg-yellow-50 text-yellow-800 rounded-lg">
+                    <i class="fas fa-info-circle mr-2"></i> Arraste e solte os padrões para reorganizar a ordem. A ordem será salva automaticamente.
+                </div>
+                <div id="pattern-container" class="mt-4 space-y-2">
                     {% for padrao in padroes %}
-                    <tr class="border-t bg-white hover:bg-gray-50 transition">
-                        <td class="p-4 border-b">{{ padrao.pattern_type }}</td>
-                        <td class="p-4 border-b">{{ padrao.veiculo }}</td>
-                        <td class="p-4 border-b">{{ padrao.bind }}</td>
-                        <td class="p-4 border-b flex space-x-4">
-                            <a href="{% url 'padrao_edit' padrao.pk %}" class="text-blue-500 hover:underline">✏️ Editar</a>
-                            <a href="{% url 'padrao_delete' padrao.pk %}" class="text-red-500 hover:underline">🗑️ Deletar</a>
-                        </td>
-                    </tr>
+                    <div class="pattern-item pattern-section bg-white border border-gray-200 rounded-lg p-3 shadow-sm flex items-center" data-id="{{ padrao.id }}">
+                        <div class="drag-handle pr-3 text-gray-400">
+                            <i class="fas fa-grip-vertical"></i>
+                        </div>
+                        <div class="flex-grow grid grid-cols-3 gap-4">
+                            <div class="text-gray-700">{{ padrao.veiculo }}</div>
+                            <div class="text-gray-500 text-sm bg-gray-100 p-2 rounded">Bind: <span class="font-mono">{{ padrao.bind }}</span></div>
+                            <div class="flex gap-2 justify-end">
+                                <a href="{% url 'padrao_edit' padrao.pk %}" class="text-blue-500 hover:text-blue-700 transition">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'padrao_delete' padrao.pk %}" class="text-red-500 hover:text-red-700 transition">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="drop-indicator"></div>
                     {% endfor %}
-                </tbody>
-            </table>
-        </div>
+                </div>
+            {% else %}
+                <div class="overflow-x-auto mt-6">
+                    <table class="w-full border border-gray-300 rounded-lg">
+                        <thead>
+                            <tr class="bg-gray-200 text-gray-700 uppercase text-sm">
+                                <th class="p-4 text-left">Tipo do Padrão</th>
+                                <th class="p-4 text-left">Veículo</th>
+                                <th class="p-4 text-left">Bind</th>
+                                <th class="p-4 text-left">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% regroup padroes|dictsort:"pattern_type" by pattern_type as padrao_grupos %}
+                            {% for grupo in padrao_grupos %}
+                                <tr class="bg-blue-50">
+                                    <td colspan="4" class="p-2 font-bold">
+                                        <a href="?pattern_type={{ grupo.grouper }}" class="hover:underline text-blue-700">
+                                            <i class="fas fa-folder-open mr-1"></i> {{ grupo.grouper }}
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% for padrao in grupo.list %}
+                                <tr class="border-t bg-white hover:bg-gray-50 transition">
+                                    <td class="p-4 border-b"></td>
+                                    <td class="p-4 border-b">{{ padrao.veiculo }}</td>
+                                    <td class="p-4 border-b font-mono">{{ padrao.bind }}</td>
+                                    <td class="p-4 border-b flex space-x-4">
+                                        <a href="{% url 'padrao_edit' padrao.pk %}" class="text-blue-500 hover:text-blue-700">
+                                            <i class="fas fa-edit"></i> Editar
+                                        </a>
+                                        <a href="{% url 'padrao_delete' padrao.pk %}" class="text-red-500 hover:text-red-700">
+                                            <i class="fas fa-trash"></i> Deletar
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
         {% else %}
-        <p class="text-gray-600 mt-6 text-center">Nenhum padrão de contagem cadastrado ainda.</p>
+            <p class="text-gray-600 mt-6 text-center">Nenhum padrão de contagem cadastrado ainda.</p>
         {% endif %}
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Configuração para arrastar e ordenar
+            let draggableItems = document.querySelectorAll('.pattern-item');
+            let dropIndicators = document.querySelectorAll('.drop-indicator');
+            let draggedItem = null;
+            
+            draggableItems.forEach(item => {
+                let handle = item.querySelector('.drag-handle');
+                
+                handle.addEventListener('mousedown', function(e) {
+                    draggedItem = item;
+                    item.classList.add('dragging');
+                    
+                    // Impedir seleção de texto durante arrasto
+                    e.preventDefault();
+                    
+                    // Posição inicial do mouse
+                    let startY = e.clientY;
+                    let startTop = item.offsetTop;
+                    
+                    function onMouseMove(e) {
+                        let newY = e.clientY - startY;
+                        
+                        // Limite o movimento vertical ao container
+                        let container = document.getElementById('pattern-container');
+                        let containerRect = container.getBoundingClientRect();
+                        let itemRect = item.getBoundingClientRect();
+                        
+                        if (e.clientY < containerRect.top) {
+                            newY = containerRect.top - startY;
+                        } else if (e.clientY > containerRect.bottom) {
+                            newY = containerRect.bottom - startY;
+                        }
+                        
+                        // Atualizar posição durante arrasto
+                        item.style.transform = `translateY(${newY}px)`;
+                        
+                        // Mostrar indicador de local de soltura
+                        updateDropIndicators(e.clientY);
+                    }
+                    
+                    function onMouseUp() {
+                        item.classList.remove('dragging');
+                        item.style.transform = '';
+                        
+                        // Ocultar todos os indicadores
+                        dropIndicators.forEach(indicator => {
+                            indicator.style.display = 'none';
+                        });
+                        
+                        // Reordenar os elementos
+                        reorderItems();
+                        
+                        // Salvar a nova ordem
+                        saveNewOrder();
+                        
+                        document.removeEventListener('mousemove', onMouseMove);
+                        document.removeEventListener('mouseup', onMouseUp);
+                        
+                        draggedItem = null;
+                    }
+                    
+                    document.addEventListener('mousemove', onMouseMove);
+                    document.addEventListener('mouseup', onMouseUp);
+                });
+            });
+            
+            function updateDropIndicators(mouseY) {
+                let closestIndicator = null;
+                let closestDistance = Infinity;
+                
+                dropIndicators.forEach(indicator => {
+                    let rect = indicator.getBoundingClientRect();
+                    let distance = Math.abs(rect.top - mouseY);
+                    
+                    if (distance < closestDistance) {
+                        closestDistance = distance;
+                        closestIndicator = indicator;
+                    }
+                    
+                    indicator.style.display = 'none';
+                });
+                
+                if (closestIndicator) {
+                    closestIndicator.style.display = 'block';
+                }
+            }
+            
+            function reorderItems() {
+                let container = document.getElementById('pattern-container');
+                let items = Array.from(container.querySelectorAll('.pattern-item'));
+                
+                // Ordenar itens por posição vertical
+                items.sort((a, b) => {
+                    return a.getBoundingClientRect().top - b.getBoundingClientRect().top;
+                });
+                
+                // Reorganizar os itens no DOM
+                items.forEach(item => {
+                    let indicator = item.nextElementSibling;
+                    container.appendChild(item);
+                    if (indicator && indicator.classList.contains('drop-indicator')) {
+                        container.appendChild(indicator);
+                    }
+                });
+            }
+            
+            function saveNewOrder() {
+                let items = Array.from(document.querySelectorAll('.pattern-item'));
+                let orderData = items.map((item, index) => {
+                    return {
+                        id: item.dataset.id,
+                        order: index + 1
+                    };
+                });
+                
+                // Enviar dados para o servidor
+                fetch('/padroes/reorder/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify(orderData)
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erro ao salvar a ordem');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Ordem salva com sucesso');
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                });
+            }
+            
+            // Função para obter o token CSRF
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+        });
+    </script>
 </body>
 </html>

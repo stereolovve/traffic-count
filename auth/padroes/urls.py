@@ -2,7 +2,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from . import views
-from .views import get_user_info, listar_preferences_usuario, atualizar_preferences_usuario
+from .views import get_user_info, listar_preferences_usuario, atualizar_preferences_usuario, reorder_patterns
 
 router = DefaultRouter()
 router.register(r'padroes-api', views.PadraoContagemViewSet, basename='padroes-api')
@@ -10,9 +10,10 @@ router.register(r'user-padroes', views.UserPadraoContagemViewSet, basename='user
 
 urlpatterns = [
     path('', views.PadraoContagemListView.as_view(), name='padrao_list'),
-    path('padroes/novo/', views.PadraoContagemCreateView.as_view(), name='padrao_create'),
-    path('padroes/<int:pk>/editar/', views.PadraoContagemUpdateView.as_view(), name='padrao_edit'),
-    path('padroes/<int:pk>/deletar/', views.PadraoContagemDeleteView.as_view(), name='padrao_delete'),
+    path('padroes/create/', views.PadraoContagemCreateView.as_view(), name='padrao_create'),
+    path('padroes/<int:pk>/edit/', views.PadraoContagemUpdateView.as_view(), name='padrao_edit'),
+    path('padroes/<int:pk>/delete/', views.PadraoContagemDeleteView.as_view(), name='padrao_delete'),
+    path('padroes/reorder/', views.reorder_patterns, name='reorder_patterns'),
     path('tipos-de-padrao/', views.listar_tipos_padrao, name='listar_tipos_padrao'),
     path('padroes-globais/', views.listar_padroes_globais, name='listar_padroes_globais'),
     path('merged-binds/', views.get_user_or_global_padrao, name='merged-binds'),

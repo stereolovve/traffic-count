@@ -5,11 +5,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sessões Ativas</title>
+    <title>Sessões</title>
     <link rel="stylesheet" type="text/css" href="{% static 'contagens/styles.css' %}">
     <link rel="shortcut icon" type="image/png" href="{% static 'img/icone.png' %}">
-
-    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -27,39 +26,84 @@
             font-size: 24px;
             margin-bottom: 20px;
         }
-        form {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            align-items: center;
-            justify-content: center;
+        .filter-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
             margin-bottom: 20px;
         }
-        form label {
-            font-size: 14px;
+        .filter-title {
+            font-weight: bold;
+            margin-bottom: 15px;
             color: #333;
+            font-size: 18px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
         }
-        form input[type="text"],
-        form input[type="date"],
-        form select {
-            padding: 6px 10px;
-            border: 1px solid #ccc;
+        .filter-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        .filter-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #555;
+        }
+        .filter-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
             border-radius: 4px;
             font-size: 14px;
-            margin-left: 5px;
+            transition: border-color 0.3s;
         }
-        form button {
-            padding: 8px 16px;
+        .filter-input:focus {
+            border-color: #007BFF;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+        }
+        .filter-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .btn-filter {
+            padding: 10px 20px;
             background: #007BFF;
             color: white;
             border: none;
             border-radius: 4px;
             font-size: 14px;
+            font-weight: bold;
             cursor: pointer;
             transition: 0.3s;
         }
-        form button:hover {
+        .btn-filter:hover {
             background: #0056b3;
+            transform: scale(1.03);
+        }
+        .btn-reset {
+            padding: 10px 20px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .btn-reset:hover {
+            background: #5a6268;
             transform: scale(1.03);
         }
         .home-button {
@@ -139,6 +183,13 @@
             color: #888;
             padding: 20px;
         }
+        .sort-icon {
+            margin-left: 5px;
+            font-size: 12px;
+        }
+        .sorting-active {
+            background-color: #0056b3;
+        }
         /* Responsivo */
         @media (max-width: 768px) {
             table {
@@ -151,9 +202,11 @@
                 padding: 5px 10px;
                 font-size: 12px;
             }
-            form {
+            .filter-row {
                 flex-direction: column;
-                align-items: stretch;
+            }
+            .filter-group {
+                width: 100%;
             }
         }
     </style>
@@ -162,41 +215,125 @@
     <div class="container">
         <h2><i class="fas fa-list"></i> Sessões</h2>
         <a href="{% url 'home' %}" class="home-button"><i class="fas fa-home"></i> Voltar para Home</a>
-        <form method="get">
-            <label>Status:
-                <select name="status">
-                    <option value="">Todos</option>
-                    <option value="ativas">Ativas</option>
-                    <option value="finalizadas">Finalizadas</option>
-                </select>
-            </label>
-            <label>Pesquisador:
-                <input type="text" name="usuario" placeholder="Nome de usuário">
-            </label>
-            <label>Código:
-                <input type="text" name="codigo" placeholder="Código">
-            </label>
-            <label>Ponto:
-                <input type="text" name="ponto" placeholder="Ponto">
-            </label>
-            <label>Data:
-                <input type="date" name="data">
-            </label>
-            <button type="submit">Filtrar</button>
-        </form>
+        
+        <div class="filter-container">
+            <div class="filter-title">Filtros</div>
+            <form method="get" id="filter-form">
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label class="filter-label">Status:</label>
+                        <select name="status" class="filter-input">
+                            <option value="">Todos</option>
+                            <option value="ativas" {% if request.GET.status == 'ativas' %}selected{% endif %}>Ativas</option>
+                            <option value="finalizadas" {% if request.GET.status == 'finalizadas' %}selected{% endif %}>Finalizadas</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Pesquisador:</label>
+                        <input type="text" name="usuario" class="filter-input" placeholder="Nome de usuário" value="{{ request.GET.usuario }}">
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">ID da Sessão:</label>
+                        <input type="text" name="id" class="filter-input" placeholder="ID" value="{{ request.GET.id }}">
+                    </div>
+                </div>
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label class="filter-label">Código:</label>
+                        <input type="text" name="codigo" class="filter-input" placeholder="Código" value="{{ request.GET.codigo }}">
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Ponto:</label>
+                        <input type="text" name="ponto" class="filter-input" placeholder="Ponto" value="{{ request.GET.ponto }}">
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Data:</label>
+                        <input type="date" name="data" class="filter-input" value="{{ request.GET.data }}">
+                    </div>
+                </div>
+                <input type="hidden" name="sort" id="sort-field" value="{{ request.GET.sort|default:'-id' }}">
+                <div class="filter-buttons">
+                    <button type="button" class="btn-reset" onclick="resetFilters()">Limpar Filtros</button>
+                    <button type="submit" class="btn-filter">Aplicar Filtros</button>
+                </div>
+            </form>
+        </div>
         
         <table>
             <thead>
                 <tr>
-                    <th>ID</th>
-                    <th>Nome da Sessão</th>
-                    <th>Código</th>
-                    <th>Ponto</th>
-                    <th>Data</th>
+                    <th onclick="sortTable('id')" class="{% if request.GET.sort == 'id' or request.GET.sort == '-id' or not request.GET.sort %}sorting-active{% endif %}">
+                        ID
+                        {% if request.GET.sort == 'id' %}
+                            <i class="fas fa-sort-up sort-icon"></i>
+                        {% elif request.GET.sort == '-id' or not request.GET.sort %}
+                            <i class="fas fa-sort-down sort-icon"></i>
+                        {% else %}
+                            <i class="fas fa-sort sort-icon"></i>
+                        {% endif %}
+                    </th>
+                    <th onclick="sortTable('sessao')">
+                        Nome da Sessão
+                        {% if request.GET.sort == 'sessao' %}
+                            <i class="fas fa-sort-up sort-icon"></i>
+                        {% elif request.GET.sort == '-sessao' %}
+                            <i class="fas fa-sort-down sort-icon"></i>
+                        {% else %}
+                            <i class="fas fa-sort sort-icon"></i>
+                        {% endif %}
+                    </th>
+                    <th onclick="sortTable('codigo')">
+                        Código
+                        {% if request.GET.sort == 'codigo' %}
+                            <i class="fas fa-sort-up sort-icon"></i>
+                        {% elif request.GET.sort == '-codigo' %}
+                            <i class="fas fa-sort-down sort-icon"></i>
+                        {% else %}
+                            <i class="fas fa-sort sort-icon"></i>
+                        {% endif %}
+                    </th>
+                    <th onclick="sortTable('ponto')">
+                        Ponto
+                        {% if request.GET.sort == 'ponto' %}
+                            <i class="fas fa-sort-up sort-icon"></i>
+                        {% elif request.GET.sort == '-ponto' %}
+                            <i class="fas fa-sort-down sort-icon"></i>
+                        {% else %}
+                            <i class="fas fa-sort sort-icon"></i>
+                        {% endif %}
+                    </th>
+                    <th onclick="sortTable('data')">
+                        Data
+                        {% if request.GET.sort == 'data' %}
+                            <i class="fas fa-sort-up sort-icon"></i>
+                        {% elif request.GET.sort == '-data' %}
+                            <i class="fas fa-sort-down sort-icon"></i>
+                        {% else %}
+                            <i class="fas fa-sort sort-icon"></i>
+                        {% endif %}
+                    </th>
                     <th>Horário</th>
-                    <th>Status</th>
+                    <th onclick="sortTable('ativa')">
+                        Status
+                        {% if request.GET.sort == 'ativa' %}
+                            <i class="fas fa-sort-up sort-icon"></i>
+                        {% elif request.GET.sort == '-ativa' %}
+                            <i class="fas fa-sort-down sort-icon"></i>
+                        {% else %}
+                            <i class="fas fa-sort sort-icon"></i>
+                        {% endif %}
+                    </th>
                     <th>Movimentos</th>
-                    <th>Criado Por</th>
+                    <th onclick="sortTable('criado_por')">
+                        Criado Por
+                        {% if request.GET.sort == 'criado_por' %}
+                            <i class="fas fa-sort-up sort-icon"></i>
+                        {% elif request.GET.sort == '-criado_por' %}
+                            <i class="fas fa-sort-down sort-icon"></i>
+                        {% else %}
+                            <i class="fas fa-sort sort-icon"></i>
+                        {% endif %}
+                    </th>
                     <th>Ações</th>
                 </tr>
             </thead>
@@ -234,11 +371,44 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="10" class="empty-row">Nenhuma sessão ativa encontrada.</td>
+                    <td colspan="10" class="empty-row">Nenhuma sessão encontrada com os filtros aplicados.</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
+
+    <script>
+        function sortTable(field) {
+            const sortField = document.getElementById('sort-field');
+            let currentSort = sortField.value;
+            
+            // Fix if old sort field name is used
+            if (currentSort === 'sessao_id') currentSort = 'id';
+            if (currentSort === '-sessao_id') currentSort = '-id';
+            
+            // Toggle sort direction
+            if (currentSort === field) {
+                sortField.value = '-' + field;
+            } else if (currentSort === '-' + field) {
+                sortField.value = field;
+            } else {
+                sortField.value = field;
+            }
+            
+            document.getElementById('filter-form').submit();
+        }
+        
+        function resetFilters() {
+            // Clear all form inputs except the sort field
+            const inputs = document.querySelectorAll('#filter-form input:not(#sort-field), #filter-form select');
+            inputs.forEach(input => {
+                input.value = '';
+            });
+            
+            // Submit the form
+            document.getElementById('filter-form').submit();
+        }
+    </script>
 </body>
 </html>

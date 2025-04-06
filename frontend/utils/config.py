@@ -6,7 +6,7 @@ from pathlib import Path
 load_dotenv()
 
 API_URL = os.getenv("API_URL", "http://127.0.0.1:8000")
-EXCEL_BASE_DIR = os.getenv("EXCEL_BASE_DIR", "Z:\\0Pesquisa\\_0ContadorDigital\\ContagensNovas")
+EXCEL_BASE_DIR = os.getenv("EXCEL_BASE_DIR", "Z:\\0Pesquisa\\_0ContadorDigital\\ContagensQ2")
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 
 if os.name == "nt": 

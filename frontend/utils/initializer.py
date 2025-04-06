@@ -23,7 +23,7 @@ def inicializar_variaveis(self):
     self.labels = {}
     self.listener = None
     self.contagem_ativa = False
-    self.historico_page_size = 30  # Número de registros a serem carregados por vez
+    self.historico_page_size = 30
 
 def configurar_numpad_mappings(self):
     self.numpad_mappings = {

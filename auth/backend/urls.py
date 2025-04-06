@@ -21,9 +21,33 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from contagens import views
 from padroes import views
+from autenticacao.models import User
+from contagens.models import Session, Counting
+from django.db.models import Count
 
 def home(request):
-    return render(request, 'auth/home.html')
+    # Get session statistics
+    sessoes_ativas = Session.objects.filter(ativa=True).count()
+    sessoes_finalizadas = Session.objects.filter(ativa=False).count()
+    total_usuarios = User.objects.count()
+    
+    # Top users with most sessions
+    top_usuarios = User.objects.annotate(
+        count=Count('session')  # Make sure 'sessao' is the correct related_name
+    ).order_by('-count')[:5]
+    
+    # Most recent sessions
+    sessoes_recentes = Session.objects.all().order_by('-id')[:5]  # Using 'id' as a fallback, use your date field instead
+    
+    context = {
+        'sessoes_ativas': sessoes_ativas,
+        'sessoes_finalizadas': sessoes_finalizadas,
+        'total_usuarios': total_usuarios,
+        'top_usuarios': top_usuarios,
+        'sessoes_recentes': sessoes_recentes,
+    }
+    
+    return render(request, 'auth/home.html', context)
 
 urlpatterns = [
     path('admin/', admin.site.urls),

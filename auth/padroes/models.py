@@ -9,10 +9,12 @@ class PadraoContagem(models.Model):
     )
     veiculo = models.CharField("Veículo", max_length=100)
     bind = models.CharField("Bind", max_length=50)
+    order = models.PositiveIntegerField("Ordem", default=0)
 
     class Meta: 
         verbose_name = "Padrão de Contagem"
         verbose_name_plural = "Padrões de Contagem"
+        ordering = ['pattern_type', 'order', 'id']
 
     def __str__(self):
         return f"{self.veiculo} ({self.bind}) - {self.pattern_type}"

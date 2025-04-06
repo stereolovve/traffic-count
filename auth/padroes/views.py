@@ -3,8 +3,14 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework import status
-from django.views.generic import ListView, CreateView, UpdateView, DeleteView
+from django.views.generic import ListView, CreateView, UpdateView, DeleteView, View
 from django.urls import reverse_lazy
+from django.shortcuts import render, redirect
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib import messages
+import json
 
 from .models import PadraoContagem, UserPadraoContagem
 from .serializers import PadraoContagemSerializer, UserPadraoContagemSerializer
@@ -55,12 +61,96 @@ class PadraoContagemListView(ListView):
     model = PadraoContagem
     template_name = 'padroes/padrao_list.html'
     context_object_name = 'padroes'
+    
+    def get_queryset(self):
+        queryset = PadraoContagem.objects.all()
+        self.selected_type = self.request.GET.get('pattern_type')
+        
+        if self.selected_type:
+            queryset = queryset.filter(pattern_type=self.selected_type)
+            # Ordenar por ordem para garantir consistência
+            queryset = queryset.order_by('order', 'id')
+        else:
+            # Se estiver mostrando todos, ordenar por tipo primeiro, depois por ordem
+            queryset = queryset.order_by('pattern_type', 'order', 'id')
+            
+        return queryset
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Usar set() para garantir que não há duplicatas
+        tipos_padroes = set(PadraoContagem.objects.values_list('pattern_type', flat=True))
+        context['tipos_padroes'] = sorted(tipos_padroes)  # Ordenar para exibição consistente
+        context['selected_type'] = self.selected_type if hasattr(self, 'selected_type') else None
+        return context
 
 class PadraoContagemCreateView(CreateView):
     model = PadraoContagem
     form_class = PadraoContagemForm
     template_name = 'padroes/padrao_form.html'
     success_url = reverse_lazy('padrao_list')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['tipos_padroes'] = PadraoContagem.objects.values_list('pattern_type', flat=True).distinct()
+        return context
+    
+    def post(self, request, *args, **kwargs):
+        # Debug
+        print("Form data:", request.POST)
+        
+        # Verificar se é o formulário múltiplo
+        if 'pattern_type_final' in request.POST:
+            pattern_type = request.POST.get('pattern_type_final')
+            veiculos = request.POST.getlist('veiculo[]')
+            binds = request.POST.getlist('bind[]')
+            
+            print(f"Criando padrões múltiplos: tipo={pattern_type}, veículos={veiculos}, binds={binds}")
+            
+            if not pattern_type or len(veiculos) == 0:
+                messages.error(request, "Erro: Tipo de padrão e pelo menos um veículo são obrigatórios.")
+                return redirect('padrao_create')
+            
+            # Criar padrões em massa
+            count = 0
+            for i, (veiculo, bind) in enumerate(zip(veiculos, binds)):
+                if not veiculo or not bind:
+                    continue
+                    
+                try:
+                    # Calcular ordem baseada na posição
+                    order = (i + 1) * 10
+                    
+                    # Verificar se já existe um padrão igual
+                    existing = PadraoContagem.objects.filter(
+                        pattern_type=pattern_type,
+                        veiculo=veiculo
+                    ).first()
+                    
+                    if existing:
+                        # Atualizar existente
+                        existing.bind = bind
+                        existing.order = order
+                        existing.save()
+                    else:
+                        # Criar novo
+                        PadraoContagem.objects.create(
+                            pattern_type=pattern_type,
+                            veiculo=veiculo,
+                            bind=bind,
+                            order=order
+                        )
+                    count += 1
+                except Exception as e:
+                    messages.error(request, f"Erro ao salvar o padrão {veiculo}: {str(e)}")
+            
+            if count > 0:
+                messages.success(request, f"{count} padrões foram salvos com sucesso!")
+            
+            return redirect('padrao_list')
+            
+        # Caso seja o formulário padrão (para edição de um único padrão)
+        return super().post(request, *args, **kwargs)
 
 class PadraoContagemUpdateView(UpdateView):
     model = PadraoContagem
@@ -72,7 +162,7 @@ class PadraoContagemDeleteView(DeleteView):
     model = PadraoContagem
     template_name = 'padroes/padrao_confirm_delete.html'
     success_url = reverse_lazy('padrao_list')
-
+    
 # API Views
 @api_view(['GET'])
 def listar_tipos_padrao(request):
@@ -167,3 +257,16 @@ def atualizar_preferences_usuario(request):
     user.save()
 
     return Response({"detail": "Bind atualizado com sucesso!"}, status=status.HTTP_200_OK)
+
+@csrf_exempt
+def reorder_patterns(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "Método não permitido"}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        for item in data:
+            PadraoContagem.objects.filter(id=item['id']).update(order=item['order'])
+        return JsonResponse({"status": "success"})
+    except Exception as e:
+        return JsonResponse({"status": "error", "message": str(e)}, status=400)
