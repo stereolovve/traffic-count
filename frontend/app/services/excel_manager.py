@@ -5,7 +5,7 @@ import re
 from datetime import datetime, timedelta
 from openpyxl import Workbook
 from openpyxl.utils.dataframe import dataframe_to_rows
-from utils.config import EXCEL_BASE_DIR
+from utils.config import get_excel_dir
 
 class ExcelManager:
     def __init__(self, contador):
@@ -113,7 +113,8 @@ class ExcelManager:
         """Retorna o caminho do arquivo Excel"""
         nome_pesquisador = re.sub(r'[<>:"/\\|?*]', '', self.contador.username)
         codigo = re.sub(r'[<>:"/\\|?*]', '', self.contador.details['Código'])
-        diretorio_pesquisador_codigo = os.path.join(EXCEL_BASE_DIR, nome_pesquisador, codigo)
+        excel_dir = get_excel_dir()
+        diretorio_pesquisador_codigo = os.path.join(excel_dir, nome_pesquisador, codigo)
         return os.path.join(diretorio_pesquisador_codigo, f'{self.contador.sessao}.xlsx')
 
     def _ensure_directories(self):
@@ -122,11 +123,9 @@ class ExcelManager:
             nome_pesquisador = re.sub(r'[<>:"/\\|?*]', '', self.contador.username)
             codigo = re.sub(r'[<>:"/\\|?*]', '', self.contador.details['Código'])
             
-            # Verificar se EXCEL_BASE_DIR é acessível
-            if not os.path.exists(EXCEL_BASE_DIR):
-                raise Exception(f"Diretório base não encontrado: {EXCEL_BASE_DIR}")
+            excel_dir = get_excel_dir()
             
-            diretorio_pesquisador = os.path.join(EXCEL_BASE_DIR, nome_pesquisador)
+            diretorio_pesquisador = os.path.join(excel_dir, nome_pesquisador)
             diretorio_pesquisador_codigo = os.path.join(diretorio_pesquisador, codigo)
             
             # Criar diretórios com mensagens de log

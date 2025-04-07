@@ -429,9 +429,22 @@
                         </select>
                     </div>
                 </div>
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label class="filter-label">Padrão</label>
+                        <select name="padrao" class="filter-select select2">
+                            <option value="">Todos os Padrões</option>
+                            {% for pattern_type in padroes %}
+                                <option value="{{ pattern_type }}" {% if filtros_ativos.padrao == pattern_type %}selected{% endif %}>
+                                    {{ pattern_type }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
                 <input type="hidden" name="sort" id="sort-field" value="{{ current_sort|default:'-id' }}">
                 
-                {% if filtros_ativos.status or filtros_ativos.pesquisador or filtros_ativos.codigo or filtros_ativos.ponto or filtros_ativos.data %}
+                {% if filtros_ativos.status or filtros_ativos.pesquisador or filtros_ativos.codigo or filtros_ativos.ponto or filtros_ativos.data or filtros_ativos.padrao %}
                 <div class="active-filters">
                     {% if filtros_ativos.status %}
                         <div class="filter-tag">
@@ -461,6 +474,12 @@
                         <div class="filter-tag">
                             <span>Data: {{ filtros_ativos.data }}</span>
                             <i class="fas fa-times" onclick="removeFilter('data')"></i>
+                        </div>
+                    {% endif %}
+                    {% if filtros_ativos.padrao %}
+                        <div class="filter-tag">
+                            <span>Padrão: {{ filtros_ativos.padrao }}</span>
+                            <i class="fas fa-times" onclick="removeFilter('padrao')"></i>
                         </div>
                     {% endif %}
                 </div>
@@ -533,6 +552,16 @@
                         {% endif %}
                     </th>
                     <th>Horário</th>
+                    <th onclick="sortTable('padrao')">
+                        Padrão
+                        {% if request.GET.sort == 'padrao' %}
+                            <i class="fas fa-sort-up sort-icon"></i>
+                        {% elif request.GET.sort == '-padrao' %}
+                            <i class="fas fa-sort-down sort-icon"></i>
+                        {% else %}
+                            <i class="fas fa-sort sort-icon"></i>
+                        {% endif %}
+                    </th>
                     <th onclick="sortTable('ativa')">
                         Status
                         {% if request.GET.sort == 'ativa' %}
@@ -554,6 +583,26 @@
                             <i class="fas fa-sort sort-icon"></i>
                         {% endif %}
                     </th>
+                    <th onclick="sortTable('created_at')">
+                        Data de Criação
+                        {% if request.GET.sort == 'created_at' %}
+                            <i class="fas fa-sort-up sort-icon"></i>
+                        {% elif request.GET.sort == '-created_at' %}
+                            <i class="fas fa-sort-down sort-icon"></i>
+                        {% else %}
+                            <i class="fas fa-sort sort-icon"></i>
+                        {% endif %}
+                    </th>
+                    <th onclick="sortTable('updated_at')">
+                        Data de Finalização
+                        {% if request.GET.sort == 'updated_at' %}
+                            <i class="fas fa-sort-up sort-icon"></i>
+                        {% elif request.GET.sort == '-updated_at' %}
+                            <i class="fas fa-sort-down sort-icon"></i>
+                        {% else %}
+                            <i class="fas fa-sort sort-icon"></i>
+                        {% endif %}
+                    </th>
                     <th>Ações</th>
                 </tr>
             </thead>
@@ -566,6 +615,7 @@
                     <td>{{ sessao.sessao.ponto }}</td>
                     <td>{{ sessao.sessao.data|default:"-" }}</td>
                     <td>{{ sessao.sessao.horario_inicio }}</td>
+                    <td>{{ sessao.sessao.padrao }}</td>
                     <td>
                         {% if sessao.sessao.ativa %}
                             <span class="badge badge-success">Ativa</span>
@@ -583,6 +633,14 @@
                         {% endif %}
                     </td>
                     <td>{{ sessao.sessao.criado_por.username }}</td>
+                    <td>{{ sessao.sessao.created_at|date:"d/m/Y H:i"|default:"-" }}</td>
+                    <td>
+                        {% if not sessao.sessao.ativa %}
+                            {{ sessao.sessao.updated_at|date:"d/m/Y H:i"|default:"-" }}
+                        {% else %}
+                            <span style="color: gray;">-</span>
+                        {% endif %}
+                    </td>
                     <td>
                         <div class="actions-container">
                             <button class="btn-actions js-toggle-menu">
@@ -608,7 +666,7 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="10" class="empty-row">Nenhuma sessão encontrada com os filtros aplicados.</td>
+                    <td colspan="12" class="empty-row">Nenhuma sessão encontrada com os filtros aplicados.</td>
                 </tr>
                 {% endfor %}
             </tbody>

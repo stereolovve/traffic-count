@@ -6,21 +6,27 @@ import os
 import json
 import asyncio
 from pathlib import Path
+import sys
 from app.contador import ContadorPerplan
 from utils.config import API_URL, EXCEL_BASE_DIR, DESKTOP_DIR, LOG_FILE, AUTH_TOKENS_FILE
 from utils.api import async_api_request
 from loginregister.register import RegisterPage
-
 from loginregister.login import LoginPage
 
 load_dotenv()
 
+# Configurar encoding para UTF-8 no Windows
+if sys.platform == 'win32':
+    sys.stdout.reconfigure(encoding='utf-8')
+    sys.stderr.reconfigure(encoding='utf-8')
+
+# Configurar logging com encoding UTF-8
 logging.basicConfig(
     level=logging.ERROR,
     format="%(asctime)s - %(levelname)s - %(module)s:%(funcName)s - %(message)s",
     handlers=[
-        logging.FileHandler(LOG_FILE),
-        logging.StreamHandler()
+        logging.FileHandler(LOG_FILE, encoding='utf-8'),
+        logging.StreamHandler(sys.stdout)
     ]
 )
 
@@ -34,43 +40,43 @@ class MyApp:
 
     async def load_user_preferences(self):
         if not self.tokens:
-            logging.warning("❌ Nenhum token encontrado. Preferências não carregadas.")
+            logging.warning("[AVISO] Nenhum token encontrado. Preferências não carregadas.")
             return
         try:
             headers = {"Authorization": f"Bearer {self.tokens['access']}"}
             response = await async_api_request(f"{API_URL}/padroes/user/preferences/", headers=headers)
             
             self.user_preferences = response
-            logging.info("✅ Preferências carregadas com sucesso!")
+            logging.info("[OK] Preferências carregadas com sucesso!")
         except Exception as ex:
-            logging.error(f"Erro ao carregar preferências: {ex}")
+            logging.error(f"[ERRO] Erro ao carregar preferências: {ex}")
 
     async def verificar_token(self):
         if not self.tokens or 'access' not in self.tokens:
-            print("❌ Nenhum token disponível!")
+            print("[ERRO] Nenhum token disponível!")
             return False
         try:
             headers = {"Authorization": f"Bearer {self.tokens['access']}"}
             response = await async_api_request(f"{API_URL}/padroes/user/info/", headers=headers)
 
             if "error" in response:
-                print(f"❌ Token inválido! Erro: {response['error']}")
+                print(f"[ERRO] Token inválido! Erro: {response['error']}")
                 return False
 
-            print("✅ Token válido! Dados do usuário:", response)
+            print("[OK] Token válido! Dados do usuário:", response)
             return True
 
         except Exception as ex:
-            logging.error(f"Erro ao verificar token: {ex}")
+            logging.error(f"[ERRO] Erro ao verificar token: {ex}")
             return False
 
     def save_tokens(self):
         try:
             with open(AUTH_TOKENS_FILE, "w") as f:
                 json.dump({"access": self.tokens.get("access"), "username": self.username}, f)
-            logging.info(f"✅ Tokens salvos em: {AUTH_TOKENS_FILE}")
+            logging.info(f"[OK] Tokens salvos em: {AUTH_TOKENS_FILE}")
         except Exception as ex:
-            logging.error(f"❌ Erro ao salvar tokens: {ex}")
+            logging.error(f"[ERRO] Erro ao salvar tokens: {ex}")
 
     def load_tokens(self):
         if AUTH_TOKENS_FILE.exists():
@@ -79,10 +85,10 @@ class MyApp:
                     saved_data = json.load(f)
                 self.tokens = {"access": saved_data.get("access")}
                 self.username = saved_data.get("username")
-                logging.info(f"🔑 Tokens carregados de: {AUTH_TOKENS_FILE}")
+                logging.info(f"[OK] Tokens carregados de: {AUTH_TOKENS_FILE}")
                 return True
             except (json.JSONDecodeError, ValueError, KeyError) as ex:
-                logging.error(f"❌ Erro ao carregar tokens: {ex}")
+                logging.error(f"[ERRO] Erro ao carregar tokens: {ex}")
                 AUTH_TOKENS_FILE.unlink()
         return False
 

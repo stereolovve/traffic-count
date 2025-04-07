@@ -1,7 +1,7 @@
 import flet as ft
 import pandas as pd
 import os
-from utils.config import EXCEL_BASE_DIR
+from utils.config import get_excel_dir
 
 class AbaRelatorio(ft.Column):
     def __init__(self, contador):
@@ -76,16 +76,17 @@ class AbaRelatorio(ft.Column):
 
             nome_pesquisador = self.contador.username  
             codigo = ''.join(c for c in self.contador.details.get('Código', '') if c.isalnum())
-            arquivo_sessao = os.path.join(EXCEL_BASE_DIR, nome_pesquisador, codigo, f"{self.contador.sessao}.xlsx")
+            excel_dir = get_excel_dir()
+            arquivo_sessao = os.path.join(excel_dir, nome_pesquisador, codigo, f"{self.contador.sessao}.xlsx")
 
             if not os.path.exists(arquivo_sessao):
-                diretorio_base = os.path.join(EXCEL_BASE_DIR, nome_pesquisador, codigo)
+                diretorio_base = os.path.join(excel_dir, nome_pesquisador, codigo)
                 arquivos_existentes = os.listdir(diretorio_base) if os.path.exists(diretorio_base) else []
                 return ft.Container(
                     content=ft.Column(
                         [
                             ft.Text(
-                                f"Planilha da sessão '{contador.sessao}' não encontrada.",
+                                f"Planilha da sessão '{self.contador.sessao}' não encontrada.",
                                 size=16,
                                 color=ft.colors.RED_700,
                                 weight=ft.FontWeight.BOLD

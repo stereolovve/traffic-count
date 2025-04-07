@@ -3,6 +3,7 @@ import httpx
 from utils.api import async_api_request
 from utils.config import API_URL
 from datetime import datetime
+import json
 
 class ApiManager:
     def __init__(self, contador):
@@ -28,23 +29,22 @@ class ApiManager:
                 headers=self._get_auth_headers()
             )
         except Exception as ex:
-            logging.error(f"Erro na requisição GET para {url}: {ex}")
+            logging.error(f"[ERRO] Requisição GET para {url}: {ex}")
             return None
 
     async def send_session_to_django(self):
-        """Envia os detalhes da sessão para o Django"""
+        """Envia os dados da sessão para o Django"""
         try:
             if not self.contador.sessao:
-                logging.error("❌ Não foi possível enviar sessão ao Django: sessão está vazia!")
+                logging.error("[ERRO] Nenhuma sessão ativa para enviar ao Django")
                 return False
 
-            logging.info(f"Enviando dados da sessão {self.contador.sessao} para o Django...")
-            
             # Preparar dados da sessão
             codigo = self.contador.details.get("Código", "") or f"AUTO_{datetime.now().strftime('%Y%m%d%H%M%S')}"
             ponto = self.contador.details.get("Ponto", "") or f"PONTO_{datetime.now().strftime('%Y%m%d%H%M%S')}"
             data_ponto = self.contador.details.get("Data do Ponto", "") or datetime.now().strftime("%d/%m/%Y")
             horario_inicio = self.contador.details.get("HorarioInicio", "") or datetime.now().strftime("%H:%M")
+            padrao = self.contador.details.get("padrao_usado", "")
             
             # Tratar movimentos
             movimentos = self.contador.details.get("Movimentos", [])
@@ -53,7 +53,7 @@ class ApiManager:
             if not movimentos:
                 movimentos = ["A"]
 
-            payload = {
+            data = {
                 "sessao": self.contador.sessao,
                 "codigo": codigo,
                 "ponto": ponto,
@@ -61,178 +61,338 @@ class ApiManager:
                 "horario_inicio": horario_inicio,
                 "usuario": self.username,
                 "ativa": True,
-                "movimentos": movimentos
+                "movimentos": movimentos,
+                "padrao": padrao
             }
 
-            url = f"{API_URL}/contagens/registrar-sessao/"
-            
-            async with httpx.AsyncClient(timeout=15.0) as client:
+            logging.info(f"[INFO] Enviando sessão para o Django com padrão: {padrao}")
+
+            async with httpx.AsyncClient() as client:
                 response = await client.post(
-                    url, 
-                    json=payload, 
+                    f"{API_URL}/contagens/registrar-sessao/",
+                    json=data,
                     headers=self._get_auth_headers()
                 )
 
             if response.status_code in [200, 201]:
-                logging.info(f"✅ Detalhes da sessão {self.contador.sessao} enviados com sucesso!")
+                try:
+                    # Tentar obter o ID da sessão da resposta
+                    response_data = response.json()
+                    if 'id' in response_data:
+                        session_id = response_data['id']
+                        self.contador.details['session_id'] = session_id
+                        logging.info(f"[OK] Sessão ID {session_id} salvo nos detalhes")
+                    else:
+                        # Se não vier na resposta, fazer uma consulta para buscar
+                        await self.obter_id_sessao(self.contador.sessao)
+                except Exception as ex:
+                    logging.warning(f"[AVISO] Não foi possível extrair ID da sessão: {ex}")
+                
+                logging.info("[OK] Sessão enviada com sucesso para o Django")
                 return True
             else:
-                logging.error(f"❌ Falha ao enviar detalhes: {response.status_code} - {response.text}")
+                logging.error(f"[ERRO] Falha ao enviar sessão para o Django: {response.status_code} - {response.text}")
                 return False
 
         except Exception as ex:
-            logging.error(f"[ERROR] ao enviar detalhes da sessão: {ex}")
+            logging.error(f"[ERRO] Exceção ao enviar sessão para o Django: {ex}")
             return False
+            
+    async def obter_id_sessao(self, nome_sessao):
+        """Obtém o ID numérico de uma sessão pelo nome"""
+        try:
+            if not nome_sessao:
+                logging.error("[ERRO] Nome da sessão não especificado")
+                return None
+                
+            async with httpx.AsyncClient() as client:
+                response = await client.get(
+                    f"{API_URL}/contagens/buscar-sessao/?nome={nome_sessao}",
+                    headers=self._get_auth_headers()
+                )
+                
+                if response.status_code == 200:
+                    response_data = response.json()
+                    if 'id' in response_data:
+                        session_id = response_data['id']
+                        self.contador.details['session_id'] = session_id
+                        logging.info(f"[OK] ID da sessão obtido: {session_id}")
+                        # Salvar na sessão
+                        self.contador.save_session()
+                        return session_id
+                    else:
+                        logging.warning("[AVISO] Resposta não contém ID da sessão")
+                else:
+                    logging.error(f"[ERRO] Falha ao obter ID da sessão: {response.status_code} - {response.text}")
+                    
+            return None
+        except Exception as ex:
+            logging.error(f"[ERRO] Exceção ao obter ID da sessão: {ex}")
+            return None
 
     async def send_count_to_django(self):
         """Envia as contagens para o Django"""
         try:
-            logging.info(f"Enviando contagens da sessão {self.contador.sessao} para o Django...")
+            if not self.contador.sessao:
+                logging.error("[ERRO] Nenhuma sessão ativa para enviar contagens")
+                return False
             
-            # Preparar lista de contagens
-            contagens_list = [
-                {
-                    "veiculo": categoria.veiculo,
-                    "movimento": categoria.movimento,
-                    "count": self.contador.contagens.get((categoria.veiculo, categoria.movimento), 0)
-                }
-                for categoria in self.contador.categorias
-            ]
-
-            # Obter período atual
-            periodo_atual = None
-            if hasattr(self.contador, "current_timeslot") and self.contador.current_timeslot:
-                periodo_atual = self.contador.current_timeslot.strftime("%H:%M")
-
-            payload = {
+            # Preparar dados para envio
+            current_timeslot = self.contador.details.get("current_timeslot", "00:00")
+            logging.info(f"[INFO] Período atual: {current_timeslot}")
+            
+            # Preparar payload no formato que o Django espera
+            data = {
                 "sessao": self.contador.sessao,
                 "usuario": self.username,
-                "contagens": contagens_list,
-                "current_timeslot": periodo_atual
+                "contagens": []
             }
             
-            async with httpx.AsyncClient(timeout=10.0) as client:
+            # Verificar quais veículos e movimentos existem para este padrão
+            movimentos = self.contador.details.get("Movimentos", [])
+            if not movimentos:
+                movimentos = ["A"]  # Fallback para movimento padrão
+                
+            # Obter todos os veículos possíveis para este padrão
+            all_veiculos = set()
+            for key in self.contador.binds.keys():
+                all_veiculos.add(key)
+                
+            # Se não tivermos veículos nos binds, verificar nas categorias
+            if not all_veiculos and hasattr(self.contador, 'session'):
+                with self.contador.session_lock:
+                    categorias = self.contador.session.query(Categoria).all()
+                    for cat in categorias:
+                        all_veiculos.add(cat.veiculo)
+            
+            # Enviar todas as combinações de veículo e movimento
+            for veiculo in all_veiculos:
+                for movimento in movimentos:
+                    key = (veiculo, movimento)
+                    count = self.contador.contagens.get(key, 0)
+                    # Sempre enviar, mesmo com count=0
+                    data["contagens"].append({
+                        "veiculo": veiculo,
+                        "movimento": movimento,
+                        "count": count,
+                        "periodo": current_timeslot
+                    })
+
+            if not data["contagens"]:
+                logging.info("[INFO] Nenhuma contagem para enviar")
+                return True
+
+            logging.info(f"[INFO] Enviando {len(data['contagens'])} contagens para o Django no período {current_timeslot}")
+            logging.info(f"[DEBUG] Payload: {json.dumps(data, indent=2)}")
+
+            async with httpx.AsyncClient() as client:
                 response = await client.post(
-                    f"{API_URL}/contagens/get/",
-                    json=payload,
+                    f"{API_URL}/contagens/get/",  # URL correta conforme urls.py
+                    json=data,
                     headers=self._get_auth_headers()
                 )
 
-            if response.status_code == 201:
-                logging.info("Contagens enviadas com sucesso!")
+            if response.status_code in [200, 201]:
+                try:
+                    response_data = response.json()
+                    logging.info(f"[OK] Contagens enviadas com sucesso: {response_data.get('mensagem', 'Sem mensagem')}")
+                except:
+                    logging.info("[OK] Contagens enviadas com sucesso")
                 return True
             else:
-                logging.error(f"Erro ao enviar contagens: {response.status_code} - {response.text}")
+                logging.error(f"[ERRO] Falha ao enviar contagens para o Django: {response.status_code} - {response.text}")
                 return False
 
         except Exception as ex:
-            logging.error(f"Erro ao enviar contagens para Django: {ex}")
+            logging.error(f"[ERRO] Exceção ao enviar contagens para o Django: {ex}")
             return False
 
     async def load_categories(self, pattern_type):
-        """Carrega categorias da API para um determinado padrão"""
-        try:
-            logging.info(f"[INFO] Carregando categorias para padrão {pattern_type}")
-            
-            # Preparar movimentos
-            movimentos = self.contador.details.get("Movimentos", [])
-            if not movimentos:
-                logging.warning("[WARNING] Nenhum movimento definido")
-                return []
-
-            movimentos = [str(mov).strip().upper() for mov in movimentos if str(mov).strip()]
-            self.contador.details["Movimentos"] = movimentos
-            print(f"[INFO] Movimentos definidos: {movimentos}")
-
-            # Fazer requisição à API
-            url = f"{API_URL}/padroes/padroes-api/?pattern_type={pattern_type}"
-            print(f"[INFO] Fazendo requisição para {url}")
-            response = await self.api_get(url)
-
-            if not response:
-                logging.warning(f"[WARNING] Nenhuma categoria retornada para {pattern_type}")
-                return []
-
-            print(f"[INFO] Resposta recebida: {response}")
-
-            # Usar um dicionário para garantir unicidade das categorias
-            categorias_dict = {}
-            
-            # Para cada veículo retornado da API, criar uma categoria para cada movimento
-            for cat in response:
-                for movimento in movimentos:
-                    key = (cat["pattern_type"], cat["veiculo"], movimento)
-                    if key not in categorias_dict:
-                        categorias_dict[key] = {
-                            "pattern_type": cat["pattern_type"],
-                            "veiculo": cat["veiculo"],
-                            "movimento": movimento,
-                            "bind": cat.get("bind", "N/A")
-                        }
-
-            # Converter o dicionário de volta para lista
-            categorias = list(categorias_dict.values())
-            print(f"[INFO] Categorias processadas: {categorias}")
-            return categorias
-
-        except Exception as ex:
-            logging.error(f"[ERROR] Erro ao carregar categorias: {ex}")
-            return []
-
-    async def load_binds(self, pattern_type):
-        """Carrega os binds da API para um determinado padrão"""
+        """Carrega as categorias do Django"""
         try:
             if not pattern_type:
-                logging.warning("[WARNING] Nenhum padrão selecionado!")
-                return {}
+                logging.error("[ERRO] Tipo de padrão não especificado")
+                return None
 
-            print(f"Carregando binds para o padrão: {pattern_type}")
-            
-            url = f"{API_URL}/padroes/merged-binds/?pattern_type={pattern_type}"
-            
-            async with httpx.AsyncClient(timeout=8.0) as client:
-                response = await client.get(url, headers=self._get_auth_headers())
-                
-                if response.status_code == 200:
-                    data = response.json()
-                    binds = {item["veiculo"]: item["bind"] for item in data}
-                    print(f"✅ {len(binds)} binds carregados com sucesso")
-                    return binds
-                else:
-                    logging.error(f"❌ Erro ao carregar binds: {response.status_code}")
-                    return {}
+            # Verificar se temos movimentos definidos
+            movimentos = self.contador.details.get("Movimentos", [])
+            if isinstance(movimentos, set):
+                movimentos = list(movimentos)
+            if not movimentos:
+                logging.warning("[AVISO] Nenhum movimento definido, usando movimento padrão 'A'")
+                movimentos = ["A"]
 
-        except Exception as ex:
-            logging.error(f"[ERROR] Erro ao carregar binds: {ex}")
-            return {}
+            logging.info(f"[INFO] Carregando categorias para padrão {pattern_type} com movimentos: {movimentos}")
 
-    async def end_session_django(self, session_id):
-        """Finaliza uma sessão no Django"""
-        try:
-            url = f"{API_URL}/contagens/finalizar-sessao/"
-            
-            # Adicionar payload com o ID da sessão
-            payload = {
-                "sessao": session_id,
-                "ativa": False
-            }
-            
-            logging.info(f"Finalizando sessão {session_id} no Django...")
-            
-            async with httpx.AsyncClient(timeout=10.0) as client:
-                response = await client.post(
-                    url,
-                    json=payload,  # Adicionar o payload na requisição
+            async with httpx.AsyncClient() as client:
+                response = await client.get(
+                    f"{API_URL}/padroes/padroes-api/?pattern_type={pattern_type}",
                     headers=self._get_auth_headers()
                 )
-            
-            if response.status_code in [200, 201]:
-                logging.info(f"✅ Sessão {session_id} finalizada no Django com sucesso!")
-                return True
+
+            if response.status_code == 200:
+                api_data = response.json()
+                logging.info(f"[INFO] Dados recebidos da API: {len(api_data)} itens")
+                
+                # Log detalhado dos veículos recebidos
+                veiculos_recebidos = sorted([item.get("veiculo") for item in api_data if "veiculo" in item])
+                logging.info(f"[INFO] Veículos recebidos da API para padrão '{pattern_type}': {veiculos_recebidos}")
+
+                # Criar lista de categorias expandida com todos os movimentos
+                categorias = []
+                for item in api_data:
+                    for movimento in movimentos:
+                        categoria = {
+                            "pattern_type": pattern_type,
+                            "veiculo": item["veiculo"],
+                            "movimento": movimento,
+                            "bind": item.get("bind", "N/A")
+                        }
+                        categorias.append(categoria)
+
+                # Salvar o tipo de padrão usado para referência futura
+                self.contador.details["padrao_usado"] = pattern_type
+                logging.info(f"[INFO] Padrão '{pattern_type}' salvo nos detalhes para referência")
+
+                logging.info(f"[OK] {len(categorias)} categorias processadas com sucesso")
+                return categorias
             else:
-                logging.error(f"❌ Erro ao finalizar sessão no Django: {response.status_code} - {response.text}")
-                return False
-            
+                logging.error(f"[ERRO] Falha ao carregar categorias do Django: {response.status_code} - {response.text}")
+                return None
+
         except Exception as ex:
-            logging.error(f"❌ Erro ao finalizar sessão no Django: {ex}")
+            logging.error(f"[ERRO] Exceção ao carregar categorias do Django: {ex}")
+            return None
+
+    async def load_binds(self, pattern_type):
+        """Carrega os binds do Django"""
+        try:
+            if not pattern_type:
+                logging.error("[ERRO] Tipo de padrão não especificado para carregar binds")
+                return None
+            
+            async with httpx.AsyncClient() as client:
+                response = await client.get(
+                    f"{API_URL}/padroes/merged-binds/?pattern_type={pattern_type}",
+                    headers=self._get_auth_headers()
+                )
+
+            if response.status_code == 200:
+                binds_list = response.json()
+                # Converter a lista em um dicionário {veiculo: bind}
+                binds_dict = {}
+                for item in binds_list:
+                    if isinstance(item, dict) and "veiculo" in item and "bind" in item:
+                        binds_dict[item["veiculo"]] = item["bind"]
+                    else:
+                        logging.warning(f"[AVISO] Item de bind ignorado por formato inválido: {item}")
+
+                logging.info(f"[OK] {len(binds_dict)} binds carregados e convertidos para dicionário")
+                return binds_dict
+            else:
+                logging.error(f"[ERRO] Falha ao carregar binds do Django: {response.status_code} - {response.text}")
+                return {}
+
+        except Exception as ex:
+            logging.error(f"[ERRO] Exceção ao carregar binds do Django: {ex}")
+            return {}
+
+    async def end_session_django(self, sessao_id):
+        """Finaliza a sessão no Django"""
+        try:
+            if not sessao_id:
+                logging.error("[ERRO] ID da sessão não especificado")
+                return False
+                
+            # Verificar se sessao_id é numérico
+            session_numeric_id = None
+            if str(sessao_id).isdigit():
+                session_numeric_id = int(sessao_id)
+            else:
+                # Se não for numérico, é o nome da sessão - precisamos fazer uma busca pelo ID numérico
+                logging.info(f"[INFO] Buscando ID numérico para a sessão '{sessao_id}'")
+                try:
+                    # Primeiro verificamos se temos o ID numérico salvo nos detalhes
+                    if hasattr(self.contador, 'details') and 'session_id' in self.contador.details:
+                        session_numeric_id = self.contador.details['session_id']
+                        logging.info(f"[INFO] ID numérico encontrado nos detalhes: {session_numeric_id}")
+                    else:
+                        # Precisamos fazer uma busca na API
+                        async with httpx.AsyncClient() as client:
+                            response = await client.get(
+                                f"{API_URL}/contagens/buscar-sessao/?nome={sessao_id}",
+                                headers=self._get_auth_headers()
+                            )
+                            
+                            if response.status_code == 200:
+                                response_data = response.json()
+                                if 'id' in response_data:
+                                    session_numeric_id = response_data['id']
+                                    # Salvar o ID para uso futuro
+                                    if hasattr(self.contador, 'details'):
+                                        self.contador.details['session_id'] = session_numeric_id
+                                    logging.info(f"[INFO] ID numérico encontrado via API: {session_numeric_id}")
+                except Exception as ex:
+                    logging.error(f"[ERRO] Falha ao buscar ID numérico da sessão: {ex}")
+            
+            if not session_numeric_id:
+                # Alternativa: Usar uma abordagem simplificada - assumir que é apenas o nome da sessão
+                # e tentar finalizar diretamente usando um endpoint diferente
+                data = {"sessao_nome": sessao_id}
+                async with httpx.AsyncClient(follow_redirects=False) as client:
+                    try:
+                        response = await client.post(
+                            f"{API_URL}/contagens/finalizar-por-nome/",
+                            json=data,
+                            headers=self._get_auth_headers(),
+                            timeout=30.0
+                        )
+                        
+                        if response.status_code in [200, 201]:
+                            logging.info(f"[OK] Sessão finalizada com sucesso pelo nome")
+                            return True
+                    except Exception as e:
+                        logging.error(f"[ERRO] Falha ao finalizar por nome: {e}")
+                
+                logging.error(f"[ERRO] Não foi possível obter o ID numérico da sessão '{sessao_id}'")
+                return False
+
+            data = {"sessao_id": session_numeric_id}
+            
+            logging.info(f"[INFO] Tentando finalizar sessão com ID {session_numeric_id}")
+            
+            # Configurar as requisições para não seguir redirecionamentos
+            async with httpx.AsyncClient(follow_redirects=False) as client:
+                try:
+                    response = await client.post(
+                        f"{API_URL}/contagens/finalizar-sessao/",
+                        json=data,
+                        headers=self._get_auth_headers(),
+                        timeout=30.0
+                    )
+
+                    if response.status_code in [200, 201]:
+                        try:
+                            response_data = response.json()
+                            mensagem = response_data.get('message', 'Sessão finalizada com sucesso')
+                        except:
+                            mensagem = 'Sessão finalizada com sucesso'
+                        
+                        logging.info(f"[OK] {mensagem}")
+                        return True
+                    else:
+                        logging.error(f"[ERRO] Falha ao finalizar sessão no Django: {response.status_code}")
+                        if response.text:
+                            logging.error(f"[ERRO] Resposta do servidor: {response.text}")
+                        return False
+
+                except httpx.TimeoutException:
+                    logging.error("[ERRO] Timeout ao tentar finalizar sessão")
+                    return False
+                except httpx.RequestError as e:
+                    logging.error(f"[ERRO] Erro na requisição ao finalizar sessão: {e}")
+                    return False
+
+        except Exception as ex:
+            logging.error(f"[ERRO] Exceção ao finalizar sessão no Django: {ex}")
             return False

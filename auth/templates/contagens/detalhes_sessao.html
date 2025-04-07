@@ -82,6 +82,14 @@
 <body>
     <div class="container">
         <h3><i class="fas fa-chart-line"></i> Detalhes da Sessão: {{ sessao.sessao }}</h3>
+        
+        <div class="alert alert-info">
+            <strong>Código:</strong> {{ sessao.codigo }} |
+            <strong>Ponto:</strong> {{ sessao.ponto }} |
+            <strong>Data:</strong> {{ sessao.data }} |
+            <strong>Horário:</strong> {{ sessao.horario_inicio }} |
+            <strong>Padrão:</strong> {% if sessao.padrao %}{{ sessao.padrao|title|cut:"_" }}{% else %}Padrão Padrão{% endif %}
+        </div>
 
         {% if erro %}
             <div class="alert alert-danger">{{ erro }}</div>

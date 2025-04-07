@@ -13,6 +13,9 @@ class Session(models.Model):
     data = models.CharField(max_length=10, null=True, blank=True)
     criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, default=1)
     ativa = models.BooleanField(default=True)
+    padrao = models.CharField(max_length=100, blank=True, null=True, help_text="Tipo de padrão utilizado na contagem")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"{self.codigo} - {self.ponto} ({self.data})"
