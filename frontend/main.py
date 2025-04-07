@@ -15,10 +15,15 @@ from loginregister.login import LoginPage
 
 load_dotenv()
 
-# Configurar encoding para UTF-8 no Windows
+# Configurar encoding para UTF-8 no Windows com verificação para None
 if sys.platform == 'win32':
-    sys.stdout.reconfigure(encoding='utf-8')
-    sys.stderr.reconfigure(encoding='utf-8')
+    try:
+        if sys.stdout is not None:
+            sys.stdout.reconfigure(encoding='utf-8')
+        if sys.stderr is not None:
+            sys.stderr.reconfigure(encoding='utf-8')
+    except AttributeError:
+        logging.warning("Não foi possível reconfigurar o encoding para UTF-8. Isso pode ocorrer quando executado como executável.")
 
 # Configurar logging com encoding UTF-8
 logging.basicConfig(
