@@ -29,6 +29,7 @@ def home(request):
     # Get session statistics
     sessoes_ativas = Session.objects.filter(ativa=True).count()
     sessoes_finalizadas = Session.objects.filter(ativa=False).count()
+    total_sessoes = Session.objects.count()
     total_usuarios = User.objects.count()
     
     # Top users with most sessions
@@ -42,6 +43,7 @@ def home(request):
     context = {
         'sessoes_ativas': sessoes_ativas,
         'sessoes_finalizadas': sessoes_finalizadas,
+        'total_sessoes': total_sessoes,
         'total_usuarios': total_usuarios,
         'top_usuarios': top_usuarios,
         'sessoes_recentes': sessoes_recentes,

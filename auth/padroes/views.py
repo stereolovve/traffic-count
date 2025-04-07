@@ -11,6 +11,7 @@ from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 import json
+from django.db import transaction
 
 from .models import PadraoContagem, UserPadraoContagem
 from .serializers import PadraoContagemSerializer, UserPadraoContagemSerializer
@@ -166,18 +167,21 @@ class PadraoContagemDeleteView(DeleteView):
 # API Views
 @api_view(['GET'])
 def listar_tipos_padrao(request):
-    tipos = PadraoContagem.objects.values_list('pattern_type', flat=True).distinct()
+    # Usar distinct() para garantir que não há duplicatas
+    tipos = PadraoContagem.objects.values_list('pattern_type', flat=True).distinct().order_by('pattern_type')
     return Response(list(tipos))
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def listar_padroes_globais(request):
-    padroes = PadraoContagem.objects.values('pattern_type').distinct()
+    # Usar distinct() para garantir que não há duplicatas nos tipos de padrão
+    padroes = PadraoContagem.objects.values('pattern_type').distinct().order_by('pattern_type')
     data = []
 
     for padrao in padroes:
         tipo_padrao = padrao["pattern_type"]
-        binds = PadraoContagem.objects.filter(pattern_type=tipo_padrao).values("veiculo", "bind")
+        # Obter os binds únicos para cada tipo de padrão
+        binds = PadraoContagem.objects.filter(pattern_type=tipo_padrao).values("veiculo", "bind").distinct()
         data.append({
             "pattern_type": tipo_padrao,
             "binds": list(binds)
@@ -259,14 +263,63 @@ def atualizar_preferences_usuario(request):
     return Response({"detail": "Bind atualizado com sucesso!"}, status=status.HTTP_200_OK)
 
 @csrf_exempt
+@require_POST
 def reorder_patterns(request):
     if request.method != "POST":
-        return JsonResponse({"error": "Método não permitido"}, status=405)
+        return JsonResponse({"status": "error", "message": "Método não permitido"}, status=405)
     
     try:
         data = json.loads(request.body)
-        for item in data:
-            PadraoContagem.objects.filter(id=item['id']).update(order=item['order'])
-        return JsonResponse({"status": "success"})
+        pattern_type = data.get('pattern_type')
+        patterns = data.get('patterns', [])
+        
+        if not pattern_type:
+            return JsonResponse({
+                "status": "error",
+                "message": "Tipo de padrão não especificado"
+            }, status=400)
+            
+        if not patterns:
+            return JsonResponse({
+                "status": "error",
+                "message": "Nenhum padrão para reordenar"
+            }, status=400)
+        
+        with transaction.atomic():
+            # Get all patterns of this type to ensure we're only updating the correct ones
+            existing_patterns = PadraoContagem.objects.filter(pattern_type=pattern_type)
+            pattern_ids = [p['id'] for p in patterns]
+            
+            # Verify all patterns exist and belong to the specified type
+            if existing_patterns.filter(id__in=pattern_ids).count() != len(pattern_ids):
+                return JsonResponse({
+                    "status": "error",
+                    "message": "Um ou mais padrões não encontrados para o tipo especificado"
+                }, status=404)
+            
+            # Update order for each pattern
+            for item in patterns:
+                pattern = existing_patterns.get(id=item['id'])
+                pattern.order = item['order']
+                pattern.save()
+                
+        return JsonResponse({
+            "status": "success",
+            "message": "Ordem atualizada com sucesso"
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({
+            "status": "error",
+            "message": "Formato de dados inválido"
+        }, status=400)
+    except PadraoContagem.DoesNotExist:
+        return JsonResponse({
+            "status": "error",
+            "message": "Padrão não encontrado"
+        }, status=404)
     except Exception as e:
-        return JsonResponse({"status": "error", "message": str(e)}, status=400)
+        return JsonResponse({
+            "status": "error",
+            "message": f"Erro ao reordenar padrões: {str(e)}"
+        }, status=500)

@@ -32,6 +32,7 @@
     </style>
 </head>
 <body class="bg-gray-100 p-6">
+    {% csrf_token %}
     <div class="max-w-5xl mx-auto bg-white p-6 rounded-lg shadow-lg">
         <div class="flex justify-between items-center">
             <h1 class="text-2xl font-bold text-gray-800">Padrões de Contagem</h1>
@@ -249,48 +250,66 @@
                 let items = Array.from(document.querySelectorAll('.pattern-item'));
                 let orderData = items.map((item, index) => {
                     return {
-                        id: item.dataset.id,
-                        order: index + 1
+                        id: parseInt(item.dataset.id),
+                        order: (index + 1) * 10  // Multiplicar por 10 para permitir inserções futuras
                     };
                 });
-                
-                // Enviar dados para o servidor
-                fetch('/padroes/reorder/', {
+
+                // Get CSRF token
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                if (!csrfToken) {
+                    showFeedback('CSRF token não encontrado. Por favor, recarregue a página.', 'error');
+                    return;
+                }
+
+                // Enviar a nova ordem para o servidor
+                fetch('{% url "reorder_patterns" %}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRFToken': getCookie('csrftoken')
+                        'X-CSRFToken': csrfToken
                     },
-                    body: JSON.stringify(orderData)
+                    body: JSON.stringify({
+                        patterns: orderData,
+                        pattern_type: '{{ selected_type }}'  // Include pattern type in request
+                    })
                 })
                 .then(response => {
                     if (!response.ok) {
-                        throw new Error('Erro ao salvar a ordem');
+                        throw new Error(`HTTP error! status: ${response.status}`);
                     }
                     return response.json();
                 })
                 .then(data => {
-                    console.log('Ordem salva com sucesso');
+                    if (data.status === 'success') {
+                        showFeedback('Ordem salva com sucesso!', 'success');
+                    } else {
+                        throw new Error(data.message || 'Erro ao salvar ordem');
+                    }
                 })
                 .catch(error => {
                     console.error('Erro:', error);
+                    showFeedback('Erro ao salvar ordem: ' + error.message, 'error');
                 });
             }
-            
-            // Função para obter o token CSRF
-            function getCookie(name) {
-                let cookieValue = null;
-                if (document.cookie && document.cookie !== '') {
-                    const cookies = document.cookie.split(';');
-                    for (let i = 0; i < cookies.length; i++) {
-                        const cookie = cookies[i].trim();
-                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                            break;
-                        }
-                    }
+
+            function showFeedback(message, type) {
+                // Remove any existing feedback
+                const existingFeedback = document.querySelector('.feedback-message');
+                if (existingFeedback) {
+                    existingFeedback.remove();
                 }
-                return cookieValue;
+
+                // Create new feedback element
+                let feedback = document.createElement('div');
+                feedback.className = `fixed bottom-4 right-4 px-4 py-2 rounded-lg shadow-lg feedback-message ${
+                    type === 'success' ? 'bg-green-500' : 'bg-red-500'
+                } text-white`;
+                feedback.textContent = message;
+                document.body.appendChild(feedback);
+                
+                // Remove after delay
+                setTimeout(() => feedback.remove(), type === 'success' ? 2000 : 3000);
             }
         });
     </script>

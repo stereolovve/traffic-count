@@ -142,25 +142,38 @@ class ApiManager:
 
             movimentos = [str(mov).strip().upper() for mov in movimentos if str(mov).strip()]
             self.contador.details["Movimentos"] = movimentos
+            print(f"[INFO] Movimentos definidos: {movimentos}")
 
             # Fazer requisição à API
             url = f"{API_URL}/padroes/padroes-api/?pattern_type={pattern_type}"
+            print(f"[INFO] Fazendo requisição para {url}")
             response = await self.api_get(url)
 
             if not response:
                 logging.warning(f"[WARNING] Nenhuma categoria retornada para {pattern_type}")
                 return []
 
-            return [
-                {
-                    "pattern_type": cat["pattern_type"],
-                    "veiculo": cat["veiculo"],
-                    "movimento": movimento,
-                    "bind": cat.get("bind", "N/A")
-                }
-                for cat in response
-                for movimento in movimentos
-            ]
+            print(f"[INFO] Resposta recebida: {response}")
+
+            # Usar um dicionário para garantir unicidade das categorias
+            categorias_dict = {}
+            
+            # Para cada veículo retornado da API, criar uma categoria para cada movimento
+            for cat in response:
+                for movimento in movimentos:
+                    key = (cat["pattern_type"], cat["veiculo"], movimento)
+                    if key not in categorias_dict:
+                        categorias_dict[key] = {
+                            "pattern_type": cat["pattern_type"],
+                            "veiculo": cat["veiculo"],
+                            "movimento": movimento,
+                            "bind": cat.get("bind", "N/A")
+                        }
+
+            # Converter o dicionário de volta para lista
+            categorias = list(categorias_dict.values())
+            print(f"[INFO] Categorias processadas: {categorias}")
+            return categorias
 
         except Exception as ex:
             logging.error(f"[ERROR] Erro ao carregar categorias: {ex}")
@@ -173,7 +186,7 @@ class ApiManager:
                 logging.warning("[WARNING] Nenhum padrão selecionado!")
                 return {}
 
-            logging.info(f"Carregando binds para o padrão: {pattern_type}")
+            print(f"Carregando binds para o padrão: {pattern_type}")
             
             url = f"{API_URL}/padroes/merged-binds/?pattern_type={pattern_type}"
             
@@ -183,7 +196,7 @@ class ApiManager:
                 if response.status_code == 200:
                     data = response.json()
                     binds = {item["veiculo"]: item["bind"] for item in data}
-                    logging.info(f"✅ {len(binds)} binds carregados com sucesso")
+                    print(f"✅ {len(binds)} binds carregados com sucesso")
                     return binds
                 else:
                     logging.error(f"❌ Erro ao carregar binds: {response.status_code}")

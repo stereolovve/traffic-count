@@ -2,22 +2,43 @@
 from django.shortcuts import render, get_object_or_404
 from .models import Session, Counting
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 import json
 from collections import defaultdict
 from django.contrib.auth import get_user_model
 from django.views.decorators.csrf import csrf_exempt
 from datetime import datetime, timedelta
 from padroes.models import PadraoContagem
+import csv
+import openpyxl
+from openpyxl.styles import Font, PatternFill, Alignment
+from openpyxl.utils import get_column_letter
 
 User = get_user_model()
 
 def listar_sessoes(request):
+    # Get filter parameters
     status = request.GET.get("status")
     pesquisador = request.GET.get("usuario")
+    codigo = request.GET.get("codigo")
+    ponto = request.GET.get("ponto")
+    data = request.GET.get("data")
+    sort_field = request.GET.get("sort", "-id")
 
+    # Get list of researchers (users who have created sessions)
+    pesquisadores = User.objects.filter(
+        id__in=Session.objects.values_list('criado_por', flat=True).distinct()
+    ).order_by('username')
+
+    # Get unique codes and points
+    codigos = Session.objects.values_list('codigo', flat=True).distinct().order_by('codigo')
+    pontos = Session.objects.values_list('ponto', flat=True).distinct().order_by('ponto')
+    datas = Session.objects.values_list('data', flat=True).distinct().order_by('data')
+
+    # Start with base queryset
     sessoes = Session.objects.all().select_related('criado_por')
 
+    # Apply filters
     if status == "ativas":
         sessoes = sessoes.filter(ativa=True)
     elif status == "finalizadas":
@@ -26,6 +47,24 @@ def listar_sessoes(request):
     if pesquisador:
         sessoes = sessoes.filter(criado_por__username__icontains=pesquisador)
 
+    if codigo:
+        sessoes = sessoes.filter(codigo__icontains=codigo)
+
+    if ponto:
+        sessoes = sessoes.filter(ponto__icontains=ponto)
+
+    if data:
+        sessoes = sessoes.filter(data__icontains=data)
+
+    # Apply sorting
+    if sort_field:
+        # Handle special cases for sorting
+        if sort_field == 'criado_por':
+            sessoes = sessoes.order_by(f'criado_por__username{"" if sort_field[0] != "-" else ""}')
+        else:
+            sessoes = sessoes.order_by(sort_field)
+
+    # Prepare the data for the template
     sessoes_com_movimentos = []
     for sessao in sessoes:
         movimentos = sessao.movimentos if sessao.movimentos else []
@@ -35,7 +74,21 @@ def listar_sessoes(request):
             "sessao_id": sessao.id
         })
 
-    return render(request, 'contagens/sessoes.html', {"sessoes": sessoes_com_movimentos})
+    return render(request, 'contagens/sessoes.html', {
+        "sessoes": sessoes_com_movimentos,
+        "current_sort": sort_field,
+        "pesquisadores": pesquisadores,
+        "codigos": codigos,  # Add list of unique codes
+        "pontos": pontos,    # Add list of unique points
+        "datas": datas,
+        "filtros_ativos": {
+            "status": status,
+            "pesquisador": pesquisador,
+            "codigo": codigo,
+            "ponto": ponto,
+            "data": data
+        }
+    })
 
 
 def detalhes_sessao(request, sessao_id):
@@ -45,20 +98,22 @@ def detalhes_sessao(request, sessao_id):
         return render(request, 'contagens/detalhes_sessao.html', {'erro': 'Sessão não encontrada.'})
     
     try:
-        # Obter todos os veículos/padrões na ordem correta
-        padroes_ordenados = PadraoContagem.objects.all().order_by('order')
+        # Obter apenas os padrões do tipo correto, na ordem correta
+        padroes_ordenados = PadraoContagem.objects.filter(
+            pattern_type="padrao_perplan"
+        ).order_by('order')
         
-        # Lista de veículos na ordem correta
+        # Lista de veículos na ordem correta - será nossa única fonte de veículos
         veiculos_ordenados = [padrao.veiculo for padrao in padroes_ordenados]
         
-        # Obter os dados da sessão como você já faz
+        # Obter os dados da sessão
         contagens = Counting.objects.filter(sessao=sessao).order_by("id")
         
         if not contagens.exists():
             return render(request, 'contagens/detalhes_sessao.html', {
                 "sessao": sessao,
                 "dados_sessao": {},
-                "veiculos": [],
+                "veiculos": veiculos_ordenados,
                 "erro": "Nenhuma contagem registrada para esta sessão."
             })
 
@@ -68,14 +123,12 @@ def detalhes_sessao(request, sessao_id):
             # Obtenha também movimentos da sessão que ainda não têm contagens
             if sessao.movimentos:
                 movimentos = sorted(set(movimentos) | set(sessao.movimentos))
-            
-            veiculos = sorted(set(contagem.veiculo for contagem in contagens))
 
             if not movimentos:
                 return render(request, 'contagens/detalhes_sessao.html', {
                     "sessao": sessao,
                     "dados_sessao": {},
-                    "veiculos": [],
+                    "veiculos": veiculos_ordenados,
                     "erro": "Nenhum movimento registrado para esta sessão."
                 })
 
@@ -92,7 +145,7 @@ def detalhes_sessao(request, sessao_id):
                 # Determinar número de períodos baseado no número de contagens por movimento/veículo
                 max_contagens_por_mov_veiculo = {}
                 for mov in movimentos:
-                    for veiculo in veiculos:
+                    for veiculo in veiculos_ordenados:
                         count = Counting.objects.filter(
                             sessao=sessao, 
                             movimento=mov, 
@@ -124,19 +177,13 @@ def detalhes_sessao(request, sessao_id):
                         periodo=periodo
                     )
                     
-                    # Se não há contagens com período explícito, usar a lógica antiga
-                    if not contagens_periodo.exists():
-                        contagens_movimento = {veiculo: 0 for veiculo in veiculos}
-                    else:
-                        contagens_movimento = {
-                            contagem.veiculo: contagem.contagem 
-                            for contagem in contagens_periodo
-                        }
-                        
-                        # Garantir que todos os veículos estejam representados
-                        for veiculo in veiculos:
-                            if veiculo not in contagens_movimento:
-                                contagens_movimento[veiculo] = 0
+                    # Inicializar contagens com 0 para todos os veículos dos padrões
+                    contagens_movimento = {veiculo: 0 for veiculo in veiculos_ordenados}
+                    
+                    # Atualizar apenas os veículos que existem nos padrões
+                    for contagem in contagens_periodo:
+                        if contagem.veiculo in veiculos_ordenados:
+                            contagens_movimento[contagem.veiculo] = contagem.contagem
                     
                     dados_sessao[movimento].append({
                         "das": periodo,
@@ -144,38 +191,21 @@ def detalhes_sessao(request, sessao_id):
                         "observacao": "Nenhuma",
                         "contagens": contagens_movimento
                     })
-        
-            # Veículos que realmente existem nos dados da sessão
-            veiculos_existentes = []
-            
-            # Só inclui veículos que existem nos dados da sessão, mantendo a ordem dos padrões
-            for veiculo in veiculos_ordenados:
-                # Verifique se este veículo existe nos dados da sessão
-                # Adapte esta lógica com base na estrutura dos seus dados
-                veiculo_existe = False
-                
-                for movimento, registros in dados_sessao.items():
-                    if registros and registros[0].get('contagens') and veiculo in registros[0]['contagens']:
-                        veiculo_existe = True
-                        break
-                
-                if veiculo_existe:
-                    veiculos_existentes.append(veiculo)
-        
+
         except Exception as e:
             import traceback
             print(traceback.format_exc())
             return render(request, 'contagens/detalhes_sessao.html', {
                 "sessao": sessao,
                 "dados_sessao": {},
-                "veiculos": [],
+                "veiculos": veiculos_ordenados,
                 "erro": f"Erro ao carregar os dados da sessão: {str(e)}"
             })
 
         return render(request, 'contagens/detalhes_sessao.html', {
             "sessao": sessao,
             "dados_sessao": dict(dados_sessao),
-            "veiculos": veiculos_existentes
+            "veiculos": veiculos_ordenados  # Usar sempre a lista original de veículos dos padrões
         })
 
     except Exception as e:
@@ -259,29 +289,147 @@ def get_countings(request):
 
     return JsonResponse({"erro": "Método não permitido"}, status=405)
 
+@csrf_exempt
+@login_required
 def finalizar_sessao(request):
-    if request.method == "POST":
-        try:
-            data = json.loads(request.body)
-            nome_sessao = data.get("sessao")
-            ativa = data.get("ativa")
+    if request.method != 'POST':
+        return JsonResponse({
+            'status': 'error',
+            'message': 'Método não permitido'
+        }, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        sessao_id = data.get('sessao_id')
+        
+        if not sessao_id:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'ID da sessão não fornecido'
+            }, status=400)
+        
+        sessao = get_object_or_404(Session, id=sessao_id)
+        
+        # Verificar se o usuário tem permissão para finalizar a sessão
+        if sessao.criado_por != request.user and not request.user.is_staff:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Você não tem permissão para finalizar esta sessão'
+            }, status=403)
+        
+        if not sessao.ativa:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Esta sessão já está finalizada'
+            }, status=400)
+        
+        sessao.ativa = False
+        sessao.save()
+        
+        return JsonResponse({
+            'status': 'success',
+            'message': 'Sessão finalizada com sucesso'
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'status': 'error',
+            'message': 'Dados inválidos'
+        }, status=400)
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=500)
 
-            if nome_sessao is None or ativa is None:
-                return JsonResponse({"erro": "Campos obrigatórios ausentes"}, status=400)
-
-            sessao = Session.objects.filter(sessao=nome_sessao).first()
-            if not sessao:
-                return JsonResponse({"erro": "Sessão não encontrada"}, status=404)
-
-            sessao.ativa = bool(ativa)
-            sessao.save()
-
-            return JsonResponse({"mensagem": "Sessão atualizada com sucesso"})
-
-        except Exception as e:
-            return JsonResponse({"erro": str(e)}, status=500)
-    else:
-        return JsonResponse({"erro": "Método não permitido"}, status=405)
+@login_required
+def exportar_csv(request, sessao_id):
+    try:
+        sessao = get_object_or_404(Session, id=sessao_id)
+        
+        # Verificar se o usuário tem permissão para exportar a sessão
+        if sessao.criado_por != request.user and not request.user.is_staff:
+            return HttpResponse('Você não tem permissão para exportar esta sessão', status=403)
+        
+        # Criar um novo workbook
+        wb = openpyxl.Workbook()
+        
+        # Configurar estilos
+        header_font = Font(bold=True)
+        header_fill = PatternFill(start_color='CCE5FF', end_color='CCE5FF', fill_type='solid')
+        
+        # Primeira aba - Detalhes da Sessão
+        ws_info = wb.active
+        ws_info.title = 'Detalhes da Sessão'
+        
+        # Adicionar informações da sessão
+        info_headers = [
+            ['ID da Sessão', sessao.id],
+            ['Nome da Sessão', sessao.sessao],
+            ['Código', sessao.codigo],
+            ['Ponto', sessao.ponto],
+            ['Data', sessao.data],
+            ['Horário', sessao.horario_inicio],
+            ['Status', 'Finalizada' if not sessao.ativa else 'Ativa'],
+            ['Criado Por', sessao.criado_por.username],
+            ['Email do Pesquisador', sessao.criado_por.email]
+        ]
+        
+        for row_idx, (header, value) in enumerate(info_headers, 1):
+            ws_info.cell(row=row_idx, column=1, value=header).font = header_font
+            ws_info.cell(row=row_idx, column=2, value=value)
+        
+        # Ajustar largura das colunas
+        ws_info.column_dimensions['A'].width = 20
+        ws_info.column_dimensions['B'].width = 30
+        
+        # Obter contagens agrupadas por movimento
+        contagens = Counting.objects.filter(sessao=sessao).order_by('periodo', 'movimento', 'veiculo')
+        movimentos = sorted(set(c.movimento for c in contagens))
+        
+        # Para cada movimento, criar uma aba separada
+        for movimento in movimentos:
+            ws_mov = wb.create_sheet(f'Contagens - {movimento}')
+            
+            # Obter veículos únicos para este movimento
+            veiculos = sorted(set(c.veiculo for c in contagens if c.movimento == movimento))
+            
+            # Escrever cabeçalho
+            headers = ['Período'] + veiculos
+            for col_idx, header in enumerate(headers, 1):
+                cell = ws_mov.cell(row=1, column=col_idx, value=header)
+                cell.font = header_font
+                cell.fill = header_fill
+                cell.alignment = Alignment(horizontal='center')
+            
+            # Agrupar contagens por período
+            periodos = defaultdict(lambda: defaultdict(int))
+            for contagem in contagens:
+                if contagem.movimento == movimento:
+                    periodos[contagem.periodo][contagem.veiculo] = contagem.contagem
+            
+            # Escrever dados
+            for row_idx, (periodo, contagens_periodo) in enumerate(sorted(periodos.items()), 2):
+                ws_mov.cell(row=row_idx, column=1, value=periodo)
+                for col_idx, veiculo in enumerate(veiculos, 2):
+                    ws_mov.cell(row=row_idx, column=col_idx, value=contagens_periodo[veiculo])
+            
+            # Ajustar largura das colunas
+            for col_idx, header in enumerate(headers, 1):
+                ws_mov.column_dimensions[get_column_letter(col_idx)].width = max(15, len(header) + 2)
+        
+        # Criar resposta HTTP
+        response = HttpResponse(
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = f'attachment; filename="sessao_{sessao_id}_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx"'
+        
+        # Salvar o arquivo
+        wb.save(response)
+        return response
+        
+    except Exception as e:
+        return HttpResponse(f'Erro ao exportar sessão: {str(e)}', status=500)
 
 def registrar_sessao(request):
     if request.method == "POST":

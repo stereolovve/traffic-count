@@ -9,6 +9,7 @@
     <link rel="stylesheet" type="text/css" href="{% static 'contagens/styles.css' %}">
     <link rel="shortcut icon" type="image/png" href="{% static 'img/icone.png' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -40,6 +41,12 @@
             font-size: 18px;
             border-bottom: 1px solid #ddd;
             padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .filter-title i {
+            color: #007BFF;
         }
         .filter-row {
             display: flex;
@@ -50,61 +57,97 @@
         .filter-group {
             flex: 1;
             min-width: 200px;
+            position: relative;
         }
         .filter-label {
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             font-weight: 500;
             color: #555;
-        }
-        .filter-input {
-            width: 100%;
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
             font-size: 14px;
-            transition: border-color 0.3s;
         }
-        .filter-input:focus {
+        .filter-input, .filter-select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background-color: #fff;
+        }
+        .filter-input:focus, .filter-select:focus {
             border-color: #007BFF;
             outline: none;
-            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+        }
+        .filter-select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23555' viewBox='0 0 16 16'%3E%3Cpath d='M8 11.5l-6-6h12z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 35px;
         }
         .filter-buttons {
             display: flex;
             justify-content: flex-end;
-            gap: 10px;
-            margin-top: 10px;
+            gap: 12px;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+        .btn-filter, .btn-reset {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         .btn-filter {
-            padding: 10px 20px;
             background: #007BFF;
             color: white;
-            border: none;
-            border-radius: 4px;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.3s;
         }
         .btn-filter:hover {
             background: #0056b3;
-            transform: scale(1.03);
+            transform: translateY(-2px);
         }
         .btn-reset {
-            padding: 10px 20px;
             background: #6c757d;
             color: white;
-            border: none;
-            border-radius: 4px;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.3s;
         }
         .btn-reset:hover {
             background: #5a6268;
-            transform: scale(1.03);
+            transform: translateY(-2px);
+        }
+        .active-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+        .filter-tag {
+            background: #e3f2fd;
+            color: #0056b3;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .filter-tag i {
+            cursor: pointer;
+            font-size: 10px;
+        }
+        .filter-tag i:hover {
+            color: #dc3545;
         }
         .home-button {
             display: inline-block;
@@ -208,53 +251,230 @@
             .filter-group {
                 width: 100%;
             }
+            .filter-buttons {
+                flex-direction: column;
+            }
+            .btn-filter, .btn-reset {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+        .btn-finalizar {
+            background-color: #ef4444;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+        }
+        .btn-finalizar:hover {
+            background-color: #b91c1c;
+        }
+        
+        .btn-csv {
+            background-color: #22c55e;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+        }
+        .btn-csv:hover {
+            background-color: #15803d;
+        }
+        .actions-container {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .popup-menu {
+            position: absolute;
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            min-width: 200px;
+            display: none;
+            right: 0;
+            top: 100%;
+            margin-top: 0.5rem;
+        }
+        
+        .popup-menu::before {
+            content: '';
+            position: absolute;
+            top: -8px;
+            right: 16px;
+            width: 16px;
+            height: 16px;
+            background: white;
+            transform: rotate(45deg);
+            box-shadow: -2px -2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .popup-menu-content {
+            position: relative;
+            background: white;
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+        
+        .popup-menu-item {
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #374151;
+        }
+        
+        .popup-menu-item:hover {
+            background: #f3f4f6;
+        }
+        
+        .popup-menu-item.danger {
+            color: #ef4444;
+        }
+        
+        .popup-menu-item.danger:hover {
+            background: #fef2f2;
+        }
+        
+        .btn-actions {
+            background: #4b5563;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-actions:hover {
+            background: #374151;
         }
     </style>
 </head>
 <body>
+    {% csrf_token %}
     <div class="container">
         <h2><i class="fas fa-list"></i> Sessões</h2>
         <a href="{% url 'home' %}" class="home-button"><i class="fas fa-home"></i> Voltar para Home</a>
         
         <div class="filter-container">
-            <div class="filter-title">Filtros</div>
+            <div class="filter-title">
+                <i class="fas fa-filter"></i>
+                Filtros
+            </div>
             <form method="get" id="filter-form">
                 <div class="filter-row">
                     <div class="filter-group">
-                        <label class="filter-label">Status:</label>
-                        <select name="status" class="filter-input">
-                            <option value="">Todos</option>
-                            <option value="ativas" {% if request.GET.status == 'ativas' %}selected{% endif %}>Ativas</option>
-                            <option value="finalizadas" {% if request.GET.status == 'finalizadas' %}selected{% endif %}>Finalizadas</option>
+                        <label class="filter-label">Status</label>
+                        <select name="status" class="filter-select">
+                            <option value="">Todos os Status</option>
+                            <option value="ativas" {% if filtros_ativos.status == 'ativas' %}selected{% endif %}>Ativas</option>
+                            <option value="finalizadas" {% if filtros_ativos.status == 'finalizadas' %}selected{% endif %}>Finalizadas</option>
                         </select>
                     </div>
                     <div class="filter-group">
-                        <label class="filter-label">Pesquisador:</label>
-                        <input type="text" name="usuario" class="filter-input" placeholder="Nome de usuário" value="{{ request.GET.usuario }}">
+                        <label class="filter-label">Pesquisador</label>
+                        <select name="usuario" class="filter-select select2">
+                            <option value="">Todos os Pesquisadores</option>
+                            {% for pesquisador in pesquisadores %}
+                                <option value="{{ pesquisador.username }}" {% if filtros_ativos.pesquisador == pesquisador.username %}selected{% endif %}>
+                                    {{ pesquisador.username }}
+                                </option>
+                            {% endfor %}
+                        </select>
                     </div>
                     <div class="filter-group">
-                        <label class="filter-label">ID da Sessão:</label>
-                        <input type="text" name="id" class="filter-input" placeholder="ID" value="{{ request.GET.id }}">
+                        <label class="filter-label">ID da Sessão</label>
+                        <input type="text" name="id" class="filter-input" placeholder="Digite o ID" value="{{ filtros_ativos.id }}">
                     </div>
                 </div>
                 <div class="filter-row">
                     <div class="filter-group">
-                        <label class="filter-label">Código:</label>
-                        <input type="text" name="codigo" class="filter-input" placeholder="Código" value="{{ request.GET.codigo }}">
+                        <label class="filter-label">Código</label>
+                        <select name="codigo" class="filter-select select2">
+                            <option value="">Todos os Códigos</option>
+                            {% for codigo in codigos %}
+                                <option value="{{ codigo }}" {% if filtros_ativos.codigo == codigo %}selected{% endif %}>
+                                    {{ codigo }}
+                                </option>
+                            {% endfor %}
+                        </select>
                     </div>
                     <div class="filter-group">
-                        <label class="filter-label">Ponto:</label>
-                        <input type="text" name="ponto" class="filter-input" placeholder="Ponto" value="{{ request.GET.ponto }}">
+                        <label class="filter-label">Ponto</label>
+                        <select name="ponto" class="filter-select select2">
+                            <option value="">Todos os Pontos</option>
+                            {% for ponto in pontos %}
+                                <option value="{{ ponto }}" {% if filtros_ativos.ponto == ponto %}selected{% endif %}>
+                                    {{ ponto }}
+                                </option>
+                            {% endfor %}
+                        </select>
                     </div>
                     <div class="filter-group">
-                        <label class="filter-label">Data:</label>
-                        <input type="date" name="data" class="filter-input" value="{{ request.GET.data }}">
+                        <label class="filter-label">Data</label>
+                        <select name="data" class="filter-select select2">
+                            <option value="">Todas as Datas</option>
+                            {% for data in datas %}
+                                <option value="{{ data }}" {% if filtros_ativos.data == data %}selected{% endif %}>
+                                    {{ data }}
+                                </option>
+                            {% endfor %}
+                        </select>
                     </div>
                 </div>
-                <input type="hidden" name="sort" id="sort-field" value="{{ request.GET.sort|default:'-id' }}">
+                <input type="hidden" name="sort" id="sort-field" value="{{ current_sort|default:'-id' }}">
+                
+                {% if filtros_ativos.status or filtros_ativos.pesquisador or filtros_ativos.codigo or filtros_ativos.ponto or filtros_ativos.data %}
+                <div class="active-filters">
+                    {% if filtros_ativos.status %}
+                        <div class="filter-tag">
+                            <span>Status: {{ filtros_ativos.status }}</span>
+                            <i class="fas fa-times" onclick="removeFilter('status')"></i>
+                        </div>
+                    {% endif %}
+                    {% if filtros_ativos.pesquisador %}
+                        <div class="filter-tag">
+                            <span>Pesquisador: {{ filtros_ativos.pesquisador }}</span>
+                            <i class="fas fa-times" onclick="removeFilter('usuario')"></i>
+                        </div>
+                    {% endif %}
+                    {% if filtros_ativos.codigo %}
+                        <div class="filter-tag">
+                            <span>Código: {{ filtros_ativos.codigo }}</span>
+                            <i class="fas fa-times" onclick="removeFilter('codigo')"></i>
+                        </div>
+                    {% endif %}
+                    {% if filtros_ativos.ponto %}
+                        <div class="filter-tag">
+                            <span>Ponto: {{ filtros_ativos.ponto }}</span>
+                            <i class="fas fa-times" onclick="removeFilter('ponto')"></i>
+                        </div>
+                    {% endif %}
+                    {% if filtros_ativos.data %}
+                        <div class="filter-tag">
+                            <span>Data: {{ filtros_ativos.data }}</span>
+                            <i class="fas fa-times" onclick="removeFilter('data')"></i>
+                        </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+
                 <div class="filter-buttons">
-                    <button type="button" class="btn-reset" onclick="resetFilters()">Limpar Filtros</button>
-                    <button type="submit" class="btn-filter">Aplicar Filtros</button>
+                    <button type="button" class="btn-reset" onclick="resetFilters()">
+                        <i class="fas fa-undo"></i>
+                        Limpar Filtros
+                    </button>
+                    <button type="submit" class="btn-filter">
+                        <i class="fas fa-search"></i>
+                        Aplicar Filtros
+                    </button>
                 </div>
             </form>
         </div>
@@ -364,9 +584,26 @@
                     </td>
                     <td>{{ sessao.sessao.criado_por.username }}</td>
                     <td>
-                        <a href="{% url 'detalhes_sessao' sessao.sessao_id %}" class="details-link">
-                            <i class="fas fa-eye"></i> Ver Detalhes
-                        </a>
+                        <div class="actions-container">
+                            <button class="btn-actions js-toggle-menu">
+                                <i class="fas fa-ellipsis-v"></i> Ações
+                            </button>
+                            <div class="popup-menu">
+                                <div class="popup-menu-content">
+                                    <a href="{% url 'detalhes_sessao' sessao.sessao_id %}" class="popup-menu-item">
+                                        <i class="fas fa-eye"></i> Ver Detalhes
+                                    </a>
+                                    {% if sessao.sessao.ativa %}
+                                    <div class="popup-menu-item danger js-finalizar" data-sessao-id="{{ sessao.sessao_id }}">
+                                        <i class="fas fa-stop-circle"></i> Finalizar Sessão
+                                    </div>
+                                    {% endif %}
+                                    <div class="popup-menu-item js-exportar" data-sessao-id="{{ sessao.sessao_id }}">
+                                        <i class="fas fa-file-csv"></i> Exportar CSV
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </td>
                 </tr>
                 {% empty %}
@@ -378,16 +615,56 @@
         </table>
     </div>
 
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
+        $(document).ready(function() {
+            $('.select2').each(function() {
+                let placeholder = $(this).attr('name');
+                placeholder = placeholder.charAt(0).toUpperCase() + placeholder.slice(1);
+                $(this).select2({
+                    placeholder: `Selecione um ${placeholder}`,
+                    allowClear: true,
+                    width: '100%',
+                    language: {
+                        noResults: function() {
+                            return "Nenhum resultado encontrado";
+                        }
+                    }
+                });
+            });
+
+            // Close all menus when clicking outside
+            $(document).on('click', function(e) {
+                if (!$(e.target).closest('.actions-container').length) {
+                    $('.popup-menu').hide();
+                }
+            });
+
+            // Toggle menu
+            $('.js-toggle-menu').on('click', function(e) {
+                e.stopPropagation();
+                const menu = $(this).siblings('.popup-menu');
+                $('.popup-menu').not(menu).hide();
+                menu.toggle();
+            });
+
+            // Action handlers
+            $('.js-finalizar').on('click', function() {
+                const sessaoId = $(this).data('sessao-id');
+                finalizarSessao(sessaoId);
+            });
+
+            $('.js-exportar').on('click', function() {
+                const sessaoId = $(this).data('sessao-id');
+                exportarCSV(sessaoId);
+            });
+        });
+
         function sortTable(field) {
             const sortField = document.getElementById('sort-field');
             let currentSort = sortField.value;
             
-            // Fix if old sort field name is used
-            if (currentSort === 'sessao_id') currentSort = 'id';
-            if (currentSort === '-sessao_id') currentSort = '-id';
-            
-            // Toggle sort direction
             if (currentSort === field) {
                 sortField.value = '-' + field;
             } else if (currentSort === '-' + field) {
@@ -400,14 +677,71 @@
         }
         
         function resetFilters() {
-            // Clear all form inputs except the sort field
             const inputs = document.querySelectorAll('#filter-form input:not(#sort-field), #filter-form select');
             inputs.forEach(input => {
                 input.value = '';
             });
-            
-            // Submit the form
+            $('.select2').val(null).trigger('change');
             document.getElementById('filter-form').submit();
+        }
+
+        function removeFilter(filterName) {
+            const input = document.querySelector(`[name="${filterName}"]`);
+            if (input) {
+                input.value = '';
+                if ($(input).hasClass('select2')) {
+                    $(input).val(null).trigger('change');
+                }
+                document.getElementById('filter-form').submit();
+            }
+        }
+
+        function finalizarSessao(sessaoId) {
+            if (!confirm('Tem certeza que deseja finalizar esta sessão?')) {
+                return;
+            }
+
+            fetch('/contagens/finalizar-sessao/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify({
+                    sessao_id: sessaoId
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Erro na resposta do servidor');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.status === 'success') {
+                    showNotification('Sessão finalizada com sucesso!', 'success');
+                    setTimeout(() => window.location.reload(), 1500);
+                } else {
+                    throw new Error(data.message || 'Erro ao finalizar sessão');
+                }
+            })
+            .catch(error => {
+                showNotification('Erro ao finalizar sessão: ' + error.message, 'error');
+            });
+        }
+
+        function exportarCSV(sessaoId) {
+            window.location.href = `/contagens/exportar-csv/${sessaoId}`;
+        }
+
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `fixed bottom-4 right-4 px-4 py-2 rounded-lg shadow-lg ${
+                type === 'success' ? 'bg-green-500' : 'bg-red-500'
+            } text-white`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), type === 'success' ? 2000 : 3000);
         }
     </script>
 </body>

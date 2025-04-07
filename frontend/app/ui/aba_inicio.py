@@ -242,7 +242,14 @@ class AbaInicio(ft.Column):
             headers = {"Authorization": f"Bearer {self.contador.tokens['access']}"} if self.contador.tokens and 'access' in self.contador.tokens else {}
             response = await async_api_request(api_url, method="GET", headers=headers)
 
-            self.contador.binds = {item["veiculo"]: item["bind"] for item in response}
+            # Usar um dicionário para garantir unicidade dos binds
+            binds_dict = {}
+            for item in response:
+                veiculo = item["veiculo"]
+                if veiculo not in binds_dict:
+                    binds_dict[veiculo] = item["bind"]
+
+            self.contador.binds = binds_dict
             
             # Correção - usar o método correto para atualizar a aba de contagem
             if 'contagem' in self.contador.ui_components:
