@@ -57,4 +57,5 @@ urlpatterns = [
     path('', home, name='home'),
     path('contagens/', include('contagens.urls')),
     path('padroes/', include('padroes.urls')),
+    path('trabalhos/', include('trabalhos.urls')),
 ]
