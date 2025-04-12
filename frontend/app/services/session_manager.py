@@ -9,6 +9,7 @@ import flet as ft
 import re
 import logging
 import httpx
+import time
 
 
 class SessionManager:
@@ -51,7 +52,6 @@ class SessionManager:
             self.contador.current_timeslot = datetime.combine(hoje, horario_inicial)
             self.contador.details["current_timeslot"] = self.contador.current_timeslot.strftime("%H:%M")
             
-            logging.info(f"Horário inicial configurado para: {horario_inicial}")
 
             # 4. Gerar nome da sessão
             horario_inicial_file_safe = session_data["horario_inicio"].replace(":", "h")
@@ -72,18 +72,15 @@ class SessionManager:
                 self.contador.sessao = f"{base_sessao}_{counter}"
                 counter += 1
 
-            logging.info(f"Nome da sessão gerado: {self.contador.sessao}")
 
             # 5. Carregar binds e categorias
             binds = await self.contador.api_manager.load_binds(session_data["padrao"])
             if binds:
                 self.contador.binds = binds
-                logging.info("Binds carregados com sucesso")
 
             categorias = await self.contador.api_manager.load_categories(session_data["padrao"])
             if categorias:
                 self.save_categories_in_local(categorias)
-                logging.info("Categorias salvas localmente")
 
             self.carregar_categorias_locais()
 
@@ -97,14 +94,12 @@ class SessionManager:
             with self.contador.session_lock:
                 self.contador.session.add(nova_sessao)
                 self.contador.session.commit()
-                logging.info("Sessão criada no banco local")
 
             # 7. Inicializar arquivo Excel
             try:
                 success_excel = self.contador.excel_manager.initialize_excel_file()
                 if not success_excel:
                     raise Exception("Falha ao criar arquivo Excel")
-                logging.info("Arquivo Excel inicializado com sucesso")
             except Exception as ex:
                 logging.error(f"Erro ao criar arquivo Excel: {ex}")
                 raise
@@ -154,30 +149,38 @@ class SessionManager:
 
     def save_session(self):
         try:
-            details_json = json.dumps(self.contador.details)
-            sessao_existente = self.contador.session.query(Sessao).filter_by(sessao=self.contador.sessao).first()
-            if sessao_existente:
-                sessao_existente.details = details_json
-                sessao_existente.ativa = True
-            else:
-                nova_sessao = Sessao(
-                    sessao=self.contador.sessao,
-                    details=details_json,
-                    ativa=True
-                )
-                self.contador.session.add(nova_sessao)
-            self.contador.session.commit()
-            logging.info(f"✅ Sessão {self.contador.sessao} salva e marcada como ativa!")
+            start_time = time.time()
             
+            with self.session_lock:
+                if self.session.in_transaction():
+                    self.session.commit()
+                
+                # Salvar contagens
+                for (veiculo, movimento), count in self.contagens.items():
+                    self.save_to_db(veiculo, movimento)
+                
+                # Atualizar detalhes da sessão com o período atual
+                sessao = self.session.query(Sessao).filter_by(sessao=self.contador.sessao).first()
+                if sessao:
+                    self.contador.details["current_timeslot"] = self.contador.current_timeslot.strftime("%H:%M")
+                    sessao.details = json.dumps(self.contador.details)
+                    self.session.commit()
+                
+                self.last_save_time = datetime.now()
+                
+            end_time = time.time()
+            elapsed_time = (end_time - start_time) * 1000  # Convertendo para milissegundos
+            logging.info(f"Tempo total para salvar sessão: {elapsed_time:.2f}ms")
+                
         except SQLAlchemyError as ex:
-            logging.error(f"Erro ao salvar sessão: {ex}")
-            self.contador.session.rollback()
+            logging.error(f"Erro ao salvar sessão no DB: {ex}")
+            with self.contador.session_lock:
+                self.session.rollback()
 
     async def load_active_session(self):
         try:
             sessao_ativa = self.contador.session.query(Sessao).filter_by(ativa=True).first()
             if not sessao_ativa:
-                logging.info("[INFO] Nenhuma sessão ativa encontrada, iniciando sem sessão")
                 self.contador.setup_ui()
                 return False
 
@@ -186,19 +189,34 @@ class SessionManager:
 
             # Configurar o timeslot atual
             hoje = datetime.now().date()
-            if "current_timeslot" in self.contador.details:
+            
+            # Primeiro tenta carregar o último período das contagens
+            ultima_contagem = self.contador.session.query(Contagem)\
+                .filter_by(sessao=self.contador.sessao)\
+                .order_by(Contagem.periodo.desc())\
+                .first()
+                
+            if ultima_contagem and ultima_contagem.periodo:
+                # Se encontrou uma contagem com período, usa ela como base
+                horario = datetime.strptime(ultima_contagem.periodo, "%H:%M").time()
+                self.contador.current_timeslot = datetime.combine(hoje, horario) + timedelta(minutes=15)
+                self.contador.details["current_timeslot"] = self.contador.current_timeslot.strftime("%H:%M")
+            # Se não encontrou contagem com período, tenta usar o último período salvo nos detalhes
+            elif "current_timeslot" in self.contador.details:
                 horario = datetime.strptime(self.contador.details["current_timeslot"], "%H:%M").time()
-                logging.info(f"Carregando timeslot salvo: {horario}")
+                self.contador.current_timeslot = datetime.combine(hoje, horario)
+            # Se não tem período salvo, usa o horário inicial
             elif "HorarioInicio" in self.contador.details:
                 horario = datetime.strptime(self.contador.details["HorarioInicio"], "%H:%M").time()
-                logging.info(f"Usando horário inicial: {horario}")
+                self.contador.current_timeslot = datetime.combine(hoje, horario)
+            # Se não tem nada, usa o horário atual
             else:
                 horario = datetime.now().time()
+                self.contador.current_timeslot = datetime.combine(hoje, horario)
+                self.contador.details["current_timeslot"] = self.contador.current_timeslot.strftime("%H:%M")
                 logging.warning("Nenhum horário encontrado, usando horário atual")
-            
-            self.contador.current_timeslot = datetime.combine(hoje, horario)
-            self.contador.details["current_timeslot"] = self.contador.current_timeslot.strftime("%H:%M")
 
+            # Carregar último horário de salvamento
             if "last_save_time" in self.contador.details:
                 self.contador.last_save_time = datetime.strptime(self.contador.details["last_save_time"], "%H:%M:%S")
             else:
@@ -241,31 +259,52 @@ class SessionManager:
 
     def save_to_db(self, veiculo, movimento):
         try:
-            with self.contador.session_lock:
-                if self.session.in_transaction():
-                    self.session.commit()  
-
+            start_time = time.time()
+            
+            with self.session_lock:
                 contagem_periodo = self.contagens.get((veiculo, movimento), 0)
+                if contagem_periodo == 0:
+                    return
+
+                # Iniciar uma nova transação
+                self.session.begin()
                 
-                with self.session.begin():
+                try:
                     contagem = self.session.query(Contagem).filter_by(
                         sessao=self.contador.sessao,
                         veiculo=veiculo,
                         movimento=movimento
                     ).first()
 
+                    # Obter o período atual
+                    periodo_atual = self.contador.current_timeslot.strftime("%H:%M")
+
                     if contagem:
                         contagem.count = contagem_periodo
                         contagem.contagem_total += contagem_periodo
+                        contagem.periodo = periodo_atual
                     else:
                         nova_contagem = Contagem(
                             sessao=self.contador.sessao,
                             veiculo=veiculo,
                             movimento=movimento,
                             count=contagem_periodo,
-                            contagem_total=contagem_periodo
+                            contagem_total=contagem_periodo,
+                            periodo=periodo_atual
                         )
                         self.session.add(nova_contagem)
+                    
+                    # Commit da transação
+                    self.session.commit()
+                    
+                except Exception as ex:
+                    # Rollback em caso de erro
+                    self.session.rollback()
+                    raise
+                
+            end_time = time.time()
+            elapsed_time = (end_time - start_time) * 1000  # Convertendo para milissegundos
+            logging.info(f"Tempo para salvar contagem de {veiculo} - {movimento}: {elapsed_time:.2f}ms")
                 
         except SQLAlchemyError as ex:
             logging.error(f"Erro ao salvar contagem no DB: {ex}")
@@ -281,7 +320,6 @@ class SessionManager:
                 key = (contagem.veiculo, contagem.movimento)
                 
                 if contagem.count == 0:
-                    logging.info(f"[INFO] Contagem zerada detectada para {contagem.veiculo} - {contagem.movimento}, ignorando.")
                     continue
 
                 self.contagens[key] = contagem.count
@@ -293,7 +331,6 @@ class SessionManager:
                 else:
                     logging.warning(f"[WARNING] Label não encontrada para {key}. Aguardando criação.")
 
-            logging.info(f"✅ Contagens recuperadas: {self.contagens}")
         
         except Exception as ex:
             logging.error(f"[ERROR] Erro ao recuperar contagens: {ex}")
@@ -302,12 +339,8 @@ class SessionManager:
         try:
             with self.contador.session_lock:
                 for categoria_dict in categorias:
-                    # Agora estamos tratando um dicionário, não um objeto Categoria
-                    logging.debug(f"[DEBUG] Processando categoria: {categoria_dict}")
 
-                    # Extrair o movimento do dicionário
                     movimento = categoria_dict['movimento']
-                    logging.debug(f"[DEBUG] Tipo de movimento: {type(movimento)} - Valor: {movimento}")
 
                     # Verificar se já existe
                     existe = self.session.query(Categoria).filter_by(
@@ -317,7 +350,6 @@ class SessionManager:
                     ).first()
 
                     if not existe:
-                        # Criar nova categoria usando os dados do dicionário
                         nova_categoria = Categoria(
                             padrao=categoria_dict['pattern_type'],
                             veiculo=categoria_dict['veiculo'],
@@ -336,7 +368,6 @@ class SessionManager:
             self.session.rollback()
 
     def _carregar_binds_locais(self, padrao=None):
-        """Backup para carregar binds do banco local quando a API falha"""
         try:
             if not padrao:
                 return {}
@@ -348,7 +379,6 @@ class SessionManager:
                 if cat.veiculo not in binds_locais and cat.bind != "N/A":
                     binds_locais[cat.veiculo] = cat.bind
                 
-            logging.info(f"✅ Binds carregados do banco local: {len(binds_locais)} itens")
             return binds_locais
         except Exception as ex:
             logging.error(f"❌ Erro ao carregar binds locais: {ex}")
@@ -378,7 +408,6 @@ class SessionManager:
                 )
                 self.session.commit()
 
-                logging.debug(f"[DEBUG] Categorias carregadas do banco: {[(c.veiculo, c.movimento) for c in self.categorias]}")
 
                 # Atualizar as categorias no contador também
                 self.contador.categorias = self.categorias
@@ -396,7 +425,6 @@ class SessionManager:
 
     async def end_session(self):
         try:
-            logging.info("Iniciando processo de finalização da sessão...")
             
             if not self.contador.sessao:
                 raise ValueError("Não há sessão ativa para finalizar")
@@ -416,7 +444,6 @@ class SessionManager:
                 if sessao_concluida:
                     sessao_concluida.ativa = False 
                     self.session.commit()
-                    logging.info(f"Sessão {self.contador.sessao} marcada como inativa no banco local")
                 else:
                     logging.warning("Sessão não encontrada no banco local")
 
@@ -437,7 +464,6 @@ class SessionManager:
             snackbar.open = True
 
             # Reiniciar a aplicação
-            logging.info("Reiniciando aplicação após finalização da sessão...")
             self.contador.restart_app_after_end_session()
             
             # Voltar para a aba inicial
@@ -472,7 +498,6 @@ class SessionManager:
             try:
                 dialog.open = False
                 self.contador.page.update()
-                logging.info("Iniciando processo de finalização via diálogo...")
                 await self.end_session()
             except Exception as ex:
                 logging.error(f"Erro ao finalizar sessão via diálogo: {ex}")
@@ -490,7 +515,6 @@ class SessionManager:
         self.contador.page.update()
 
     def clear_current_session_data(self):
-        """Limpa os dados da sessão atual"""
         with self.session_lock:
             self.session.query(Contagem).filter_by(sessao=self.contador.sessao).delete()
             self.session.commit()
@@ -498,7 +522,6 @@ class SessionManager:
         self.contador.contagens.clear()
 
     def update_session_time(self, current_timeslot, last_save_time):
-        """Atualiza informações de tempo da sessão"""
         self.contador.last_save_time = last_save_time
         self.contador.details["last_save_time"] = last_save_time.strftime("%H:%M:%S")
         self.contador.current_timeslot = current_timeslot + timedelta(minutes=15)

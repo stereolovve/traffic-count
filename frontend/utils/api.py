@@ -3,129 +3,64 @@ import httpx
 import asyncio
 import logging
 import json
-import os
-from pathlib import Path
-from datetime import datetime, timedelta
-from .cache import cache
+from functools import lru_cache
+from typing import Optional, Dict, Any
+import aiohttp
+from datetime import datetime
+from .config import API_URL
 
+# Configurar logging apenas para erros críticos
 logging.getLogger(__name__).setLevel(logging.ERROR)
 
-class APICache:
-    def __init__(self, cache_dir=".cache"):
-        self.cache_dir = Path(cache_dir)
-        self.cache_dir.mkdir(exist_ok=True)
-        self.cache_duration = timedelta(hours=1)  # Cache válido por 1 hora
+# Cache apenas para token de autenticação
+@lru_cache(maxsize=1)
+def get_auth_token() -> Optional[str]:
+    try:
+        with open("tokens.json", "r") as f:
+            tokens = json.load(f)
+            return tokens.get("access")
+    except:
+        return None
 
-    def _get_cache_path(self, key):
-        return self.cache_dir / f"{key}.json"
-
-    def get(self, key):
-        cache_path = self._get_cache_path(key)
-        if not cache_path.exists():
-            return None
-
-        try:
-            with open(cache_path, 'r') as f:
-                data = json.load(f)
-                cache_time = datetime.fromisoformat(data['timestamp'])
-                if datetime.now() - cache_time > self.cache_duration:
-                    return None
-                return data['value']
-        except:
-            return None
-
-    def set(self, key, value):
-        cache_path = self._get_cache_path(key)
-        try:
-            with open(cache_path, 'w') as f:
-                json.dump({
-                    'timestamp': datetime.now().isoformat(),
-                    'value': value
-                }, f)
-        except:
-            pass
-
-# Instância global do cache
-cache = APICache()
-
-async def async_api_request(url: str, method: str = "GET", json_data=None, headers: dict = None, use_cache=False, cache_key=None) -> dict | list:
-    """
-    Faz uma requisição à API com retry automático e cache opcional
-    """
-    if use_cache and cache_key:
-        cached_data = cache.get(cache_key)
-        if cached_data:
-            return cached_data
-
-    if not isinstance(method, str):
-        logging.error(f"[ERROR] Parâmetro 'method' deve ser string, recebido: {method}, Tipo: {type(method)}")
-        method = "GET" 
-
-    method = method.upper()
-    headers = headers or {}
-
-    max_retries = 3
-    base_delay = 1  # segundos
-
-    for attempt in range(max_retries):
-        try:
-            async with httpx.AsyncClient() as client:
-                if method == "GET":
-                    response = await client.get(url, headers=headers)
-                elif method == "POST":
-                    response = await client.post(url, json=json_data, headers=headers)
-                elif method == "PUT":
-                    response = await client.put(url, json=json_data, headers=headers)
-                elif method == "DELETE":
-                    response = await client.delete(url, headers=headers)
-                else:
-                    logging.error(f"[API ERROR] Método HTTP '{method}' não suportado.")
-                    return {"error": f"Método '{method}' não suportado"}
-
-                response.raise_for_status()
-                json_response = response.json()
-
-                if use_cache and cache_key:
-                    cache.set(cache_key, json_response)
-
-                logging.debug(f"[API DEBUG] Resposta bem-sucedida para {url}: {json_response}")
-                return json_response
-
-        except httpx.HTTPStatusError as ex:
-            if attempt == max_retries - 1:
-                error_msg = f"HTTP Error {ex.response.status_code}"
-                logging.error(f"[API ERROR] {error_msg} - URL: {url}, Body: {ex.response.text}")
-                return [] if method == "GET" else {"error": error_msg, "details": ex.response.text}
-            delay = base_delay * (2 ** attempt)
-            logging.warning(f"Tentativa {attempt + 1} falhou. Tentando novamente em {delay} segundos...")
-            await asyncio.sleep(delay)
-
-        except httpx.RequestError as ex:
-            if attempt == max_retries - 1:
-                error_msg = "Falha na requisição à API"
-                logging.error(f"[API ERROR] {error_msg} - URL: {url}, Detalhes: {ex}")
-                return [] if method == "GET" else {"error": error_msg, "details": str(ex)}
-            delay = base_delay * (2 ** attempt)
-            logging.warning(f"Tentativa {attempt + 1} falhou. Tentando novamente em {delay} segundos...")
-            await asyncio.sleep(delay)
-
-        except ValueError as ex:
-            if attempt == max_retries - 1:
-                error_msg = "Resposta inválida da API (não é JSON)"
-                logging.error(f"[API ERROR] {error_msg} - URL: {url}, Detalhes: {ex}")
-                return [] if method == "GET" else {"error": error_msg, "details": str(ex)}
-            delay = base_delay * (2 ** attempt)
-            logging.warning(f"Tentativa {attempt + 1} falhou. Tentando novamente em {delay} segundos...")
-            await asyncio.sleep(delay)
-
-        except Exception as ex:
-            if attempt == max_retries - 1:
-                error_msg = "Erro inesperado na requisição"
-                logging.error(f"[API ERROR] {error_msg} - URL: {url}, Detalhes: {ex}")
-                return [] if method == "GET" else {"error": error_msg, "details": str(ex)}
-            delay = base_delay * (2 ** attempt)
-            logging.warning(f"Tentativa {attempt + 1} falhou. Tentando novamente em {delay} segundos...")
-            await asyncio.sleep(delay)
+async def async_api_request(method, endpoint, data=None, headers=None):
+    """Faz uma requisição assíncrona para a API."""
+    if headers is None:
+        headers = {}
+    
+    # Adiciona headers padrão
+    headers.update({
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+    })
+    
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.request(
+                method=method,
+                url=f"{API_URL}{endpoint}",
+                json=data,
+                headers=headers
+            ) as response:
+                # Trata diferentes códigos de status
+                if response.status in [200, 201]:  # Sucesso
+                    return await response.json()
+                elif response.status == 400:  # Bad Request
+                    error_text = await response.text()
+                    logging.error(f"Erro na requisição (400): {error_text}")
+                    return {"erro": f"Erro na requisição: {error_text}"}
+                elif response.status == 401:  # Unauthorized
+                    logging.error("Erro de autenticação (401)")
+                    return {"erro": "Erro de autenticação"}
+                elif response.status == 404:  # Not Found
+                    logging.error("Recurso não encontrado (404)")
+                    return {"erro": "Recurso não encontrado"}
+                else:  # Outros erros
+                    error_text = await response.text()
+                    logging.error(f"Erro na requisição ({response.status}): {error_text}")
+                    return {"erro": f"Erro na requisição: {error_text}"}
+    except Exception as e:
+        logging.error(f"Erro na requisição: {str(e)}")
+        return {"erro": str(e)}
 
 async def parallel_requests(urls, headers=None):
     """

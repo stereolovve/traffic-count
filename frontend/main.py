@@ -44,12 +44,9 @@ class MyApp:
         self.contador = None
 
     async def load_user_preferences(self):
-        if not self.tokens:
-            logging.warning("[AVISO] Nenhum token encontrado. Preferências não carregadas.")
-            return
         try:
             headers = {"Authorization": f"Bearer {self.tokens['access']}"}
-            response = await async_api_request(f"{API_URL}/padroes/user/preferences/", headers=headers)
+            response = await async_api_request("GET", "/padroes/user/preferences/", headers=headers)
             
             self.user_preferences = response
             logging.info("[OK] Preferências carregadas com sucesso!")
@@ -62,7 +59,7 @@ class MyApp:
             return False
         try:
             headers = {"Authorization": f"Bearer {self.tokens['access']}"}
-            response = await async_api_request(f"{API_URL}/padroes/user/info/", headers=headers)
+            response = await async_api_request("GET", "/padroes/user/info/", headers=headers)
 
             if "error" in response:
                 print(f"[ERRO] Token inválido! Erro: {response['error']}")

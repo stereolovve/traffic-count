@@ -131,46 +131,44 @@ class ApiManager:
             return None
 
     async def send_count_to_django(self):
-        """Envia as contagens para o Django"""
+        """Envia as contagens para o Django de forma otimizada"""
         try:
             if not self.contador.sessao:
-                logging.error("[ERRO] Nenhuma sessão ativa para enviar contagens")
                 return False
             
             # Preparar dados para envio
-            current_timeslot = self.contador.details.get("current_timeslot", "00:00")
-            logging.info(f"[INFO] Período atual: {current_timeslot}")
+            if not hasattr(self.contador, "current_timeslot"):
+                raise ValueError("current_timeslot não está definido")
+                
+            current_timeslot = self.contador.current_timeslot.strftime("%H:%M")
             
-            # Preparar payload no formato que o Django espera
+            # Preparar payload otimizado
             data = {
                 "sessao": self.contador.sessao,
                 "usuario": self.username,
                 "contagens": []
             }
             
-            # Verificar quais veículos e movimentos existem para este padrão
+            # Verificar movimentos
             movimentos = self.contador.details.get("Movimentos", [])
             if not movimentos:
-                movimentos = ["A"]  # Fallback para movimento padrão
+                movimentos = ["A"]
                 
-            # Obter todos os veículos possíveis para este padrão
+            # Obter todos os veículos possíveis
             all_veiculos = set()
-            for key in self.contador.binds.keys():
-                all_veiculos.add(key)
-                
-            # Se não tivermos veículos nos binds, verificar nas categorias
-            if not all_veiculos and hasattr(self.contador, 'session'):
-                with self.contador.session_lock:
-                    categorias = self.contador.session.query(Categoria).all()
-                    for cat in categorias:
-                        all_veiculos.add(cat.veiculo)
+            # Primeiro verifica nos binds
+            all_veiculos.update(self.contador.binds.keys())
             
-            # Enviar todas as combinações de veículo e movimento
+            # Depois verifica nas contagens existentes
+            for key in self.contador.contagens.keys():
+                all_veiculos.add(key[0])  # key[0] é o veículo
+            
+            # Preparar contagens para todos os veículos e movimentos
             for veiculo in all_veiculos:
                 for movimento in movimentos:
                     key = (veiculo, movimento)
                     count = self.contador.contagens.get(key, 0)
-                    # Sempre enviar, mesmo com count=0
+                    # Envia todas as contagens, mesmo as zeradas
                     data["contagens"].append({
                         "veiculo": veiculo,
                         "movimento": movimento,
@@ -178,33 +176,22 @@ class ApiManager:
                         "periodo": current_timeslot
                     })
 
-            if not data["contagens"]:
-                logging.info("[INFO] Nenhuma contagem para enviar")
-                return True
+            # Fazer a requisição
+            response = await async_api_request(
+                "POST",
+                "/contagens/get/",
+                data=data,
+                headers={"Authorization": f"Bearer {self.contador.tokens['access']}"}
+            )
 
-            logging.info(f"[INFO] Enviando {len(data['contagens'])} contagens para o Django no período {current_timeslot}")
-            logging.info(f"[DEBUG] Payload: {json.dumps(data, indent=2)}")
-
-            async with httpx.AsyncClient() as client:
-                response = await client.post(
-                    f"{API_URL}/contagens/get/",  # URL correta conforme urls.py
-                    json=data,
-                    headers=self._get_auth_headers()
-                )
-
-            if response.status_code in [200, 201]:
-                try:
-                    response_data = response.json()
-                    logging.info(f"[OK] Contagens enviadas com sucesso: {response_data.get('mensagem', 'Sem mensagem')}")
-                except:
-                    logging.info("[OK] Contagens enviadas com sucesso")
-                return True
-            else:
-                logging.error(f"[ERRO] Falha ao enviar contagens para o Django: {response.status_code} - {response.text}")
+            if "erro" in response:
+                logging.error(f"Erro ao enviar contagens para o Django: {response['erro']}")
                 return False
 
+            return True
+
         except Exception as ex:
-            logging.error(f"[ERRO] Exceção ao enviar contagens para o Django: {ex}")
+            logging.error(f"Erro ao enviar contagens para o Django: {ex}")
             return False
 
     async def load_categories(self, pattern_type):
@@ -396,3 +383,51 @@ class ApiManager:
         except Exception as ex:
             logging.error(f"[ERRO] Exceção ao finalizar sessão no Django: {ex}")
             return False
+
+    async def load_codigos(self):
+        """Carrega os códigos do Django"""
+        try:
+            response = await async_api_request(
+                url=f"{API_URL}/trabalhos/api/codigos/",
+                method="GET",
+                headers=self._get_auth_headers()
+            )
+            
+            if response:
+                return [item["codigo"] for item in response]
+            return []
+        except Exception as ex:
+            logging.error(f"[ERRO] Falha ao carregar códigos: {ex}")
+            return []
+
+    async def load_padroes(self):
+        """Carrega os tipos de padrões do Django"""
+        try:
+            response = await async_api_request(
+                url=f"{API_URL}/padroes/tipos-padroes/",
+                method="GET",
+                headers=self._get_auth_headers()
+            )
+            
+            if response:
+                return [item["nome"] for item in response]
+            return []
+        except Exception as ex:
+            logging.error(f"[ERRO] Falha ao carregar tipos de padrões: {ex}")
+            return []
+
+    async def load_pontos(self, codigo):
+        """Carrega os pontos do Django para um código específico"""
+        try:
+            response = await async_api_request(
+                url=f"{API_URL}/trabalhos/api/pontos/{codigo}/",
+                method="GET",
+                headers=self._get_auth_headers()
+            )
+            
+            if response:
+                return [item["nome"] for item in response]
+            return []
+        except Exception as ex:
+            logging.error(f"[ERRO] Falha ao carregar pontos: {ex}")
+            return []

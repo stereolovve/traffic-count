@@ -353,10 +353,13 @@ class ContadorPerplan(ft.Column):
     def _perform_save(self, now):
         async def salvar():
             try:
-
                 # 1. Configurar timeslot
                 if not hasattr(self, "current_timeslot") or self.current_timeslot is None:
-                    if "HorarioInicio" in self.details:
+                    if "current_timeslot" in self.details:
+                        hoje = datetime.now().date()
+                        horario = datetime.strptime(self.details["current_timeslot"], "%H:%M").time()
+                        self.current_timeslot = datetime.combine(hoje, horario)
+                    elif "HorarioInicio" in self.details:
                         hoje = datetime.now().date()
                         horario = datetime.strptime(self.details["HorarioInicio"], "%H:%M").time()
                         self.current_timeslot = datetime.combine(hoje, horario)
@@ -376,8 +379,12 @@ class ContadorPerplan(ft.Column):
                 # 4. Atualizar estado da sessão
                 self.last_save_time = now
                 self.details["last_save_time"] = self.last_save_time.strftime("%H:%M:%S")
+                
+                # Atualizar o período para o próximo
                 self.current_timeslot += timedelta(minutes=15)
                 self.details["current_timeslot"] = self.current_timeslot.strftime("%H:%M")
+                
+                # Salvar a sessão com os novos dados
                 self.save_session()
 
                 # 5. Atualizar UI

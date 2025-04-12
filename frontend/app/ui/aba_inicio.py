@@ -58,10 +58,12 @@ class AbaInicio(ft.Column):
 
         self.ponto_dropdown = ft.Dropdown(
             label="Ponto",
-            options=[],
+            options=[ft.dropdown.Option(key="placeholder", text="Selecione o código primeiro...")],
+            value="placeholder",
             on_change=self.on_ponto_selected,
             expand=True,
-            border_radius=8
+            border_radius=8,
+            disabled=True
         )
         self.inputs_container.content.controls.append(self.ponto_dropdown)
 
@@ -231,11 +233,21 @@ class AbaInicio(ft.Column):
         try:
             headers = {"Authorization": f"Bearer {self.contador.tokens['access']}"}
             response = await async_api_request(
-                f"{API_URL}/trabalhos/api/codigos/", 
-                headers=headers,
-                use_cache=True,
-                cache_key="codigos"
+                "GET",
+                "/trabalhos/api/codigos/", 
+                headers=headers
             )
+            
+            # Converter a resposta de texto para JSON se necessário
+            if isinstance(response, str):
+                try:
+                    response = json.loads(response)
+                except json.JSONDecodeError:
+                    logging.error("Resposta da API não é um JSON válido")
+                    self.codigo_dropdown.options = [ft.dropdown.Option("Erro na API")]
+                    if self.page:
+                        self.page.update()
+                    return
             
             self.codigo_dropdown.options = [
                 ft.dropdown.Option(
@@ -256,80 +268,118 @@ class AbaInicio(ft.Column):
         codigo_id = e.control.value
         if codigo_id:
             try:
+                # Atualizar mensagem do dropdown de ponto
+                self.ponto_dropdown.options = [ft.dropdown.Option(key="loading", text="Carregando pontos...")]
+                self.ponto_dropdown.value = "loading"
+                self.ponto_dropdown.disabled = True
+                self.ponto_dropdown.update()
+
                 headers = {"Authorization": f"Bearer {self.contador.tokens['access']}"}
-                url = f"{API_URL}/trabalhos/api/codigos/{codigo_id}/"
-                logging.info(f"Carregando detalhes do código {codigo_id} da URL: {url}")
-                
-                response = await async_api_request(url, headers=headers)
-                logging.info(f"Resposta da API para código: {response}")
+                response = await async_api_request(
+                    "GET",
+                    f"/trabalhos/api/codigos/{codigo_id}/",
+                    headers=headers
+                )
                 
                 if not response:
                     logging.error(f"Código {codigo_id} não encontrado")
+                    self.ponto_dropdown.options = [ft.dropdown.Option(key="no_points", text="Nenhum ponto encontrado")]
+                    self.ponto_dropdown.value = "no_points"
+                    self.ponto_dropdown.update()
                     return
                 
                 # Carregar pontos do código
                 await self.load_pontos(codigo_id)
             except Exception as ex:
                 logging.error(f"Erro ao carregar detalhes do código: {ex}")
-                self.ponto_dropdown.options = []
-                self.ponto_dropdown.value = None
-                self.page.update()
+                self.ponto_dropdown.options = [ft.dropdown.Option(key="error", text="Erro ao carregar pontos")]
+                self.ponto_dropdown.value = "error"
+                self.ponto_dropdown.disabled = True
+                self.ponto_dropdown.update()
         else:
-            self.ponto_dropdown.options = []
-            self.ponto_dropdown.value = None
-            self.page.update()
+            self.ponto_dropdown.options = [ft.dropdown.Option(key="placeholder", text="Selecione o código primeiro...")]
+            self.ponto_dropdown.value = "placeholder"
+            self.ponto_dropdown.disabled = True
+            self.ponto_dropdown.update()
 
     async def load_pontos(self, codigo_id):
         try:
             headers = {"Authorization": f"Bearer {self.contador.tokens['access']}"}
-            url = f"{API_URL}/trabalhos/api/pontos/?codigo={codigo_id}"
-            logging.info(f"Carregando pontos para código {codigo_id} da URL: {url}")
+            response = await async_api_request(
+                "GET",
+                f"/trabalhos/api/pontos/?codigo={codigo_id}",
+                headers=headers
+            )
             
-            response = await async_api_request(url, headers=headers)
-            logging.info(f"Resposta da API para pontos: {response}")
+            # Converter a resposta de texto para JSON se necessário
+            if isinstance(response, str):
+                try:
+                    response = json.loads(response)
+                except json.JSONDecodeError:
+                    logging.error("Resposta da API não é um JSON válido")
+                    self.ponto_dropdown.options = [ft.dropdown.Option(key="error", text="Erro ao carregar pontos")]
+                    self.ponto_dropdown.value = "error"
+                    self.ponto_dropdown.disabled = True
+                    if self.page:
+                        self.page.update()
+                    return
             
             if not response:
-                logging.warning(f"Nenhum ponto encontrado para o código {codigo_id}")
-                self.ponto_dropdown.options = []
-                self.ponto_dropdown.value = None
+                self.ponto_dropdown.options = [ft.dropdown.Option(key="no_points", text="Nenhum ponto encontrado")]
+                self.ponto_dropdown.value = "no_points"
+                self.ponto_dropdown.disabled = True
                 self.page.update()
                 return
             
             self.ponto_dropdown.options = [
                 ft.dropdown.Option(
                     key=str(ponto['id']),
-                    text=f"{ponto['nome']} - {ponto['localizacao']}"
+                    text=ponto['nome']  # Agora só o nome, sem localização
                 ) for ponto in response
             ]
             
             self.ponto_dropdown.value = None
+            self.ponto_dropdown.disabled = False
             
             if self.page:
                 self.page.update()
-                logging.info(f"Pontos carregados com sucesso: {len(response)} pontos encontrados")
         except Exception as ex:
             logging.error(f"Erro ao carregar pontos: {ex}")
-            self.ponto_dropdown.options = [ft.dropdown.Option("Erro na API")]
+            self.ponto_dropdown.options = [ft.dropdown.Option(key="error", text="Erro ao carregar pontos")]
+            self.ponto_dropdown.value = "error"
+            self.ponto_dropdown.disabled = True
             if self.page:
                 self.page.update()
 
     async def on_ponto_selected(self, e):
         ponto_id = e.control.value
-        if ponto_id:
-            try:
-                headers = {"Authorization": f"Bearer {self.contador.tokens['access']}"}
-                response = await async_api_request(
-                    f"{API_URL}/trabalhos/api/pontos/{ponto_id}/",
-                    headers=headers
-                )
-                
-                self.codigo_ponto_input.value = response['codigo_info']['codigo']
-                self.nome_ponto_input.value = response['nome']
-                
-                if self.page:
-                    self.page.update()
-            except Exception as ex:
-                logging.error(f"Erro ao carregar detalhes do ponto: {ex}")
+        # Ignorar requisições para valores de placeholder/loading/error
+        if ponto_id in ["placeholder", "loading", "error", "no_points"]:
+            return
+            
+        try:
+            headers = {"Authorization": f"Bearer {self.contador.tokens['access']}"}
+            response = await async_api_request(
+                "GET",
+                f"/trabalhos/api/pontos/{ponto_id}/",
+                headers=headers
+            )
+            
+            # Converter a resposta de texto para JSON se necessário
+            if isinstance(response, str):
+                try:
+                    response = json.loads(response)
+                except json.JSONDecodeError:
+                    logging.error("Resposta da API não é um JSON válido")
+                    return
+            
+            self.codigo_ponto_input.value = response['codigo_info']['codigo']
+            self.nome_ponto_input.value = response['nome']  # Agora só o nome, sem localização
+            
+            if self.page:
+                self.page.update()
+        except Exception as ex:
+            logging.error(f"Erro ao carregar detalhes do ponto: {ex}")
 
     async def load_padroes(self):
         try:
@@ -338,13 +388,10 @@ class AbaInicio(ft.Column):
             
             headers = {"Authorization": f"Bearer {self.contador.tokens['access']}"} if self.contador.tokens and 'access' in self.contador.tokens else {}
 
-            url = f"{API_URL}/padroes/tipos-de-padrao/"
             response = await async_api_request(
-                url, 
-                method="GET", 
-                headers=headers,
-                use_cache=True,
-                cache_key="padroes"
+                "GET",
+                "/padroes/tipos-de-padrao/", 
+                headers=headers
             )
             
             tipos = response
@@ -434,24 +481,50 @@ class AbaInicio(ft.Column):
                 self.page.update()
 
     async def iniciar_criacao_sessao(self, e):
-            if not self.validar_campos():
-                return
+        if not self.validar_campos():
+            return
 
-        # Criar objeto de sessão com os dados dos dropdowns
+        # Desabilitar botão e mostrar loading
+        e.control.disabled = True
+        e.control.text = "Criando sessão..."
+        e.control.update()
+        
+        banner = self.contador.show_loading("Criando sessão e carregando padrões...")
+
+        try:
+            # Criar objeto de sessão com os dados dos dropdowns
             session_data = {
                 "pesquisador": self.contador.username,
-            "codigo": self.codigo_ponto_input.value,
-            "ponto": self.nome_ponto_input.value,
+                "codigo": self.codigo_ponto_input.value,
+                "ponto": self.nome_ponto_input.value,
                 "horario_inicio": self.selected_time,
-            "data_ponto": self.data_ponto_input.value,
-            "padrao": self.padrao_dropdown.value,
+                "data_ponto": self.data_ponto_input.value,
+                "padrao": self.padrao_dropdown.value,
                 "movimentos": [
-                movimento.controls[0].value 
-                for movimento in self.movimentos_container.controls
-                if movimento.controls[0].value
-            ]
+                    movimento.controls[0].value 
+                    for movimento in self.movimentos_container.controls
+                    if movimento.controls[0].value
+                ]
             }
 
             await self.contador.create_session(session_data)
-        # Após criar a sessão, verificar novamente o estado
+            # Após criar a sessão, verificar novamente o estado
             await self.check_active_session()
+
+        except Exception as ex:
+            logging.error(f"Erro ao criar sessão: {ex}")
+            self.contador.page.show_snack_bar(
+                ft.SnackBar(
+                    content=ft.Text(f"Erro ao criar sessão: {str(ex)}"),
+                    bgcolor="red"
+                )
+            )
+        finally:
+            # Restaurar estado do botão
+            e.control.disabled = False
+            e.control.text = "Criar Sessão"
+            e.control.update()
+            
+            # Remover banner de loading
+            if banner:
+                self.contador.hide_loading(banner)

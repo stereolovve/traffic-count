@@ -218,123 +218,83 @@ def detalhes_sessao(request, sessao_id):
             "erro": f"Erro ao carregar os dados da sessão: {str(e)}"
         })
 
+@csrf_exempt
 def get_countings(request):
     if request.method == "POST":
         try:
+            # Remover descompressão
             data = json.loads(request.body)
-            logging.info(f"[DEBUG] Dados recebidos: {json.dumps(data, indent=2)}")
-
             sessao_nome = data.get("sessao")
             username = data.get("usuario")
             contagens = data.get("contagens", [])
 
             if not sessao_nome or not username:
-                logging.error(f"[ERRO] Dados obrigatórios ausentes: sessao={sessao_nome}, usuario={username}")
                 return JsonResponse({"erro": "Dados obrigatórios ausentes"}, status=400)
 
-            usuario = User.objects.filter(username=username).first()
-            if not usuario:
-                logging.error(f"[ERRO] Usuário não encontrado: {username}")
-                return JsonResponse({"erro": "Usuário não encontrado"}, status=404)
-
-            # Recuperar sessão
-            sessao = Session.objects.filter(sessao=sessao_nome).first()
+            # Otimização: Buscar sessão e usuário em uma única query
+            sessao = Session.objects.select_related('criado_por').filter(sessao=sessao_nome).first()
             if not sessao:
-                logging.error(f"[ERRO] Sessão não encontrada: {sessao_nome}")
                 return JsonResponse({"erro": "Sessão não encontrada"}, status=404)
-            
-            # Verificar se temos pelo menos um conjunto de contagens para um período
-            periodos_set = set()
-            for item in contagens:
-                if 'periodo' in item and item['periodo']:
-                    periodos_set.add(item['periodo'])
-            
+
+            # Verificar períodos
+            periodos_set = {item['periodo'] for item in contagens if 'periodo' in item and item['periodo']}
             if not periodos_set:
-                logging.error("[ERRO] Nenhum período válido encontrado nas contagens")
                 return JsonResponse({"erro": "Nenhum período válido encontrado"}, status=400)
-            
-            # Para cada período, garantir que processamos todas as contagens
-            # incluindo contagens com valor zero
-            veiculos_set = set()
-            movimentos_set = set()
-            
-            # Extrair todos os veículos e movimentos existentes
-            for item in contagens:
-                if 'veiculo' in item and item['veiculo']:
-                    veiculos_set.add(item['veiculo'])
-                if 'movimento' in item and item['movimento']:
-                    movimentos_set.add(item['movimento'])
-            
-            # Obtém os veículos dos padrões para garantir a ordem correta
-            # Obter os tipos de padrões disponíveis no banco de dados
-            padrao_types = list(PadraoContagem.objects.values_list('pattern_type', flat=True).distinct())
-            
-            # Obter o tipo de padrão usado na sessão ou usar o primeiro disponível como fallback
-            pattern_type = sessao.padrao if sessao.padrao else (padrao_types[0] if padrao_types else None)
-            
-            padroes_ordenados = PadraoContagem.objects.filter(
-                pattern_type=pattern_type
-            ).order_by('order')
-            
-            # Se não encontrar padrões para o tipo específico, tenta com o primeiro disponível
-            if not padroes_ordenados.exists() and padrao_types:
-                pattern_type = padrao_types[0]
-                padroes_ordenados = PadraoContagem.objects.filter(
-                    pattern_type=pattern_type
-                ).order_by('order')
-            
-            # Adiciona os veículos que podem não ter sido enviados
-            for padrao in padroes_ordenados:
-                veiculos_set.add(padrao.veiculo)
-            
-            # Usa movimentos da sessão caso não tenham sido enviados
+
+            # Extrair veículos e movimentos de forma otimizada
+            veiculos_set = {item['veiculo'] for item in contagens if 'veiculo' in item and item['veiculo']}
+            movimentos_set = {item['movimento'] for item in contagens if 'movimento' in item and item['movimento']}
+
+            # Usar movimentos da sessão se necessário
             if sessao.movimentos and not movimentos_set:
                 movimentos_set.update(sessao.movimentos)
+
+            # Otimização: Buscar padrões em uma única query
+            pattern_type = sessao.padrao
+            padroes_ordenados = PadraoContagem.objects.filter(pattern_type=pattern_type).order_by('order')
             
-            # Para cada período, processa todas as combinações de veículo/movimento
-            updated_count = 0
-            created_count = 0
-            
+            # Adicionar veículos dos padrões
+            veiculos_set.update(padrao.veiculo for padrao in padroes_ordenados)
+
+            # Otimização: Usar bulk_create para inserções em lote
+            counting_objects = []
             for periodo in periodos_set:
-                # Primeiro, remove contagens existentes para este período
-                Counting.objects.filter(
-                    sessao=sessao, 
-                    periodo=periodo
-                ).delete()
+                # Remover contagens existentes para este período
+                Counting.objects.filter(sessao=sessao, periodo=periodo).delete()
                 
-                # Para cada combinação, cria ou atualiza a contagem
+                # Preparar objetos para bulk_create
                 for veiculo in veiculos_set:
                     for movimento in movimentos_set:
-                        # Procura esta combinação nas contagens enviadas
-                        contagem_valor = 0
-                        for item in contagens:
-                            if (item.get('veiculo') == veiculo and 
-                                item.get('movimento') == movimento and 
-                                item.get('periodo') == periodo):
-                                contagem_valor = item.get('count', 0)
-                                break
+                        # Encontrar contagem correspondente
+                        contagem_valor = next(
+                            (item.get('count', 0) for item in contagens 
+                             if item.get('veiculo') == veiculo 
+                             and item.get('movimento') == movimento 
+                             and item.get('periodo') == periodo),
+                            0
+                        )
                         
-                        # Cria ou atualiza a contagem, mesmo com valor zero
-                        Counting.objects.create(
+                        counting_objects.append(Counting(
                             sessao=sessao,
                             veiculo=veiculo,
                             movimento=movimento,
                             contagem=contagem_valor,
                             periodo=periodo
-                        )
-                        created_count += 1
+                        ))
 
-            mensagem = f"Contagens processadas com sucesso! {created_count} contagens criadas para {len(periodos_set)} períodos."
-            logging.info(f"[OK] {mensagem}")
-            return JsonResponse({"mensagem": mensagem}, status=201)
+            # Inserir todos os objetos de uma vez
+            Counting.objects.bulk_create(counting_objects)
+
+            # Remover compressão da resposta
+            response_data = {
+                "mensagem": f"Contagens processadas com sucesso! {len(counting_objects)} contagens criadas."
+            }
+            
+            return JsonResponse(response_data, status=201)
 
         except json.JSONDecodeError:
-            logging.error("[ERRO] JSON inválido recebido!")
             return JsonResponse({"erro": "JSON inválido"}, status=400)
         except Exception as e:
-            logging.error(f"[ERRO] Erro ao processar contagens: {str(e)}")
-            import traceback
-            logging.error(traceback.format_exc())
             return JsonResponse({"erro": f"Erro ao processar contagens: {str(e)}"}, status=500)
 
     return JsonResponse({"erro": "Método não permitido"}, status=405)

@@ -19,22 +19,38 @@ class ExcelManager:
             self._ensure_directories()
             arquivo_sessao = self._get_excel_path()
             
-            # Verificar se o arquivo existe
+            # Verificar se o arquivo existe e criar se necessário
             if not os.path.exists(arquivo_sessao):
-                logging.error(f"Arquivo Excel não encontrado: {arquivo_sessao}")
-                self.initialize_excel_file()  # Tentar criar o arquivo se não existir
+                logging.info(f"Arquivo Excel não encontrado. Criando novo: {arquivo_sessao}")
+                if not self.initialize_excel_file():
+                    raise Exception("Falha ao criar arquivo Excel")
+            
+            # Calcular período fim
+            periodo_fim = current_timeslot + timedelta(minutes=15)
+            periodo_str = current_timeslot.strftime("%H:%M")
+            periodo_fim_str = periodo_fim.strftime("%H:%M")
             
             # Salvar no Excel
             with pd.ExcelWriter(arquivo_sessao, engine='openpyxl', mode='a', if_sheet_exists='overlay') as writer:
                 for movimento in self.contador.details["Movimentos"]:
-                    df_existente = pd.read_excel(arquivo_sessao, sheet_name=movimento)
+                    try:
+                        df_existente = pd.read_excel(arquivo_sessao, sheet_name=movimento)
+                    except Exception as ex:
+                        logging.error(f"Erro ao ler planilha {movimento}: {ex}")
+                        continue
+
+                    # Verificar se o período já existe
+                    if "das" in df_existente.columns and any(df_existente["das"] == periodo_str):
+                        logging.warning(f"Período {periodo_str} já existe no Excel. Pulando...")
+                        continue
 
                     nova_linha = {
-                        "das": current_timeslot.strftime("%H:%M"),
-                        "às": (current_timeslot + timedelta(minutes=15)).strftime("%H:%M"),
+                        "das": periodo_str,
+                        "às": periodo_fim_str,
                         "observacao": self.contador.period_observacao
                     }
 
+                    # Adicionar contagens para cada veículo
                     for categoria in [c for c in self.contador.categorias if c.movimento == movimento]:
                         veiculo = categoria.veiculo
                         key = (veiculo, movimento)
@@ -44,7 +60,7 @@ class ExcelManager:
                     df_resultante = pd.concat([df_existente, df_novo], ignore_index=True)
                     df_resultante.to_excel(writer, sheet_name=movimento, index=False)
 
-            logging.info(f"Contagens salvas no Excel para o período: {current_timeslot.strftime('%H:%M')}")
+            logging.info(f"Contagens salvas no Excel para o período: {periodo_str}")
             return True
 
         except Exception as ex:
@@ -84,8 +100,15 @@ class ExcelManager:
             else:
                 wb.remove(wb.active)
                 for movimento in self.contador.details["Movimentos"]:
-                    wb.create_sheet(title=movimento)
-                    logging.info(f"Planilha criada para movimento: {movimento}")
+                    ws = wb.create_sheet(title=movimento)
+                    # Adicionar cabeçalhos padrão
+                    headers = ["das", "às", "observacao"]
+                    # Adicionar veículos como colunas
+                    for categoria in self.contador.categorias:
+                        if categoria.movimento == movimento and categoria.veiculo not in headers:
+                            headers.append(categoria.veiculo)
+                    ws.append(headers)
+                    logging.info(f"Planilha criada para movimento: {movimento} com colunas: {headers}")
 
             # 6. Adicionar planilha de detalhes
             ws_details = wb.create_sheet(title="Detalhes")

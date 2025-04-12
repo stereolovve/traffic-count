@@ -52,6 +52,7 @@ class Contagem(Base):
     movimento = Column(String, nullable=False)
     count = Column(Integer, default=0)
     contagem_total = Column(Integer, default=0)
+    periodo = Column(String)  # Formato HH:MM
 
     sessao_obj = relationship("Sessao", back_populates="contagens")
 
