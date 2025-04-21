@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Excluir Croqui {{ croqui.codigo }} - Traffic Count{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="mb-6">
+        <a href="{% url 'croquis_list' %}" class="text-blue-600 hover:text-blue-800 inline-flex items-center">
+            <i class="fas fa-arrow-left mr-2"></i> Voltar para lista
+        </a>
+    </div>
+
+    <div class="max-w-lg mx-auto bg-white shadow-md rounded-lg overflow-hidden">
+        <div class="p-6">
+            <div class="text-center">
+                <i class="fas fa-exclamation-triangle text-yellow-500 text-5xl mb-4"></i>
+                <h1 class="text-2xl font-bold text-gray-800 mb-2">Confirmar Exclusão</h1>
+                <p class="text-gray-600 mb-6">
+                    Tem certeza que deseja excluir o croqui <span class="font-semibold">{{ croqui.codigo }}</span>?
+                    Esta ação não pode ser desfeita.
+                </p>
+            </div>
+
+            <div class="bg-gray-50 p-4 rounded-md mb-6">
+                <h2 class="text-sm font-medium text-gray-500 mb-2">Detalhes do Croqui</h2>
+                <dl class="grid grid-cols-1 gap-2">
+                    <div class="flex justify-between">
+                        <dt class="text-sm text-gray-500">Código:</dt>
+                        <dd class="text-sm font-medium text-gray-900">{{ croqui.codigo }}</dd>
+                    </div>
+                    <div class="flex justify-between">
+                        <dt class="text-sm text-gray-500">Lote:</dt>
+                        <dd class="text-sm font-medium text-gray-900">{{ croqui.lote }}</dd>
+                    </div>
+                    <div class="flex justify-between">
+                        <dt class="text-sm text-gray-500">Ponto:</dt>
+                        <dd class="text-sm font-medium text-gray-900">{{ croqui.ponto }}</dd>
+                    </div>
+                    <div class="flex justify-between">
+                        <dt class="text-sm text-gray-500">Data:</dt>
+                        <dd class="text-sm font-medium text-gray-900">{{ croqui.data_croqui|date:"d/m/Y" }}</dd>
+                    </div>
+                    <div class="flex justify-between">
+                        <dt class="text-sm text-gray-500">Movimento:</dt>
+                        <dd class="text-sm font-medium text-gray-900">{{ croqui.movimento }}</dd>
+                    </div>
+                    <div class="flex justify-between">
+                        <dt class="text-sm text-gray-500">Padrão:</dt>
+                        <dd class="text-sm font-medium text-gray-900">{{ croqui.padrao }}</dd>
+                    </div>
+                    <div class="flex justify-between">
+                        <dt class="text-sm text-gray-500">Criado por:</dt>
+                        <dd class="text-sm font-medium text-gray-900">{{ croqui.created_by.username }}</dd>
+                    </div>
+                    <div class="flex justify-between">
+                        <dt class="text-sm text-gray-500">Criado em:</dt>
+                        <dd class="text-sm font-medium text-gray-900">{{ croqui.created_at|date:"d/m/Y H:i" }}</dd>
+                    </div>
+                    {% if croqui.aprovado_por %}
+                    <div class="flex justify-between">
+                        <dt class="text-sm text-gray-500">Aprovado por:</dt>
+                        <dd class="text-sm font-medium text-gray-900">{{ croqui.aprovado_por.username }}</dd>
+                    </div>
+                    <div class="flex justify-between">
+                        <dt class="text-sm text-gray-500">Aprovado em:</dt>
+                        <dd class="text-sm font-medium text-gray-900">{{ croqui.aprovado_em|date:"d/m/Y H:i" }}</dd>
+                    </div>
+                    {% endif %}
+                </dl>
+            </div>
+
+            {% if croqui.imagem %}
+            <div class="mb-6">
+                <h2 class="text-sm font-medium text-gray-500 mb-2">Imagem do Croqui</h2>
+                <img src="{{ croqui.imagem.url }}" alt="Croqui" class="w-full h-auto rounded-lg shadow-md cursor-pointer" 
+                     onclick="window.open('{{ croqui.imagem.url }}', '_blank')">
+            </div>
+            {% endif %}
+
+            <form method="post" class="flex justify-end space-x-3">
+                {% csrf_token %}
+                <a href="{% url 'croquis_list' %}" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-md inline-flex items-center">
+                    Cancelar
+                </a>
+                <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-md inline-flex items-center">
+                    <i class="fas fa-trash mr-2"></i> Confirmar Exclusão
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %} 

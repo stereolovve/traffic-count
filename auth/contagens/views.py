@@ -461,7 +461,7 @@ def exportar_csv(request, sessao_id):
             # Garantir que todos os períodos existam, mesmo sem contagens
             periodos_registrados = set(periodos.keys())
             if not periodos_registrados:
-                # Se não houver períodos, crie pelo menos um período padrão
+                # Se não houver períodos, crie pelo menos um período baseado no horário inicial
                 horario_inicio = datetime.strptime(sessao.horario_inicio, "%H:%M") if sessao.horario_inicio else datetime.strptime("00:00", "%H:%M")
                 periodo = horario_inicio.strftime("%H:%M")
                 periodos[periodo] = defaultdict(int)
@@ -520,6 +520,7 @@ def exportar_csv(request, sessao_id):
     except Exception as e:
         return HttpResponse(f'Erro ao exportar sessão: {str(e)}', status=500)
 
+@csrf_exempt
 def registrar_sessao(request):
     if request.method == "POST":
         try:

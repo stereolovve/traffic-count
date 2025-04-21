@@ -18,6 +18,10 @@ from django.contrib.auth import authenticate
 from django.http import JsonResponse
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
+from django.shortcuts import render, redirect
+from django.contrib.auth import login
+from .forms import CustomUserCreationForm
+from django.contrib import messages
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -66,49 +70,43 @@ class RegisterView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        print(f"🔍 Recebendo payload de registro: {request.data}")  # ✅ Debug
-
-        username = request.data.get("username")
-        password = request.data.get("password")
-        name = request.data.get("name")
-        last_name = request.data.get("last_name")
-        email = request.data.get("email")
-        setor = request.data.get("setor")
-
-        if not username or not password or not name or not last_name or not email or not setor:
-            return Response({"detail": "Todos os campos são obrigatórios!"}, status=status.HTTP_400_BAD_REQUEST)
-
-        if User.objects.filter(username=username).exists():
-            return Response({"detail": "Usuário já existe!"}, status=status.HTTP_400_BAD_REQUEST)
-
-        if User.objects.filter(email=email).exists():
-            return Response({"detail": "E-mail já cadastrado!"}, status=status.HTTP_400_BAD_REQUEST)
-
         try:
+            data = request.data
+            username = data.get('username')
+            password = data.get('password1')  
+            name = data.get('name')
+            last_name = data.get('last_name')
+            email = data.get('email')
+            setor = data.get('setor')
+
+            # Validações
+            if not all([username, password, name, last_name, email, setor]):
+                return Response({"detail": "Todos os campos são obrigatórios!"}, status=status.HTTP_400_BAD_REQUEST)
+
+            if data.get('password1') != data.get('password2'):
+                return Response({"detail": "As senhas não correspondem!"}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Criar usuário
             user = User.objects.create_user(
                 username=username,
                 password=password,
+                email=email,
                 first_name=name,
                 last_name=last_name,
-                email=email
+                setor=setor
             )
-            user.setor = setor
-            user.save()
 
-            print(f"✅ Usuário criado com sucesso: {user}")  # ✅ Debug
-            return Response(
-                {
-                    "id": user.id,
-                    "username": user.username,
-                    "email": user.email,
-                    "setor": user.setor,
-                    "detail": "Usuário registrado com sucesso!"
-                }, 
-                status=status.HTTP_201_CREATED
-            )
+            return Response({
+                "id": user.id,
+                "username": user.username,
+                "email": user.email,
+                "name": user.first_name,
+                "last_name": user.last_name,
+                "setor": user.setor
+            }, status=status.HTTP_201_CREATED)
 
         except Exception as e:
-            print(f"❌ ERRO AO CRIAR USUÁRIO: {e}")  # ✅ Log do erro
+            print(f"❌ ERRO AO CRIAR USUÁRIO: {e}")
             return Response({"detail": f"Erro ao registrar usuário: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
@@ -145,3 +143,16 @@ class RefreshTokenView(APIView):
             return Response({"access": access_token})
         except Exception as e:
             return Response({"detail": "Token inválido ou expirado!"}, status=401)
+
+
+def register(request):
+    if request.method == 'POST':
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            messages.success(request, 'Registro realizado com sucesso!')
+            return redirect('home')
+    else:
+        form = CustomUserCreationForm()
+    return render(request, 'registration/register.html', {'form': form})

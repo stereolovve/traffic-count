@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Trabalhos{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Breadcrumb -->
+    <nav class="text-sm mb-8">
+        <ol class="list-none p-0 inline-flex">
+            <li class="flex items-center">
+                <a href="{% url 'home' %}" class="text-gray-500 hover:text-gray-700">Home</a>
+                <svg class="fill-current w-3 h-3 mx-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">
+                    <path d="M285.476 272.971L91.132 467.314c-9.373 9.373-24.569 9.373-33.941 0l-22.667-22.667c-9.357-9.357-9.375-24.522-.04-33.901L188.505 256 34.484 101.255c-9.335-9.379-9.317-24.544.04-33.901l22.667-22.667c9.373-9.373 24.569-9.373 33.941 0L285.475 239.03c9.373 9.372 9.373 24.568.001 33.941z"/>
+                </svg>
+            </li>
+            <li class="flex items-center">
+                <a href="{% url 'trabalho_list' %}" class="text-gray-500 hover:text-gray-700">Trabalhos</a>
+                {% if cliente %}
+                <svg class="fill-current w-3 h-3 mx-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">
+                    <path d="M285.476 272.971L91.132 467.314c-9.373 9.373-24.569 9.373-33.941 0l-22.667-22.667c-9.357-9.357-9.375-24.522-.04-33.901L188.505 256 34.484 101.255c-9.335-9.379-9.317-24.544.04-33.901l22.667-22.667c9.373-9.373 24.569-9.373 33.941 0L285.475 239.03c9.373 9.372 9.373 24.568.001 33.941z"/>
+                </svg>
+                <li class="text-gray-500">{{ cliente.nome }}</li>
+                {% endif %}
+                {% if codigo %}
+                <svg class="fill-current w-3 h-3 mx-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">
+                    <path d="M285.476 272.971L91.132 467.314c-9.373 9.373-24.569 9.373-33.941 0l-22.667-22.667c-9.357-9.357-9.375-24.522-.04-33.901L188.505 256 34.484 101.255c-9.335-9.379-9.317-24.544.04-33.901l22.667-22.667c9.373-9.373 24.569-9.373 33.941 0L285.475 239.03c9.373 9.372 9.373 24.568.001 33.941z"/>
+                </svg>
+                <li class="text-gray-500">{{ codigo.nome }}</li>
+                {% endif %}
+            </li>
+        </ol>
+    </nav>
+
+    <!-- Clientes Section -->
+    {% if not cliente and not codigo %}
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-800">Clientes</h2>
+            <button id="newClienteBtn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
+                Novo Cliente
+            </button>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full table-auto">
+                <thead>
+                    <tr class="bg-gray-100">
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for cliente in clientes %}
+                    <tr class="cliente-row" data-cliente-id="{{ cliente.id }}">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <a href="{% url 'trabalho_list' %}?cliente_id={{ cliente.id }}" class="text-blue-600 hover:text-blue-800">
+                                {{ cliente.nome }}
+                            </a>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <button class="edit-cliente-btn text-indigo-600 hover:text-indigo-900 mr-3" data-id="{{ cliente.id }}" data-nome="{{ cliente.nome }}" data-cnpj="{{ cliente.cnpj }}">
+                                Editar
+                            </button>
+                            <button class="delete-cliente-btn text-red-600 hover:text-red-900" data-id="{{ cliente.id }}" data-nome="{{ cliente.nome }}">
+                                Excluir
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Códigos Section -->
+    {% if cliente and not codigo %}
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-800">Códigos de {{ cliente.nome }}</h2>
+            <button id="newCodigoBtn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
+                Novo Código
+            </button>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full table-auto">
+                <thead>
+                    <tr class="bg-gray-100">
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Código</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descrição</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for codigo in codigos %}
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <a href="{% url 'trabalho_list' %}?cliente_id={{ cliente.id }}&codigo_id={{ codigo.id }}" class="text-blue-600 hover:text-blue-800">
+                                {{ codigo.codigo }}
+                            </a>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">{{ codigo.descricao }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <button class="edit-codigo-btn text-indigo-600 hover:text-indigo-900 mr-3" data-id="{{ codigo.id }}" data-codigo="{{ codigo.codigo }}" data-descricao="{{ codigo.descricao }}">
+                                Editar
+                            </button>
+                            <button class="delete-codigo-btn text-red-600 hover:text-red-900" data-id="{{ codigo.id }}" data-codigo="{{ codigo.codigo }}">
+                                Excluir
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Pontos Section -->
+    {% if codigo %}
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2>Pontos</h2>
+            <div>
+                <button type="button" class="btn btn-primary me-2" id="bulkCreatePontosBtn">
+                    <i class="fas fa-plus"></i> Criar Pontos em Massa
+                </button>
+                <button type="button" class="btn btn-primary" id="newPontoBtn">
+                    <i class="fas fa-plus"></i> Novo Ponto
+                </button>
+            </div>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full table-auto">
+                <thead>
+                    <tr class="bg-gray-100">
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for ponto in pontos %}
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap">{{ ponto.nome }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <button class="edit-ponto-btn text-indigo-600 hover:text-indigo-900 mr-3" data-id="{{ ponto.id }}" data-nome="{{ ponto.nome }}">
+                                Editar
+                            </button>
+                            <button class="delete-ponto-btn text-red-600 hover:text-red-900" data-id="{{ ponto.id }}">
+                                Excluir
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Hidden Fields -->
+    {% if cliente %}
+    <input type="hidden" id="cliente_id" value="{{ cliente.id }}">
+    {% endif %}
+    {% if codigo %}
+    <input type="hidden" id="codigo_id" value="{{ codigo.id }}">
+    {% endif %}
+</div>
+
+{% include 'trabalhos/modals.html' %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    console.log('Template carregado - Antes de carregar trabalhos.js');
+    
+    // Verificar se o botão de criar código existe
+    document.addEventListener('DOMContentLoaded', function() {
+        const newCodigoBtn = document.getElementById('newCodigoBtn');
+        console.log('Verificação direta - Botão de novo código:', newCodigoBtn);
+        
+        if (newCodigoBtn) {
+            newCodigoBtn.addEventListener('click', function() {
+                console.log('Clique direto no botão de novo código');
+                const modal = document.getElementById('newCodigoModal');
+                if (modal) {
+                    console.log('Modal encontrado, removendo classe hidden');
+                    modal.classList.remove('hidden');
+                } else {
+                    console.error('Modal não encontrado');
+                }
+            });
+        }
+    });
+</script>
+<script src="{% static 'js/trabalhos.js' %}"></script>
+<script>
+    console.log('Template carregado - Depois de carregar trabalhos.js');
+</script>
+{% endblock %}

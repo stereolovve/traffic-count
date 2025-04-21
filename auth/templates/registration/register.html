@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+
+{% block title %}Registro - Traffic Count{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8">
+        <div>
+            <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
+                Criar nova conta
+            </h2>
+        </div>
+        <form class="mt-8 space-y-6" method="post">
+            {% csrf_token %}
+            <div class="rounded-md shadow-sm space-y-2">
+                <div>
+                    <label for="name" class="block text-sm font-medium text-gray-700">Primeiro nome</label>
+                    <input id="name" name="name" type="text" required class="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm" placeholder="Ex.: João">
+                </div>
+                <div>
+                    <label for="last_name" class="block text-sm font-medium text-gray-700">Sobrenome</label>
+                    <input id="last_name" name="last_name" type="text" required class="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm" placeholder="Ex.: Silva">
+                </div>
+                <div>
+                    <label for="username" class="block text-sm font-medium text-gray-700">Usuário</label>
+                    <input id="username" name="username" type="text" readonly class="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm bg-gray-100" placeholder="Ex.: joao.silva">
+                </div>
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700">E-mail</label>
+                    <input id="email" name="email" type="email" required class="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm" placeholder="Ex.: joao@exemplo.com">
+                </div>
+                <div>
+                    <label for="password1" class="block text-sm font-medium text-gray-700">Senha</label>
+                    <input id="password1" name="password1" type="password" required class="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm" placeholder="Digite sua senha">
+                </div>
+                <div>
+                    <label for="password2" class="block text-sm font-medium text-gray-700">Confirmar Senha</label>
+                    <input id="password2" name="password2" type="password" required class="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm" placeholder="Confirme sua senha">
+                </div>
+                <div>
+                    <label for="setor" class="block text-sm font-medium text-gray-700">Setor</label>
+                    <select id="setor" name="setor" required class="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm">
+                        <option value="">Selecione um setor</option>
+                        <option value="CON">Contagem</option>
+                        <option value="DIG">Digitação</option>
+                        <option value="P&D">Perci</option>
+                        <option value="SUPER">Supervisão</option>
+                    </select>
+                </div>
+            </div>
+
+            {% if form.errors %}
+            <div class="rounded-md bg-red-50 p-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-red-800">
+                            Erro no registro
+                        </h3>
+                        <div class="mt-2 text-sm text-red-700">
+                            {% for field in form %}
+                                {% for error in field.errors %}
+                                    <p>{{ error }}</p>
+                                {% endfor %}
+                            {% endfor %}
+                            {% for error in form.non_field_errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <div>
+                <button type="submit" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    Registrar
+                </button>
+            </div>
+            
+            <div class="text-center">
+                <a href="{% url 'login' %}" class="font-medium text-blue-600 hover:text-blue-500">
+                    Já tem uma conta? Entrar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function removeSpecialChars(text) {
+    // Remove acentos
+    text = text.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    // Remove caracteres especiais
+    return text.replace(/[^a-zA-Z0-9.]/g, '');
+}
+
+function updateUsername() {
+    const nameField = document.getElementById('name');
+    const lastNameField = document.getElementById('last_name');
+    const usernameField = document.getElementById('username');
+    
+    if (nameField && lastNameField && usernameField) {
+        const name = nameField.value.trim().toLowerCase();
+        const lastName = lastNameField.value.trim().toLowerCase();
+        
+        const cleanName = removeSpecialChars(name);
+        const cleanLastName = removeSpecialChars(lastName);
+        
+        let username = '';
+        if (cleanName && cleanLastName) {
+            username = `${cleanName}.${cleanLastName}`;
+        } else if (cleanName) {
+            username = cleanName;
+        } else if (cleanLastName) {
+            username = cleanLastName;
+        }
+        
+        usernameField.value = username;
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const nameField = document.getElementById('name');
+    const lastNameField = document.getElementById('last_name');
+    
+    if (nameField && lastNameField) {
+        nameField.addEventListener('input', updateUsername);
+        lastNameField.addEventListener('input', updateUsername);
+    }
+});
+</script>
+{% endblock %}

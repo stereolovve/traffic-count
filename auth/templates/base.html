@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Traffic Count{% endblock %}</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="shortcut icon" type="image/png" href="{% static 'img/icone.png' %}">
+    {% block extra_css %}{% endblock %}
+    <style>
+        {% block style %}{% endblock %}
+    </style>
+</head>
+<body class="bg-gray-100">
+    {% if user.is_authenticated %}
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <a href="{% url 'home' %}" class="flex items-center">
+                            <img src="{% static 'img/icone.png' %}" alt="Logo" class="h-8 w-8 mr-2">
+                            <span class="text-xl font-bold text-gray-800">Traffic Count</span>
+                        </a>
+                    </div>
+                    <div class="hidden md:ml-6 md:flex md:space-x-4">
+                        <a href="{% url 'home' %}" class="nav-link {% if request.resolver_match.url_name == 'home' %}nav-link-active{% else %}nav-link-inactive{% endif %}">
+                            <i class="fas fa-home mr-1"></i> Home
+                        </a>
+                        <a href="{% url 'trabalho_list' %}" class="nav-link {% if request.resolver_match.url_name == 'trabalho_list' %}nav-link-active{% else %}nav-link-inactive{% endif %}">
+                            <i class="fas fa-tasks mr-1"></i> Trabalhos
+                        </a>
+                        <a href="{% url 'listar_sessoes' %}" class="nav-link {% if request.resolver_match.url_name == 'listar_sessoes' %}nav-link-active{% else %}nav-link-inactive{% endif %}">
+                            <i class="fas fa-calculator mr-1"></i> Contagens
+                        </a>
+                        <a href="{% url 'padrao_list' %}" class="nav-link {% if request.resolver_match.url_name == 'padrao_list' %}nav-link-active{% else %}nav-link-inactive{% endif %}">
+                            <i class="fas fa-chart-line mr-1"></i> Padrões
+                        </a>
+                        <a href="{% url 'croquis_list' %}" class="nav-link {% if request.resolver_match.url_name == 'croquis_list' %}nav-link-active{% else %}nav-link-inactive{% endif %}">
+                            <i class="fas fa-drafting-compass mr-1"></i> Croquis
+                        </a>
+                        <a href="{% url 'admin:index' %}" class="nav-link nav-link-inactive" target="_blank">
+                            <i class="fas fa-cog mr-1"></i> Admin
+                        </a>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    {% if request.resolver_match.url_name == 'trabalho_detail' or 'trabalho_list' in request.path %}
+                    <button onclick="history.back()" class="back-button">
+                        <i class="fas fa-arrow-left mr-1"></i> Voltar
+                    </button>
+                    {% endif %}
+                    <div class="flex-shrink-0">
+                        <span class="text-gray-700">
+                            <i class="fas fa-user mr-1"></i>
+                            Olá, {{ user.username }}!
+                        </span>
+                        <form method="post" action="{% url 'logout' %}" class="inline">
+                            {% csrf_token %}
+                            <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700">
+                                Sair
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <!-- Mobile menu button -->
+            <div class="md:hidden">
+                <button type="button" class="mobile-menu-button inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-gray-500" aria-controls="mobile-menu" aria-expanded="false">
+                    <span class="sr-only">Open main menu</span>
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile menu, show/hide based on menu state -->
+        <div class="md:hidden hidden" id="mobile-menu">
+            <div class="px-2 pt-2 pb-3 space-y-1">
+                <a href="{% url 'home' %}" class="nav-link block {% if request.resolver_match.url_name == 'home' %}nav-link-active{% else %}nav-link-inactive{% endif %}">
+                    <i class="fas fa-home mr-1"></i> Home
+                </a>
+                <a href="{% url 'trabalho_list' %}" class="nav-link block {% if request.resolver_match.url_name == 'trabalho_list' %}nav-link-active{% else %}nav-link-inactive{% endif %}">
+                    <i class="fas fa-tasks mr-1"></i> Trabalhos
+                </a>
+                <a href="{% url 'listar_sessoes' %}" class="nav-link block {% if request.resolver_match.url_name == 'listar_sessoes' %}nav-link-active{% else %}nav-link-inactive{% endif %}">
+                    <i class="fas fa-calculator mr-1"></i> Contagens
+                </a>
+                <a href="{% url 'padrao_list' %}" class="nav-link block {% if request.resolver_match.url_name == 'padrao_list' %}nav-link-active{% else %}nav-link-inactive{% endif %}">
+                    <i class="fas fa-chart-line mr-1"></i> Padrões
+                </a>
+                <a href="{% url 'croquis_list' %}" class="nav-link block {% if request.resolver_match.url_name == 'croquis_list' %}nav-link-active{% else %}nav-link-inactive{% endif %}">
+                    <i class="fas fa-drafting-compass mr-1"></i> Croquis
+                </a>
+                <a href="{% url 'admin:index' %}" class="nav-link block nav-link-inactive" target="_blank">
+                    <i class="fas fa-cog mr-1"></i> Admin
+                </a>
+            </div>
+        </div>
+    </nav>
+    {% endif %}
+
+    <main class="py-10">
+        {% if messages %}
+        <div class="container mx-auto px-4 mb-8">
+            {% for message in messages %}
+            <div class="{% if message.tags == 'success' %}bg-green-100 border-l-4 border-green-500 text-green-700{% elif message.tags == 'error' %}bg-red-100 border-l-4 border-red-500 text-red-700{% else %}bg-blue-100 border-l-4 border-blue-500 text-blue-700{% endif %} p-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        {% if message.tags == 'success' %}
+                        <i class="fas fa-check-circle"></i>
+                        {% elif message.tags == 'error' %}
+                        <i class="fas fa-exclamation-circle"></i>
+                        {% else %}
+                        <i class="fas fa-info-circle"></i>
+                        {% endif %}
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm">{{ message }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% block content %}{% endblock %}
+    </main>
+
+    {% block extra_js %}{% endblock %}
+    <script>
+        // Mobile menu toggle
+        document.querySelector('.mobile-menu-button').addEventListener('click', function() {
+            document.getElementById('mobile-menu').classList.toggle('hidden');
+        });
+    </script>
+</body>
+</html>

@@ -1,5 +1,7 @@
-<!-- auth/templates/contagens/sessoes.html -->
+{% extends "base.html" %}
 {% load static %}
+{% block title %}Sessões{% endblock %}
+{% block content %}
 <!DOCTYPE html>
 <html lang="pt">
 <head>
@@ -148,22 +150,6 @@
         }
         .filter-tag i:hover {
             color: #dc3545;
-        }
-        .home-button {
-            display: inline-block;
-            background: #007BFF;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 5px;
-            font-size: 14px;
-            text-decoration: none;
-            font-weight: bold;
-            transition: 0.3s;
-            margin-bottom: 20px;
-        }
-        .home-button:hover {
-            background: #0056b3;
-            transform: scale(1.05);
         }
         table {
             width: 100%;
@@ -360,8 +346,7 @@
 <body>
     {% csrf_token %}
     <div class="container">
-        <h2><i class="fas fa-list"></i> Sessões</h2>
-        <a href="{% url 'home' %}" class="home-button"><i class="fas fa-home"></i> Voltar para Home</a>
+        <h2><i class="fas fa-list"></i> Contagens</h2>
         
         <div class="filter-container">
             <div class="filter-title">
@@ -804,3 +789,4 @@
     </script>
 </body>
 </html>
+{% endblock %}

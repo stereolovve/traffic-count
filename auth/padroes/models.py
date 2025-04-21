@@ -17,7 +17,7 @@ class PadraoContagem(models.Model):
         ordering = ['pattern_type', 'order', 'id']
 
     def __str__(self):
-        return f"{self.veiculo} ({self.bind}) - {self.pattern_type}"
+        return self.pattern_type
 
 class UserPadraoContagem(models.Model):
     user = models.ForeignKey(
@@ -35,4 +35,4 @@ class UserPadraoContagem(models.Model):
         verbose_name_plural = "Usuários Padrão de Contagem"
 
     def __str__(self):
-        return f"{self.user.username} => {self.veiculo} ({self.bind}) - {self.pattern_type}"
+        return self.veiculo

@@ -1,5 +1,9 @@
 <!-- Listagem de Padrões de Contagem -->
+{% extends "base.html" %}
 {% load static %}
+{% block title %}Padrões de Contagem{% endblock %}
+
+{% block content %}
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -36,9 +40,6 @@
     <div class="max-w-5xl mx-auto bg-white p-6 rounded-lg shadow-lg">
         <div class="flex justify-between items-center">
             <h1 class="text-2xl font-bold text-gray-800">Padrões de Contagem</h1>
-            <a href="{% url 'home' %}" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
-                <i class="fas fa-home"></i> Voltar para Home
-            </a>
         </div>
         <div class="flex justify-between items-center mt-6">
             <p class="text-gray-600">Gerencie seus padrões de contagem de forma hierárquica e ordenada.</p>
@@ -315,3 +316,4 @@
     </script>
 </body>
 </html>
+{% endblock %}

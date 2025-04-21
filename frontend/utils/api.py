@@ -35,6 +35,7 @@ async def async_api_request(method, endpoint, data=None, headers=None):
     
     try:
         async with aiohttp.ClientSession() as session:
+            print(f"[DEBUG] chamando {method} {API_URL}{endpoint} – payload {data}")
             async with session.request(
                 method=method,
                 url=f"{API_URL}{endpoint}",

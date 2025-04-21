@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Revisar Croqui {{ croqui.codigo }} - Traffic Count{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="mb-6">
+        <a href="{% url 'croquis_list' %}" class="text-blue-600 hover:text-blue-800 inline-flex items-center">
+            <i class="fas fa-arrow-left mr-2"></i> Voltar para lista
+        </a>
+    </div>
+
+    <div class="bg-white shadow-md rounded-lg overflow-hidden">
+        <div class="p-6">
+            <div class="mb-6">
+                <h1 class="text-2xl font-bold text-gray-800">Revisar Croqui {{ croqui.codigo }}</h1>
+                <p class="text-gray-600 mt-1">
+                    Criado por {{ croqui.created_by.username }} em {{ croqui.created_at|date:"d/m/Y H:i" }}
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div class="space-y-4">
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500">Informações Básicas</h3>
+                        <dl class="mt-2 grid grid-cols-1 gap-2">
+                            <div class="bg-gray-50 px-4 py-3 rounded-md">
+                                <dt class="text-sm font-medium text-gray-500">Código</dt>
+                                <dd class="mt-1 text-sm text-gray-900">{{ croqui.codigo }}</dd>
+                            </div>
+                            <div class="bg-gray-50 px-4 py-3 rounded-md">
+                                <dt class="text-sm font-medium text-gray-500">Lote</dt>
+                                <dd class="mt-1 text-sm text-gray-900">{{ croqui.lote }}</dd>
+                            </div>
+                            <div class="bg-gray-50 px-4 py-3 rounded-md">
+                                <dt class="text-sm font-medium text-gray-500">Ponto</dt>
+                                <dd class="mt-1 text-sm text-gray-900">{{ croqui.ponto }}</dd>
+                            </div>
+                            <div class="bg-gray-50 px-4 py-3 rounded-md">
+                                <dt class="text-sm font-medium text-gray-500">Movimento</dt>
+                                <dd class="mt-1 text-sm text-gray-900">{{ croqui.movimento }}</dd>
+                            </div>
+                            <div class="bg-gray-50 px-4 py-3 rounded-md">
+                                <dt class="text-sm font-medium text-gray-500">Padrão</dt>
+                                <dd class="mt-1 text-sm text-gray-900">{{ croqui.padrao }}</dd>
+                            </div>
+                        </dl>
+                    </div>
+
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500">Data e Horário</h3>
+                        <dl class="mt-2 grid grid-cols-1 gap-2">
+                            <div class="bg-gray-50 px-4 py-3 rounded-md">
+                                <dt class="text-sm font-medium text-gray-500">Data do Croqui</dt>
+                                <dd class="mt-1 text-sm text-gray-900">{{ croqui.data_croqui|date:"d/m/Y" }}</dd>
+                            </div>
+                            <div class="bg-gray-50 px-4 py-3 rounded-md">
+                                <dt class="text-sm font-medium text-gray-500">Horário</dt>
+                                <dd class="mt-1 text-sm text-gray-900">{{ croqui.hora_inicio|time:"H:i" }} - {{ croqui.hora_fim|time:"H:i" }}</dd>
+                            </div>
+                        </dl>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500">Imagem do Croqui</h3>
+                        <div class="mt-2">
+                            {% if croqui.imagem %}
+                            <div class="relative">
+                                <img src="{{ croqui.imagem.url }}" alt="Croqui {{ croqui.codigo }}" 
+                                     class="w-full h-auto rounded-lg shadow-md cursor-pointer" 
+                                     onclick="window.open('{{ croqui.imagem.url }}', '_blank')"
+                                     title="Clique para ver em tamanho real">
+                                <div class="absolute bottom-2 right-2">
+                                    <a href="{{ croqui.imagem.url }}" download 
+                                       class="bg-white bg-opacity-75 hover:bg-opacity-100 text-gray-700 font-medium py-1 px-3 rounded-md inline-flex items-center text-sm">
+                                        <i class="fas fa-download mr-1"></i> Download
+                                    </a>
+                                </div>
+                            </div>
+                            {% else %}
+                            <div class="bg-gray-100 rounded-lg p-4 text-center text-gray-500">
+                                <i class="fas fa-image text-4xl mb-2"></i>
+                                <p>Nenhuma imagem disponível</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <form method="post" class="mt-6">
+                {% csrf_token %}
+                <div class="space-y-4">
+                    <div>
+                        <label for="id_status" class="block text-sm font-medium text-gray-700">Status da Revisão</label>
+                        <div class="mt-1">
+                            {{ form.status }}
+                        </div>
+                        {% if form.status.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.status.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <label for="id_observacao" class="block text-sm font-medium text-gray-700">Observações</label>
+                        <div class="mt-1">
+                            {{ form.observacao }}
+                        </div>
+                        {% if form.observacao.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.observacao.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div class="flex justify-end space-x-3">
+                        <a href="{% url 'croquis_list' %}" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-md inline-flex items-center">
+                            Cancelar
+                        </a>
+                        <button type="submit" class="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-md inline-flex items-center">
+                            <i class="fas fa-check mr-2"></i> Salvar Revisão
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
