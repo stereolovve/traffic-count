@@ -453,11 +453,9 @@ class AbaInicio(ft.Column):
             
             headers = {"Authorization": f"Bearer {self.contador.tokens['access']}"} if self.contador.tokens and 'access' in self.contador.tokens else {}
             response = await async_api_request(
-                f"{API_URL}/padroes/merged-binds/?pattern_type={padrao_selecionado_str}",
-                method="GET",
-                headers=headers,
-                use_cache=True,
-                cache_key=cache_key
+                "GET",
+                f"/padroes/merged-binds/?pattern_type={padrao_selecionado_str}",
+                headers=headers
             )
 
             # Usar um dicionário para garantir unicidade dos binds

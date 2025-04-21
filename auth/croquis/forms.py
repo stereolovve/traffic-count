@@ -23,13 +23,21 @@ class CroquisForm(forms.ModelForm):
         empty_label="Selecione um padrão",
         widget=forms.Select(attrs={'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm'})
     )
+    hora_inicio = forms.TimeField(
+        widget=forms.TimeInput(attrs={'type': 'time', 'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm'})
+    )
+    hora_fim = forms.TimeField(
+        widget=forms.TimeInput(attrs={'type': 'time', 'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm'})
+    )
 
     class Meta:
         model = Croquis
-        fields = ['codigo', 'lote', 'ponto', 'movimento', 'padrao', 'data_croqui', 'imagem', 'status']
+        fields = ['codigo', 'lote', 'ponto', 'movimento', 'padrao', 'data_croqui', 'hora_inicio', 'hora_fim', 'imagem', 'status'    ]
         widgets = {
             'data_croqui': forms.DateInput(attrs={'type': 'date', 'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm'}),
             'lote': forms.TextInput(attrs={'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm'}),
+            'hora_inicio': forms.TimeInput(attrs={'type': 'time', 'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm'}),
+            'hora_fim': forms.TimeInput(attrs={'type': 'time', 'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm'}),
             'imagem': forms.ClearableFileInput(attrs={'class': 'sr-only'}),
             'movimento': forms.TextInput(attrs={'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm'}),
         }
