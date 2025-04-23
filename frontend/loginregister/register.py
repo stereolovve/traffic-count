@@ -142,9 +142,9 @@ class RegisterPage(ft.Container):
             }
 
             response = await async_api_request(
-                url=f"{API_URL}/auth/register/",
-                method="POST",
-                json_data=payload
+                "POST",
+                "/auth/register/",
+                data=payload
             )
 
             if isinstance(response, dict) and response.get("id"):

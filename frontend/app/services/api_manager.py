@@ -24,8 +24,8 @@ class ApiManager:
         """Método genérico para requisições GET"""
         try:
             return await async_api_request(
-                url=url, 
-                method="GET", 
+                "GET",
+                url,
                 headers=self._get_auth_headers()
             )
         except Exception as ex:
@@ -388,8 +388,8 @@ class ApiManager:
         """Carrega os códigos do Django"""
         try:
             response = await async_api_request(
-                url=f"{API_URL}/trabalhos/api/codigos/",
-                method="GET",
+                "GET",
+                "/trabalhos/api/codigos/",
                 headers=self._get_auth_headers()
             )
             
@@ -404,8 +404,8 @@ class ApiManager:
         """Carrega os tipos de padrões do Django"""
         try:
             response = await async_api_request(
-                url=f"{API_URL}/padroes/tipos-padroes/",
-                method="GET",
+                "GET",
+                "/padroes/tipos-padroes/",
                 headers=self._get_auth_headers()
             )
             
@@ -420,8 +420,8 @@ class ApiManager:
         """Carrega os pontos do Django para um código específico"""
         try:
             response = await async_api_request(
-                url=f"{API_URL}/trabalhos/api/pontos/{codigo}/",
-                method="GET",
+                "GET",
+                f"/trabalhos/api/pontos/{codigo}/",
                 headers=self._get_auth_headers()
             )
             

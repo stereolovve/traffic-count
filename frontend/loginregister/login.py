@@ -76,9 +76,9 @@ class LoginPage(ft.Container):
         try:
             payload = {"username": username, "password": password}
             response = await async_api_request(
-                url=f"{API_URL}/auth/login/",
-                method="POST",
-                json_data=payload
+                "POST",
+                "/auth/login/",
+                data=payload
             )
 
             if isinstance(response, dict) and "access" in response:

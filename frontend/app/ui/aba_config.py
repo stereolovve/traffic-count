@@ -114,10 +114,10 @@ class AbaConfig(ft.Column):
         try:
             headers = {"Authorization": f"Bearer {self.tokens['access']}"}
             response = await async_api_request(
-                url=f"{API_URL}/padroes/user/preferences/",
-                method="POST",
-                headers=headers,
-                data={"padrao": padrao, "binds": binds}
+                "POST",
+                "/padroes/user/preferences/",
+                data={"padrao": padrao, "binds": binds},
+                headers=headers
             )
             logger.info("Preferências salvas com sucesso!")
             self.page.overlay.append(ft.SnackBar(ft.Text("Preferências salvas!"), bgcolor=ft.colors.GREEN))
