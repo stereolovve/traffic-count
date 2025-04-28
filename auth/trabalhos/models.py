@@ -32,3 +32,15 @@ class Ponto(models.Model):
 
     def __str__(self):
         return f"{self.nome} - {self.codigo.codigo} ({self.codigo.cliente.nome})"
+
+
+# Modelos para Detalhes do Ponto
+class PontoDetail(models.Model):
+    ponto = models.ForeignKey(Ponto, on_delete=models.CASCADE, related_name='details')
+    movimento = models.CharField(max_length=100)
+    observacao = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+class PontoDetailImage(models.Model):
+    detail = models.ForeignKey(PontoDetail, on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField(upload_to='ponto_details/')

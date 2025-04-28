@@ -13,7 +13,6 @@ class ExcelManager:
         self.session = contador.session
 
     def save_contagens(self, current_timeslot):
-        """Salva as contagens atuais no Excel"""
         try:
             # Verificar diretórios primeiro
             self._ensure_directories()
@@ -47,7 +46,8 @@ class ExcelManager:
                     nova_linha = {
                         "das": periodo_str,
                         "às": periodo_fim_str,
-                        "observacao": self.contador.period_observacao
+                        # Observação específica por movimento
+                        "observacao": self.contador.period_observacoes.get(movimento, "")
                     }
 
                     # Adicionar contagens para cada veículo

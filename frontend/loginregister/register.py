@@ -139,7 +139,10 @@ class RegisterPage(ft.Container):
                 "last_name": self.last_name_field.value.strip(),
                 "email": self.email_field.value.strip(),
                 "setor": self.setor_field.value,
+                "password1": self.password_field.value,
+                "password2": self.confirm_password_field.value,
             }
+            logger.debug(f"Register payload: {payload}")
 
             response = await async_api_request(
                 "POST",
@@ -152,7 +155,8 @@ class RegisterPage(ft.Container):
                 await asyncio.sleep(2)
                 self.page.run_task(self.app._perform_switch_to_login)
             else:
-                error_msg = response.get("detail", "Erro ao registrar: resposta inesperada")
+                # Exibir detalhe ou mensagem de erro vinda da API
+                error_msg = response.get("detail") or response.get("erro") or "Erro ao registrar: resposta inesperada"
                 self.show_error(error_msg)
                 logger.error(f"[ERROR] Resposta da API sem confirmação de registro: {response}")
 

@@ -79,9 +79,21 @@ class RegisterView(APIView):
             email = data.get('email')
             setor = data.get('setor')
 
-            # Validações
-            if not all([username, password, name, last_name, email, setor]):
-                return Response({"detail": "Todos os campos são obrigatórios!"}, status=status.HTTP_400_BAD_REQUEST)
+            # Validações: apontar campos obrigatórios faltantes
+            required = {
+                'username': username,
+                'password1': password,
+                'name': name,
+                'last_name': last_name,
+                'email': email,
+                'setor': setor,
+            }
+            missing = [field for field, value in required.items() if not value]
+            if missing:
+                return Response(
+                    {"detail": f"Campos obrigatórios faltando: {', '.join(missing)}"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
             if data.get('password1') != data.get('password2'):
                 return Response({"detail": "As senhas não correspondem!"}, status=status.HTTP_400_BAD_REQUEST)

@@ -6,11 +6,12 @@ from rest_framework.decorators import action, api_view, permission_classes, auth
 from rest_framework.response import Response
 from rest_framework.authentication import SessionAuthentication
 from django_filters.rest_framework import DjangoFilterBackend
-from .models import Cliente, Codigo, Ponto
+from .models import Cliente, Codigo, Ponto, PontoDetail, PontoDetailImage
 from .serializers import ClienteSerializer, CodigoSerializer, PontoSerializer
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from rest_framework.permissions import IsAuthenticated
+from .forms import PontoDetailForm
 
 def trabalho_list(request):
     cliente_id = request.GET.get('cliente_id')
@@ -177,6 +178,38 @@ def ponto_delete(request, pk):
         ponto.delete()
         messages.success(request, 'Ponto excluído com sucesso!')
     return redirect('trabalho_list')
+
+def ponto_detail(request, pk):
+    ponto = get_object_or_404(Ponto, pk=pk)
+    if request.method == 'POST':
+        form = PontoDetailForm(request.POST, request.FILES)
+        if form.is_valid():
+            movimento = form.cleaned_data['movimento']
+            observacao = form.cleaned_data['observacao']
+            detail = PontoDetail.objects.create(ponto=ponto, movimento=movimento, observacao=observacao)
+            for f in request.FILES.getlist('imagens'):
+                PontoDetailImage.objects.create(detail=detail, image=f)
+            messages.success(request, "Detalhe salvo com sucesso!")
+            return redirect('ponto_detail', pk=pk)
+    else:
+        form = PontoDetailForm()
+    # prefetch images to display thumbnails
+    details = ponto.details.prefetch_related('images').all().order_by('-created_at')
+    return render(request, 'trabalhos/ponto_detail.html', {
+        'ponto': ponto,
+        'form': form,
+        'details': details,
+    })
+
+@login_required
+def ponto_detail_add_images(request, pk, detail_id):
+    ponto = get_object_or_404(Ponto, pk=pk)
+    detail = get_object_or_404(PontoDetail, pk=detail_id, ponto=ponto)
+    if request.method == 'POST':
+        for f in request.FILES.getlist('imagens'):
+            PontoDetailImage.objects.create(detail=detail, image=f)
+        messages.success(request, "Imagens adicionadas ao detalhe com sucesso!")
+    return redirect('ponto_detail', pk=pk)
 
 class ClienteViewSet(viewsets.ModelViewSet):
     queryset = Cliente.objects.all()

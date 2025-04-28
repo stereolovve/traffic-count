@@ -8,6 +8,30 @@ import threading
 
 
 def on_key_press(self, key):
+    # Tecla única: F12 para salvar rapidamente
+    from pynput.keyboard import Key, KeyCode
+    if key == Key.f12:
+        try:
+            self.save_contagens(None)
+        except Exception as ex:
+            logging.error(f"Erro ao ativar atalho salvar F12: {ex}")
+        return
+    # Atalhos: Ctrl+S para salvar
+    from pynput.keyboard import Key, KeyCode
+    # Registrar pressionamento de Ctrl
+    if key in (Key.ctrl_l, Key.ctrl_r):
+        if not hasattr(self, 'pressed_keys'): self.pressed_keys = set()
+        self.pressed_keys.add(key)
+        return
+    # Ctrl+S
+    if isinstance(key, KeyCode) and key.char and key.char.lower() == 's' and any(ctrl in getattr(self, 'pressed_keys', set()) for ctrl in (Key.ctrl_l, Key.ctrl_r)):
+        try:
+            # Disparar salvamento
+            self.save_contagens(None)
+        except Exception as ex:
+            logging.error(f"Erro ao ativar atalho salvar: {ex}")
+        return
+    # Bloquear outras operações se contagem não ativa
     if not self.contagem_ativa:
         return
     
@@ -63,4 +87,12 @@ def on_key_press(self, key):
 
     threading.Thread(target=_processar_tecla, daemon=True).start()
 
-        
+
+def on_key_release(self, key):
+    # Limpar estado de Ctrl
+    from pynput.keyboard import Key
+    try:
+        if key in (Key.ctrl_l, Key.ctrl_r) and hasattr(self, 'pressed_keys'):
+            self.pressed_keys.discard(key)
+    except Exception as ex:
+        logging.error(f"Erro no on_key_release: {ex}")

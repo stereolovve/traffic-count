@@ -61,6 +61,7 @@ class ContadorPerplan(ft.Column):
         self.contagens = {}  
         self.categorias = []  
         self.details = {"Movimentos": []}
+        self.period_observacoes = {}
         
         # Inicializar serviços
         self.session_manager = SessionManager(self)
@@ -121,22 +122,22 @@ class ContadorPerplan(ft.Column):
     
     def show_loading(self, message="Carregando..."):
         progress = ft.ProgressRing()
-        banner = ft.Banner(
-            content=ft.Text(message),
-            leading=progress,
-            bgcolor=ft.colors.BLUE_100,
-            actions=[
-                ft.TextButton("Aguarde...", disabled=True)
-            ] 
+        dialog = ft.AlertDialog(
+            modal=True,
+            title=ft.Text(message),
+            content=progress,
+            actions=[]
         )
-        self.page.overlay.append(banner)
+        self.page.dialog = dialog
+        dialog.open = True
         self.page.update()
-        return banner
+        return dialog
 
     def hide_loading(self, banner):
-        if banner in self.page.overlay:
-            self.page.overlay.remove(banner)
-            self.page.update()
+        dialog = banner
+        dialog.open = False
+        self.page.update()
+        self.page.dialog = None
 
     async def create_session(self, session_data):
         await self.session_manager.create_session(session_data)
@@ -351,6 +352,7 @@ class ContadorPerplan(ft.Column):
             self.page.update()
 
     def _perform_save(self, now):
+        banner = self.show_loading("Salvando contagens...")
         async def salvar():
             try:
                 # 1. Configurar timeslot
@@ -414,13 +416,17 @@ class ContadorPerplan(ft.Column):
                 snackbar.open = True
                 self.page.update()
 
+                # Limpar observações após salvamento
+                self.period_observacoes.clear()
+
             except ValueError as ve:
                 logging.error(f"Erro de validação: {ve}")
                 self.ui_manager.show_error_message(str(ve))
             except Exception as ex:
                 logging.error(f"Erro ao salvar contagens: {ex}")
                 self.ui_manager.show_error_message(f"Erro ao salvar contagens: {str(ex)}")
-
+            finally:
+                self.hide_loading(banner)
         self.page.run_task(salvar)
 
     def on_key_press(self, key):

@@ -448,17 +448,23 @@ class AbaContagem(ft.Column):
             return None
 
     def abrir_dialogo_observacao(self, e):
+        # Identifica o movimento da aba atual
+        mov_index = self.movimento_tabs.selected_index if self.movimento_tabs else 0
+        movimentos = self.contador.details.get("Movimentos", [])
+        movimento = movimentos[mov_index] if mov_index < len(movimentos) else None
+
         def on_confirm(ev):
-            self.contador.period_observacao = textfield.value
+            if movimento:
+                self.contador.period_observacoes[movimento] = textfield.value
             dialog.open = False
             self.contador.page.update()
 
-            snackbar = ft.SnackBar(ft.Text("✅ Observação salva!"), bgcolor="PURPLE")
-            self.contador.page.overlay.append(snackbar)
-            snackbar.open = True
-            self.contador.page.update()
-
-        textfield = ft.TextField(label="Observação do período", multiline=True, width=300)
+        textfield = ft.TextField(
+            label="Observação do período",
+            multiline=True,
+            width=300,
+            value=self.contador.period_observacoes.get(movimento, "")
+        )
         dialog = ft.AlertDialog(
             title=ft.Text("Inserir Observação"),
             content=textfield,
