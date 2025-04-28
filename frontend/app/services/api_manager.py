@@ -10,6 +10,8 @@ class ApiManager:
         self.contador = contador
         self.tokens = contador.tokens
         self.username = contador.username
+        # HTTP client keep-alive
+        self.client = httpx.AsyncClient(base_url=API_URL, headers=self._get_auth_headers())
         
     def _get_auth_headers(self):
         """Retorna os headers de autenticação padrão"""
@@ -67,12 +69,10 @@ class ApiManager:
 
             logging.info(f"[INFO] Enviando sessão para o Django com padrão: {padrao}")
 
-            async with httpx.AsyncClient() as client:
-                response = await client.post(
-                    f"{API_URL}/contagens/registrar-sessao/",
-                    json=data,
-                    headers=self._get_auth_headers()
-                )
+            response = await self.client.post(
+                "/contagens/registrar-sessao/",
+                json=data
+            )
 
             if response.status_code in [200, 201]:
                 try:
@@ -105,25 +105,23 @@ class ApiManager:
                 logging.error("[ERRO] Nome da sessão não especificado")
                 return None
                 
-            async with httpx.AsyncClient() as client:
-                response = await client.get(
-                    f"{API_URL}/contagens/buscar-sessao/?nome={nome_sessao}",
-                    headers=self._get_auth_headers()
-                )
+            response = await self.client.get(
+                f"/contagens/buscar-sessao/?nome={nome_sessao}"
+            )
                 
-                if response.status_code == 200:
-                    response_data = response.json()
-                    if 'id' in response_data:
-                        session_id = response_data['id']
-                        self.contador.details['session_id'] = session_id
-                        logging.info(f"[OK] ID da sessão obtido: {session_id}")
-                        # Salvar na sessão
-                        self.contador.save_session()
-                        return session_id
-                    else:
-                        logging.warning("[AVISO] Resposta não contém ID da sessão")
+            if response.status_code == 200:
+                response_data = response.json()
+                if 'id' in response_data:
+                    session_id = response_data['id']
+                    self.contador.details['session_id'] = session_id
+                    logging.info(f"[OK] ID da sessão obtido: {session_id}")
+                    # Salvar na sessão
+                    self.contador.save_session()
+                    return session_id
                 else:
-                    logging.error(f"[ERRO] Falha ao obter ID da sessão: {response.status_code} - {response.text}")
+                    logging.warning("[AVISO] Resposta não contém ID da sessão")
+            else:
+                logging.error(f"[ERRO] Falha ao obter ID da sessão: {response.status_code} - {response.text}")
                     
             return None
         except Exception as ex:
@@ -177,15 +175,14 @@ class ApiManager:
                     })
 
             # Fazer a requisição
-            response = await async_api_request(
-                "POST",
+            response = await self.client.post(
                 "/contagens/get/",
-                data=data,
-                headers={"Authorization": f"Bearer {self.contador.tokens['access']}"}
+                json=data
             )
 
-            if "erro" in response:
-                logging.error(f"Erro ao enviar contagens para o Django: {response['erro']}")
+            resp_data = response.json()
+            if isinstance(resp_data, dict) and "erro" in resp_data:
+                logging.error(f"Erro ao enviar contagens para o Django: {resp_data['erro']}")
                 return False
 
             return True
@@ -211,11 +208,9 @@ class ApiManager:
 
             logging.info(f"[INFO] Carregando categorias para padrão {pattern_type} com movimentos: {movimentos}")
 
-            async with httpx.AsyncClient() as client:
-                response = await client.get(
-                    f"{API_URL}/padroes/padroes-api/?pattern_type={pattern_type}",
-                    headers=self._get_auth_headers()
-                )
+            response = await self.client.get(
+                f"/padroes/padroes-api/?pattern_type={pattern_type}"
+            )
 
             if response.status_code == 200:
                 api_data = response.json()
@@ -258,11 +253,9 @@ class ApiManager:
                 logging.error("[ERRO] Tipo de padrão não especificado para carregar binds")
                 return None
             
-            async with httpx.AsyncClient() as client:
-                response = await client.get(
-                    f"{API_URL}/padroes/merged-binds/?pattern_type={pattern_type}",
-                    headers=self._get_auth_headers()
-                )
+            response = await self.client.get(
+                f"/padroes/merged-binds/?pattern_type={pattern_type}"
+            )
 
             if response.status_code == 200:
                 binds_list = response.json()
@@ -305,20 +298,18 @@ class ApiManager:
                         logging.info(f"[INFO] ID numérico encontrado nos detalhes: {session_numeric_id}")
                     else:
                         # Precisamos fazer uma busca na API
-                        async with httpx.AsyncClient() as client:
-                            response = await client.get(
-                                f"{API_URL}/contagens/buscar-sessao/?nome={sessao_id}",
-                                headers=self._get_auth_headers()
-                            )
+                        response = await self.client.get(
+                            f"/contagens/buscar-sessao/?nome={sessao_id}"
+                        )
                             
-                            if response.status_code == 200:
-                                response_data = response.json()
-                                if 'id' in response_data:
-                                    session_numeric_id = response_data['id']
-                                    # Salvar o ID para uso futuro
-                                    if hasattr(self.contador, 'details'):
-                                        self.contador.details['session_id'] = session_numeric_id
-                                    logging.info(f"[INFO] ID numérico encontrado via API: {session_numeric_id}")
+                        if response.status_code == 200:
+                            response_data = response.json()
+                            if 'id' in response_data:
+                                session_numeric_id = response_data['id']
+                                # Salvar o ID para uso futuro
+                                if hasattr(self.contador, 'details'):
+                                    self.contador.details['session_id'] = session_numeric_id
+                                logging.info(f"[INFO] ID numérico encontrado via API: {session_numeric_id}")
                 except Exception as ex:
                     logging.error(f"[ERRO] Falha ao buscar ID numérico da sessão: {ex}")
             
@@ -326,58 +317,38 @@ class ApiManager:
                 # Alternativa: Usar uma abordagem simplificada - assumir que é apenas o nome da sessão
                 # e tentar finalizar diretamente usando um endpoint diferente
                 data = {"sessao_nome": sessao_id}
-                async with httpx.AsyncClient(follow_redirects=False) as client:
-                    try:
-                        response = await client.post(
-                            f"{API_URL}/contagens/finalizar-por-nome/",
-                            json=data,
-                            headers=self._get_auth_headers(),
-                            timeout=30.0
-                        )
+                response = await self.client.post(
+                    "/contagens/finalizar-por-nome/",
+                    json=data
+                )
                         
-                        if response.status_code in [200, 201]:
-                            logging.info(f"[OK] Sessão finalizada com sucesso pelo nome")
-                            return True
-                    except Exception as e:
-                        logging.error(f"[ERRO] Falha ao finalizar por nome: {e}")
+                if response.status_code in [200, 201]:
+                    logging.info(f"[OK] Sessão finalizada com sucesso pelo nome")
+                    return True
+            else:
+                data = {"sessao_id": session_numeric_id}
                 
-                logging.error(f"[ERRO] Não foi possível obter o ID numérico da sessão '{sessao_id}'")
-                return False
+                logging.info(f"[INFO] Tentando finalizar sessão com ID {session_numeric_id}")
+                
+                # Configurar as requisições para não seguir redirecionamentos
+                response = await self.client.post(
+                    "/contagens/finalizar-sessao/",
+                    json=data
+                )
 
-            data = {"sessao_id": session_numeric_id}
-            
-            logging.info(f"[INFO] Tentando finalizar sessão com ID {session_numeric_id}")
-            
-            # Configurar as requisições para não seguir redirecionamentos
-            async with httpx.AsyncClient(follow_redirects=False) as client:
-                try:
-                    response = await client.post(
-                        f"{API_URL}/contagens/finalizar-sessao/",
-                        json=data,
-                        headers=self._get_auth_headers(),
-                        timeout=30.0
-                    )
-
-                    if response.status_code in [200, 201]:
-                        try:
-                            response_data = response.json()
-                            mensagem = response_data.get('message', 'Sessão finalizada com sucesso')
-                        except:
-                            mensagem = 'Sessão finalizada com sucesso'
+                if response.status_code in [200, 201]:
+                    try:
+                        response_data = response.json()
+                        mensagem = response_data.get('message', 'Sessão finalizada com sucesso')
+                    except:
+                        mensagem = 'Sessão finalizada com sucesso'
                         
-                        logging.info(f"[OK] {mensagem}")
-                        return True
-                    else:
-                        logging.error(f"[ERRO] Falha ao finalizar sessão no Django: {response.status_code}")
-                        if response.text:
-                            logging.error(f"[ERRO] Resposta do servidor: {response.text}")
-                        return False
-
-                except httpx.TimeoutException:
-                    logging.error("[ERRO] Timeout ao tentar finalizar sessão")
-                    return False
-                except httpx.RequestError as e:
-                    logging.error(f"[ERRO] Erro na requisição ao finalizar sessão: {e}")
+                    logging.info(f"[OK] {mensagem}")
+                    return True
+                else:
+                    logging.error(f"[ERRO] Falha ao finalizar sessão no Django: {response.status_code}")
+                    if response.text:
+                        logging.error(f"[ERRO] Resposta do servidor: {response.text}")
                     return False
 
         except Exception as ex:
@@ -387,14 +358,12 @@ class ApiManager:
     async def load_codigos(self):
         """Carrega os códigos do Django"""
         try:
-            response = await async_api_request(
-                "GET",
-                "/trabalhos/api/codigos/",
-                headers=self._get_auth_headers()
+            response = await self.client.get(
+                "/trabalhos/api/codigos/"
             )
             
-            if response:
-                return [item["codigo"] for item in response]
+            if response.status_code == 200:
+                return [item["codigo"] for item in response.json()]
             return []
         except Exception as ex:
             logging.error(f"[ERRO] Falha ao carregar códigos: {ex}")
@@ -403,14 +372,12 @@ class ApiManager:
     async def load_padroes(self):
         """Carrega os tipos de padrões do Django"""
         try:
-            response = await async_api_request(
-                "GET",
-                "/padroes/tipos-padroes/",
-                headers=self._get_auth_headers()
+            response = await self.client.get(
+                "/padroes/tipos-padroes/"
             )
             
-            if response:
-                return [item["nome"] for item in response]
+            if response.status_code == 200:
+                return [item["nome"] for item in response.json()]
             return []
         except Exception as ex:
             logging.error(f"[ERRO] Falha ao carregar tipos de padrões: {ex}")
@@ -419,14 +386,12 @@ class ApiManager:
     async def load_pontos(self, codigo):
         """Carrega os pontos do Django para um código específico"""
         try:
-            response = await async_api_request(
-                "GET",
-                f"/trabalhos/api/pontos/{codigo}/",
-                headers=self._get_auth_headers()
+            response = await self.client.get(
+                f"/trabalhos/api/pontos/{codigo}/"
             )
             
-            if response:
-                return [item["nome"] for item in response]
+            if response.status_code == 200:
+                return [item["nome"] for item in response.json()]
             return []
         except Exception as ex:
             logging.error(f"[ERRO] Falha ao carregar pontos: {ex}")

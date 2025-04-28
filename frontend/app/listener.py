@@ -16,21 +16,12 @@ def on_key_press(self, key):
         except Exception as ex:
             logging.error(f"Erro ao ativar atalho salvar F12: {ex}")
         return
-    # Atalhos: Ctrl+S para salvar
-    from pynput.keyboard import Key, KeyCode
     # Registrar pressionamento de Ctrl
     if key in (Key.ctrl_l, Key.ctrl_r):
         if not hasattr(self, 'pressed_keys'): self.pressed_keys = set()
         self.pressed_keys.add(key)
         return
-    # Ctrl+S
-    if isinstance(key, KeyCode) and key.char and key.char.lower() == 's' and any(ctrl in getattr(self, 'pressed_keys', set()) for ctrl in (Key.ctrl_l, Key.ctrl_r)):
-        try:
-            # Disparar salvamento
-            self.save_contagens(None)
-        except Exception as ex:
-            logging.error(f"Erro ao ativar atalho salvar: {ex}")
-        return
+
     # Bloquear outras operações se contagem não ativa
     if not self.contagem_ativa:
         return
@@ -56,6 +47,7 @@ def on_key_press(self, key):
                     aba_contagem.movimento_tabs.selected_index = (
                         aba_contagem.movimento_tabs.selected_index - 1
                     ) % len(aba_contagem.movimento_tabs.tabs)
+                    
                     self.page.update()
                     return
                 

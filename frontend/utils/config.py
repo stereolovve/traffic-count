@@ -32,5 +32,5 @@ def get_excel_dir():
         # Se não conseguir acessar o diretório da rede, usa o diretório local
         return CONTAGENS_DIR
 
-LOG_FILE = DESKTOP_DIR / "log.txt"  
+LOG_FILE = Path.cwd() / "log.txt"  
 AUTH_TOKENS_FILE = DESKTOP_DIR / "auth_tokens.json"

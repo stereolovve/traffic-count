@@ -35,6 +35,20 @@ logging.basicConfig(
     ]
 )
 
+# Ignorar erros de executor após shutdown (avoid "cannot schedule new futures after shutdown")
+def _ignore_executor_shutdown(loop, context):
+    msg = context.get("message", "")
+    if "cannot schedule new futures after shutdown" in msg:
+        return
+    loop.default_exception_handler(context)
+
+try:
+    loop = asyncio.get_running_loop()
+except RuntimeError:
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+loop.set_exception_handler(_ignore_executor_shutdown)
+
 class MyApp:
     def __init__(self, page: ft.Page):
         self.page = page
