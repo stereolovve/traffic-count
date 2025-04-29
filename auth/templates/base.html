@@ -42,8 +42,11 @@
                         <a href="{% url 'croquis_list' %}" class="nav-link {% if request.resolver_match.url_name == 'croquis_list' %}nav-link-active{% else %}nav-link-inactive{% endif %}">
                             <i class="fas fa-drafting-compass mr-1"></i> Croquis
                         </a>
-                        <a href="{% url 'admin:index' %}" class="nav-link nav-link-inactive" target="_blank">
+                        <a href="{% url 'admin:index' %}" class="nav-link {% if request.resolver_match.url_name == 'admin:index' %}nav-link-active{% else %}nav-link-inactive{% endif %}" target="_blank">
                             <i class="fas fa-cog mr-1"></i> Admin
+                        </a>
+                        <a href="{% url 'updates_page' %}" class="nav-link {% if request.resolver_match.url_name == 'updates_page' %}nav-link-active{% else %}nav-link-inactive{% endif %}" target="_blank">
+                            <i class="fas fa-download mr-1"></i> Atualizações
                         </a>
                     </div>
                 </div>
@@ -94,8 +97,11 @@
                 <a href="{% url 'croquis_list' %}" class="nav-link block {% if request.resolver_match.url_name == 'croquis_list' %}nav-link-active{% else %}nav-link-inactive{% endif %}">
                     <i class="fas fa-drafting-compass mr-1"></i> Croquis
                 </a>
-                <a href="{% url 'admin:index' %}" class="nav-link block nav-link-inactive" target="_blank">
+                <a href="{% url 'admin:index' %}" class="nav-link block {% if request.resolver_match.url_name == 'admin:index' %}nav-link-active{% else %}nav-link-inactive{% endif %}" target="_blank">
                     <i class="fas fa-cog mr-1"></i> Admin
+                </a>
+                <a href="{% url 'updates_page' %}" class="nav-link block {% if request.resolver_match.url_name == 'updates_page' %}nav-link-active{% else %}nav-link-inactive{% endif %}" target="_blank">
+                    <i class="fas fa-download mr-1"></i> Atualizações
                 </a>
             </div>
         </div>

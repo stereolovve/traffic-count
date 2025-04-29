@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="bg-gradient-to-b from-blue-50 to-white min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-3xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
+    <div class="bg-blue-600 px-6 py-4">
+      <h1 class="text-2xl font-bold text-white">Atualizações do Sistema</h1>
+    </div>
+    
+    <div class="p-6 md:p-8">
+      {% if release %}
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-3xl font-bold text-gray-800">v{{ release.version }}</h2>
+            <p class="text-sm text-gray-500 mt-1">Publicado em {{ release.published_at|date:"d/m/Y H:i" }}</p>
+          </div>
+          <div class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+            Nova versão
+          </div>
+        </div>
+        
+        <div class="mb-8">
+          <h3 class="text-lg font-semibold text-gray-700 mb-3 flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z" clip-rule="evenodd" />
+            </svg>
+            Registro de alterações
+          </h3>
+          <div class="bg-gray-50 rounded-lg p-4 border border-gray-200 text-gray-700">
+            {{ release.changelog|linebreaks }}
+          </div>
+        </div>
+        
+        <div class="mt-8 text-center">
+          <a href="{{ release.file.url }}" download class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+            </svg>
+            Baixar Contador v{{ release.version }}
+          </a>
+          <p class="mt-2 text-sm text-gray-500">Clique para baixar a versão mais recente</p>
+        </div>
+      {% else %}
+        <div class="py-12 text-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+          </svg>
+          <h3 class="mt-4 text-lg font-medium text-gray-900">Sistema Atualizado</h3>
+          <p class="mt-1 text-gray-500">Você já está usando a versão mais recente do sistema.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

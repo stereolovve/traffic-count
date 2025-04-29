@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block content %}
+  {% if messages %}
+    {% for msg in messages %}
+      <div class="p-4 mb-4 text-white bg-blue-500 rounded">{{ msg }}</div>
+    {% endfor %}
+  {% endif %}
+  <div class="max-w-3xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+    <div class="bg-white shadow sm:rounded-lg p-6">
+      <h1 class="text-3xl font-bold text-gray-900">{{ ponto.nome }}</h1>
+      <p class="mt-1 text-sm text-gray-600">Código: {{ ponto.codigo }}</p>
+      <p class="mt-1 text-sm text-gray-600">Localização: {{ ponto.localizacao }}</p>
+    </div>
+
+    <div class="mt-8 bg-white shadow sm:rounded-lg p-6">
+      <h2 class="text-2xl font-semibold text-gray-800">Detalhes do Ponto</h2>
+      <div class="mt-4 space-y-4">
+        {% if details %}
+          {% for detail in details %}
+            <div class="p-4 border rounded-lg">
+              <p class="font-medium text-gray-700">{{ detail.movimento }}</p>
+              <p class="text-sm text-gray-500">{{ detail.created_at|date:"d/m/Y H:i" }}</p>
+              {% if detail.observacao %}
+                <p class="mt-2 text-gray-700">{{ detail.observacao }}</p>
+              {% endif %}
+              {% if detail.images.all %}
+                <div class="mt-4 grid grid-cols-3 gap-4">
+                  {% for img in detail.images.all %}
+                    <a href="{{ img.image.url }}" target="_blank">
+                      <img src="{{ img.image.url }}" alt="Detalhe" class="w-full h-32 object-cover rounded-md cursor-pointer" />
+                    </a>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+          {% endfor %}
+        {% else %}
+          <p class="text-gray-500">Nenhum detalhe cadastrado.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="mt-8 bg-white shadow sm:rounded-lg p-6">
+      <h2 class="text-2xl font-semibold text-gray-800">Adicionar Detalhe</h2>
+      <form method="post" enctype="multipart/form-data" class="mt-6 space-y-6">
+        {% if form.non_field_errors %}
+          <div class="text-red-600 mb-2">{{ form.non_field_errors }}</div>
+        {% endif %}
+        {% csrf_token %}
+        <div>
+          <label for="{{ form.movimento.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ form.movimento.label }}</label>
+          {{ form.movimento }}
+          {{ form.movimento.errors }}
+        </div>
+        <div>
+          <label for="{{ form.imagens.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ form.imagens.label }}</label>
+          {{ form.imagens }}
+          {{ form.imagens.errors }}
+          <p class="text-xs text-gray-500 mt-1">Segure Ctrl (ou Shift) para selecionar múltiplos arquivos.</p>
+          <div id="preview" class="mt-2 grid grid-cols-4 gap-4"></div>
+        </div>
+        <div>
+          <label for="{{ form.observacao.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ form.observacao.label }}</label>
+          {{ form.observacao }}
+          {{ form.observacao.errors }}
+        </div>
+        <div class="pt-4">
+          <button type="submit" class="w-full inline-flex justify-center py-2 px-4 bg-blue-600 text-white font-medium rounded-md shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            Salvar Detalhe
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const input = document.querySelector('input[type="file"][name="imagens"]');
+      const preview = document.getElementById('preview');
+      input.addEventListener('change', () => {
+        preview.innerHTML = '';
+        Array.from(input.files).forEach(file => {
+          const reader = new FileReader();
+          reader.onload = e => {
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.className = 'w-24 h-24 object-cover rounded-md';
+            preview.appendChild(img);
+          };
+          reader.readAsDataURL(file);
+        });
+      });
+    });
+  </script>
+{% endblock %}
