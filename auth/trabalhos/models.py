@@ -25,7 +25,7 @@ class Codigo(models.Model):
 class Ponto(models.Model):
     codigo = models.ForeignKey(Codigo, on_delete=models.CASCADE, related_name='pontos')
     nome = models.CharField(max_length=100)
-    localizacao = models.CharField(max_length=200, blank=True)
+    localizacao = models.CharField(max_length=200, null=True, blank=True)
 
     class Meta:
         unique_together = ('codigo', 'nome')
