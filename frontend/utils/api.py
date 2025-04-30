@@ -37,7 +37,7 @@ async def async_api_request(method, endpoint, data=None, headers=None):
         async with aiohttp.ClientSession() as session:
             async with session.request(
                 method=method,
-                url=f"{API_URL}{endpoint}",
+                url=f"{API_URL}/{endpoint.lstrip('/')}",
                 json=data,
                 headers=headers
             ) as response:

@@ -8,8 +8,9 @@ import asyncio
 from pathlib import Path
 import sys
 from app.contador import ContadorPerplan
-from utils.config import API_URL, EXCEL_BASE_DIR, DESKTOP_DIR, LOG_FILE, AUTH_TOKENS_FILE
+from utils.config import API_URL, EXCEL_BASE_DIR, DESKTOP_DIR, LOG_FILE, AUTH_TOKENS_FILE, APP_VERSION
 from utils.api import async_api_request
+from utils.update_checker import UpdateChecker
 from loginregister.register import RegisterPage
 from loginregister.login import LoginPage
 
@@ -56,6 +57,7 @@ class MyApp:
         self.username = None
         self.user_preferences = {}
         self.contador = None
+        self.update_checker = UpdateChecker(page)
 
     async def load_user_preferences(self):
         try:
@@ -126,8 +128,22 @@ class MyApp:
             
             await self.contador.atualizar_binds()
             self.page.update()
+            
+            # Verificar atualizações disponíveis após carregar a interface principal
+            self.page.run_task(self.check_for_updates)
         except Exception as ex:
             logging.error(f"[ERROR] Erro ao mudar para app principal: {ex}")
+            
+    async def check_for_updates(self):
+        """Verifica se há atualizações disponíveis"""
+        try:
+            # Aguarda um pouco para não sobrecarregar a inicialização
+            await asyncio.sleep(3)
+            logging.info(f"Verificando atualizações. Versão atual: {APP_VERSION}")
+            await self.update_checker.check_for_updates()
+        except Exception as e:
+            logging.error(f"Erro ao verificar atualizações: {str(e)}")
+            # Não exibe erro ao usuário para não atrapalhar a experiência
 
     def show_login_page(self):
         """Mostra a página de login usando a abordagem de views"""
