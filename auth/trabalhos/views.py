@@ -182,17 +182,51 @@ def ponto_delete(request, pk):
 def ponto_detail(request, pk):
     ponto = get_object_or_404(Ponto, pk=pk)
     if request.method == 'POST':
-        form = PontoDetailForm(request.POST, request.FILES)
-        if form.is_valid():
-            movimento = form.cleaned_data['movimento']
-            observacao = form.cleaned_data['observacao']
-            detail = PontoDetail.objects.create(ponto=ponto, movimento=movimento, observacao=observacao)
-            for f in request.FILES.getlist('imagens'):
-                PontoDetailImage.objects.create(detail=detail, image=f)
-            messages.success(request, "Detalhe salvo com sucesso!")
-            return redirect('ponto_detail', pk=pk)
+        form_type = request.POST.get('form_type', '')
+        
+        if form_type == 'movimento':
+            # Processar formulário de movimento
+            movimento = request.POST.get('movimento', '')
+            if movimento:
+                detail = PontoDetail.objects.create(ponto=ponto, movimento=movimento)
+                messages.success(request, "Movimento salvo com sucesso!")
+            else:
+                messages.error(request, "Por favor, informe a descrição do movimento.")
+        
+        elif form_type == 'observacao':
+            # Processar formulário de observação
+            observacao = request.POST.get('observacao', '')
+            if observacao:
+                detail = PontoDetail.objects.create(ponto=ponto, observacao=observacao)
+                messages.success(request, "Observação salva com sucesso!")
+            else:
+                messages.error(request, "Por favor, informe a observação.")
+        
+        elif form_type == 'croqui':
+            # Processar formulário de croqui
+            if 'imagens' in request.FILES:
+                detail = PontoDetail.objects.create(ponto=ponto)
+                for f in request.FILES.getlist('imagens'):
+                    PontoDetailImage.objects.create(detail=detail, image=f)
+                messages.success(request, "Croquis salvos com sucesso!")
+            else:
+                messages.error(request, "Por favor, selecione pelo menos um arquivo.")
+        
+        else:
+            # Processar formulário padrão (compatibilidade com versão anterior)
+            form = PontoDetailForm(request.POST, request.FILES)
+            if form.is_valid():
+                movimento = form.cleaned_data['movimento']
+                observacao = form.cleaned_data['observacao']
+                detail = PontoDetail.objects.create(ponto=ponto, movimento=movimento, observacao=observacao)
+                for f in request.FILES.getlist('imagens'):
+                    PontoDetailImage.objects.create(detail=detail, image=f)
+                messages.success(request, "Detalhe salvo com sucesso!")
+        
+        return redirect('ponto_detail', pk=pk)
     else:
         form = PontoDetailForm()
+    
     # prefetch images to display thumbnails
     details = ponto.details.prefetch_related('images').all().order_by('-created_at')
     return render(request, 'trabalhos/ponto_detail.html', {

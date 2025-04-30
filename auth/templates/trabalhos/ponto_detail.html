@@ -12,83 +12,190 @@
       <p class="mt-1 text-sm text-gray-600">Localização: {{ ponto.localizacao }}</p>
     </div>
 
+    <!-- Card de Movimentos -->
     <div class="mt-8 bg-white shadow sm:rounded-lg p-6">
-      <h2 class="text-2xl font-semibold text-gray-800">Detalhes do Ponto</h2>
-      <div class="mt-4 space-y-4">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-2xl font-semibold text-gray-800">Movimentos</h2>
+        <button type="button" id="addMovimentoBtn" class="px-4 py-2 bg-blue-600 text-white font-medium rounded-md shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+          Adicionar Movimento
+        </button>
+      </div>
+      <div class="mt-4 space-y-4" id="movimentos-container">
         {% if details %}
           {% for detail in details %}
-            <div class="p-4 border rounded-lg">
-              <p class="font-medium text-gray-700">{{ detail.movimento }}</p>
-              <p class="text-sm text-gray-500">{{ detail.created_at|date:"d/m/Y H:i" }}</p>
-              {% if detail.observacao %}
-                <p class="mt-2 text-gray-700">{{ detail.observacao }}</p>
-              {% endif %}
-              {% if detail.images.all %}
-                <div class="mt-4 grid grid-cols-3 gap-4">
-                  {% for img in detail.images.all %}
-                    <a href="{{ img.image.url }}" target="_blank">
-                      <img src="{{ img.image.url }}" alt="Detalhe" class="w-full h-32 object-cover rounded-md cursor-pointer" />
-                    </a>
-                  {% endfor %}
-                </div>
-              {% endif %}
-            </div>
+            {% if detail.movimento %}
+              <div class="p-4 border rounded-lg">
+                <p class="font-medium text-gray-700">{{ detail.movimento }}</p>
+                <p class="text-sm text-gray-500">{{ detail.created_at|date:"d/m/Y H:i" }}</p>
+              </div>
+            {% endif %}
           {% endfor %}
         {% else %}
-          <p class="text-gray-500">Nenhum detalhe cadastrado.</p>
+          <p class="text-gray-500">Nenhum movimento cadastrado.</p>
         {% endif %}
+      </div>
+      <!-- Form para adicionar movimento -->
+      <div id="movimento-form" class="hidden mt-4 p-4 border rounded-lg">
+        <form method="post" class="space-y-4">
+          {% csrf_token %}
+          <input type="hidden" name="form_type" value="movimento">
+          <div>
+            <label for="movimento" class="block text-sm font-medium text-gray-700">Descrição do Movimento</label>
+            <input type="text" name="movimento" id="movimento" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
+          </div>
+          <div>
+            <button type="submit" class="w-full inline-flex justify-center py-2 px-4 bg-blue-600 text-white font-medium rounded-md shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+              Salvar Movimento
+            </button>
+          </div>
+        </form>
       </div>
     </div>
 
+    <!-- Card de Observações -->
     <div class="mt-8 bg-white shadow sm:rounded-lg p-6">
-      <h2 class="text-2xl font-semibold text-gray-800">Adicionar Detalhe</h2>
-      <form method="post" enctype="multipart/form-data" class="mt-6 space-y-6">
-        {% if form.non_field_errors %}
-          <div class="text-red-600 mb-2">{{ form.non_field_errors }}</div>
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-2xl font-semibold text-gray-800">Observações</h2>
+        <button type="button" id="addObservacaoBtn" class="px-4 py-2 bg-blue-600 text-white font-medium rounded-md shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+          Adicionar Observação
+        </button>
+      </div>
+      <div class="mt-4 space-y-4">
+        {% if details %}
+          {% for detail in details %}
+            {% if detail.observacao %}
+              <div class="p-4 border rounded-lg">
+                <p class="mt-2 text-gray-700">{{ detail.observacao }}</p>
+                <p class="text-sm text-gray-500 mt-2">{{ detail.created_at|date:"d/m/Y H:i" }}</p>
+              </div>
+            {% endif %}
+          {% endfor %}
+        {% else %}
+          <p class="text-gray-500">Nenhuma observação cadastrada.</p>
         {% endif %}
-        {% csrf_token %}
-        <div>
-          <label for="{{ form.movimento.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ form.movimento.label }}</label>
-          {{ form.movimento }}
-          {{ form.movimento.errors }}
-        </div>
-        <div>
-          <label for="{{ form.imagens.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ form.imagens.label }}</label>
-          {{ form.imagens }}
-          {{ form.imagens.errors }}
-          <p class="text-xs text-gray-500 mt-1">Segure Ctrl (ou Shift) para selecionar múltiplos arquivos.</p>
-          <div id="preview" class="mt-2 grid grid-cols-4 gap-4"></div>
-        </div>
-        <div>
-          <label for="{{ form.observacao.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ form.observacao.label }}</label>
-          {{ form.observacao }}
-          {{ form.observacao.errors }}
-        </div>
-        <div class="pt-4">
-          <button type="submit" class="w-full inline-flex justify-center py-2 px-4 bg-blue-600 text-white font-medium rounded-md shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-            Salvar Detalhe
-          </button>
-        </div>
-      </form>
+      </div>
+      <!-- Form para adicionar observação -->
+      <div id="observacao-form" class="hidden mt-4 p-4 border rounded-lg">
+        <form method="post" class="space-y-4">
+          {% csrf_token %}
+          <input type="hidden" name="form_type" value="observacao">
+          <div>
+            <label for="observacao" class="block text-sm font-medium text-gray-700">Observação</label>
+            <textarea name="observacao" id="observacao" rows="4" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"></textarea>
+          </div>
+          <div>
+            <button type="submit" class="w-full inline-flex justify-center py-2 px-4 bg-blue-600 text-white font-medium rounded-md shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+              Salvar Observação
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Card de Croquis -->
+    <div class="mt-8 bg-white shadow sm:rounded-lg p-6">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-2xl font-semibold text-gray-800">Croquis</h2>
+        <button type="button" id="addCroquisBtn" class="px-4 py-2 bg-blue-600 text-white font-medium rounded-md shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+          Adicionar Croqui
+        </button>
+      </div>
+      <div class="mt-4 grid grid-cols-3 gap-4">
+        {% if details %}
+          {% for detail in details %}
+            {% if detail.images.all %}
+              {% for img in detail.images.all %}
+                <div class="p-2 border rounded-lg">
+                  <a href="{{ img.image.url }}" target="_blank">
+                    <img src="{{ img.image.url }}" alt="Croqui" class="w-full h-32 object-cover rounded-md cursor-pointer" />
+                  </a>
+                  <p class="text-sm text-gray-500 mt-2">{{ detail.created_at|date:"d/m/Y H:i" }}</p>
+                </div>
+              {% endfor %}
+            {% endif %}
+          {% endfor %}
+        {% else %}
+          <p class="text-gray-500 col-span-3">Nenhum croqui cadastrado.</p>
+        {% endif %}
+      </div>
+      <!-- Form para adicionar croqui -->
+      <div id="croqui-form" class="hidden mt-4 p-4 border rounded-lg">
+        <form method="post" enctype="multipart/form-data" class="space-y-4">
+          {% csrf_token %}
+          <input type="hidden" name="form_type" value="croqui">
+          <div>
+            <label for="imagens" class="block text-sm font-medium text-gray-700">Selecione os arquivos PNG</label>
+            <input type="file" name="imagens" id="imagens" accept=".png" multiple class="mt-1 block w-full text-gray-600">
+            <p class="text-xs text-gray-500 mt-1">Segure Ctrl (ou Shift) para selecionar múltiplos arquivos.</p>
+            <div id="croqui-preview" class="mt-2 grid grid-cols-4 gap-4"></div>
+          </div>
+          <div>
+            <button type="submit" class="w-full inline-flex justify-center py-2 px-4 bg-blue-600 text-white font-medium rounded-md shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+              Salvar Croquis
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
+
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      const input = document.querySelector('input[type="file"][name="imagens"]');
-      const preview = document.getElementById('preview');
-      input.addEventListener('change', () => {
-        preview.innerHTML = '';
-        Array.from(input.files).forEach(file => {
-          const reader = new FileReader();
-          reader.onload = e => {
-            const img = document.createElement('img');
-            img.src = e.target.result;
-            img.className = 'w-24 h-24 object-cover rounded-md';
-            preview.appendChild(img);
-          };
-          reader.readAsDataURL(file);
+      // Botões para mostrar/esconder formulários
+      const addMovimentoBtn = document.getElementById('addMovimentoBtn');
+      const addObservacaoBtn = document.getElementById('addObservacaoBtn');
+      const addCroquisBtn = document.getElementById('addCroquisBtn');
+      
+      const movimentoForm = document.getElementById('movimento-form');
+      const observacaoForm = document.getElementById('observacao-form');
+      const croquisForm = document.getElementById('croqui-form');
+      
+      // Toggle formulário de movimento
+      if (addMovimentoBtn && movimentoForm) {
+        addMovimentoBtn.addEventListener('click', () => {
+          movimentoForm.classList.toggle('hidden');
+          if (observacaoForm) observacaoForm.classList.add('hidden');
+          if (croquisForm) croquisForm.classList.add('hidden');
         });
-      });
+      }
+      
+      // Toggle formulário de observação
+      if (addObservacaoBtn && observacaoForm) {
+        addObservacaoBtn.addEventListener('click', () => {
+          observacaoForm.classList.toggle('hidden');
+          if (movimentoForm) movimentoForm.classList.add('hidden');
+          if (croquisForm) croquisForm.classList.add('hidden');
+        });
+      }
+      
+      // Toggle formulário de croqui
+      if (addCroquisBtn && croquisForm) {
+        addCroquisBtn.addEventListener('click', () => {
+          croquisForm.classList.toggle('hidden');
+          if (movimentoForm) movimentoForm.classList.add('hidden');
+          if (observacaoForm) observacaoForm.classList.add('hidden');
+        });
+      }
+      
+      // Preview para croquis
+      const croquisInput = document.getElementById('imagens');
+      const croquisPreview = document.getElementById('croqui-preview');
+      
+      if (croquisInput && croquisPreview) {
+        croquisInput.addEventListener('change', () => {
+          croquisPreview.innerHTML = '';
+          Array.from(croquisInput.files).forEach(file => {
+            const reader = new FileReader();
+            reader.onload = e => {
+              const img = document.createElement('img');
+              img.src = e.target.result;
+              img.className = 'w-24 h-24 object-cover rounded-md';
+              croquisPreview.appendChild(img);
+            };
+            reader.readAsDataURL(file);
+          });
+        });
+      }
     });
   </script>
 {% endblock %}
