@@ -31,6 +31,10 @@ urlpatterns = [
     path('ponto/<int:pk>/', views.ponto_detail, name='ponto_detail'),
     # Add images to existing detail
     path('ponto/<int:pk>/add-images/<int:detail_id>/', views.ponto_detail_add_images, name='ponto_detail_add_images'),
+    # Delete detail item (movimento, observacao)
+    path('ponto/<int:pk>/delete-detail/<int:detail_id>/', views.ponto_detail_delete, name='ponto_detail_delete'),
+    # Delete image
+    path('ponto/<int:pk>/delete-image/<int:image_id>/', views.ponto_detail_delete_image, name='ponto_detail_delete_image'),
     
     # API URLs
     path('api/pontos/bulk-create/', views.bulk_create_pontos, name='bulk-create-pontos'),

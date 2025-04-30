@@ -245,6 +245,31 @@ def ponto_detail_add_images(request, pk, detail_id):
         messages.success(request, "Imagens adicionadas ao detalhe com sucesso!")
     return redirect('ponto_detail', pk=pk)
 
+@login_required
+def ponto_detail_delete(request, pk, detail_id):
+    ponto = get_object_or_404(Ponto, pk=pk)
+    detail = get_object_or_404(PontoDetail, pk=detail_id, ponto=ponto)
+    delete_type = request.POST.get('delete_type', '')
+    
+    if delete_type == 'movimento':
+        message = "Movimento excluído com sucesso!"
+    elif delete_type == 'observacao':
+        message = "Observação excluída com sucesso!"
+    else:
+        message = "Item excluído com sucesso!"
+    
+    detail.delete()
+    messages.success(request, message)
+    return redirect('ponto_detail', pk=pk)
+
+@login_required
+def ponto_detail_delete_image(request, pk, image_id):
+    ponto = get_object_or_404(Ponto, pk=pk)
+    image = get_object_or_404(PontoDetailImage, pk=image_id, detail__ponto=ponto)
+    image.delete()
+    messages.success(request, "Imagem excluída com sucesso!")
+    return redirect('ponto_detail', pk=pk)
+
 class ClienteViewSet(viewsets.ModelViewSet):
     queryset = Cliente.objects.all()
     serializer_class = ClienteSerializer
