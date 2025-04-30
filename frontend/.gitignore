@@ -5,3 +5,6 @@ __pycache__/
 venv/
 auth_tokens.json
 config/.env
+frontend/dist
+frontend/build
+
