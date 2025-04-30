@@ -170,7 +170,8 @@ SIMPLE_JWT = {
     'ROTATE_REFRESH_TOKENS': False,  # Não gere novos tokens de atualização automaticamente
     'BLACKLIST_AFTER_ROTATION': False,  # Permita invalidar tokens de atualização antigos
 }
-
+LOG_DIR = BASE_DIR / 'logs'
+LOG_DIR.mkdir(exist_ok=True)
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -181,19 +182,15 @@ LOGGING = {
         },
     },
     'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-            'formatter': 'verbose',
-        },
         'file': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': BASE_DIR / 'logs/django.log',
+            'filename': LOG_DIR / 'django.log',
             'formatter': 'verbose',
         },
     },
     'root': {
-        'handlers': ['console', 'file'],
+        'handlers': ['file'],
         'level': 'DEBUG',
     },
 }
