@@ -8,3 +8,4 @@ config/.env
 frontend/dist
 frontend/build
 
+.env

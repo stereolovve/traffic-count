@@ -5,3 +5,7 @@ log.txt
 auth_tokens.json
 icone.spec
 main.spec
+.env
+dist
+build
+/auth/media
