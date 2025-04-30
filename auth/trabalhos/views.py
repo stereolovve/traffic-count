@@ -17,7 +17,7 @@ def trabalho_list(request):
     cliente_id = request.GET.get('cliente_id')
     codigo_id = request.GET.get('codigo_id')
     
-    clientes = Cliente.objects.all()
+    clientes = Cliente.objects.filter().order_by('nome')
     cliente = None
     codigo = None
     codigos = []
@@ -25,11 +25,11 @@ def trabalho_list(request):
     
     if cliente_id:
         cliente = get_object_or_404(Cliente, id=cliente_id)
-        codigos = Codigo.objects.filter(cliente=cliente)
+        codigos = Codigo.objects.filter(cliente=cliente).order_by('codigo')
         
         if codigo_id:
             codigo = get_object_or_404(Codigo, id=codigo_id)
-            pontos = Ponto.objects.filter(codigo=codigo)
+            pontos = Ponto.objects.filter(codigo=codigo).order_by('nome')
     
     context = {
         'clientes': clientes,
