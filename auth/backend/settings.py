@@ -174,25 +174,30 @@ SIMPLE_JWT = {
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
-    'handlers': {
-        'console': {
-            'level': 'DEBUG',
-            'class': 'logging.StreamHandler',
-            'stream': None,
-            'formatter': 'verbose',
-        },
-    },
     'formatters': {
         'verbose': {
-            'format': '[{levelname}] {message}',
+            'format': '[{asctime}] [{levelname}] {name}: {message}',
             'style': '{',
         },
     },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': BASE_DIR / 'logs/django.log',
+            'formatter': 'verbose',
+        },
+    },
     'root': {
-        'handlers': ['console'],
+        'handlers': ['console', 'file'],
         'level': 'DEBUG',
     },
 }
+
 
 CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1:8000", "http://perplan.tech"]  # Adicione seu domínio/IP
 CSRF_COOKIE_SECURE = False  # Desative se estiver usando HTTP
