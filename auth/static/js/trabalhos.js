@@ -386,6 +386,7 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             const response = await fetch(`/trabalhos/cliente/${id}/delete/`, {
                 method: 'POST',
+                credentials: 'same-origin',
                 headers: {
                     'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
                 },
@@ -412,6 +413,7 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             const response = await fetch(`/trabalhos/codigo/${id}/delete/`, {
                 method: 'POST',
+                credentials: 'same-origin',
                 headers: {
                     'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
                 },
@@ -438,6 +440,7 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             const response = await fetch(`/trabalhos/ponto/${id}/delete/`, {
                 method: 'POST',
+                credentials: 'same-origin',
                 headers: {
                     'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
                 },
