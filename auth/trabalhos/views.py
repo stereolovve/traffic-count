@@ -18,6 +18,8 @@ def trabalho_list(request):
     codigo_id = request.GET.get('codigo_id')
     
     clientes = Cliente.objects.filter().order_by('nome')
+    for cliente in clientes:
+        cliente.num_codigos = Codigo.objects.filter(cliente=cliente).count()
     cliente = None
     codigo = None
     codigos = []
@@ -26,6 +28,10 @@ def trabalho_list(request):
     if cliente_id:
         cliente = get_object_or_404(Cliente, id=cliente_id)
         codigos = Codigo.objects.filter(cliente=cliente).order_by('codigo')
+        
+        # Adicionar a contagem de pontos para cada código
+        for codigo_obj in codigos:
+            codigo_obj.num_pontos = Ponto.objects.filter(codigo=codigo_obj).count()
         
         if codigo_id:
             codigo = get_object_or_404(Codigo, id=codigo_id)
