@@ -8,7 +8,7 @@ load_dotenv()
 # Versão atual do aplicativo - atualize este valor a cada nova versão
 APP_VERSION = "6.4.2"
 
-API_URL = os.getenv("API_URL", "http://127.0.0.1:8000")
+API_URL = os.getenv("API_URL", "http://perplan.tech")
 EXCEL_BASE_DIR = os.getenv("EXCEL_BASE_DIR", "Z:\\0Pesquisa\\_0ContadorDigital\\ContagensQ2")
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 
