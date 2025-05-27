@@ -30,9 +30,11 @@
                         <a href="{% url 'home' %}" class="nav-link {% if request.resolver_match.url_name == 'home' %}nav-link-active{% else %}nav-link-inactive{% endif %}">
                             <i class="fas fa-home mr-1"></i> Home
                         </a>
+                        {% if can_edit %}
                         <a href="{% url 'trabalho_list' %}" class="nav-link {% if request.resolver_match.url_name == 'trabalho_list' %}nav-link-active{% else %}nav-link-inactive{% endif %}">
-                            <i class="fas fa-tasks mr-1"></i> Trabalhos
+                            <i class="fas fa-tasks mr-1"></i> Clientes
                         </a>
+                        {% endif %}
                         <a href="{% url 'listar_sessoes' %}" class="nav-link {% if request.resolver_match.url_name == 'listar_sessoes' %}nav-link-active{% else %}nav-link-inactive{% endif %}">
                             <i class="fas fa-calculator mr-1"></i> Contagens
                         </a>
@@ -85,9 +87,11 @@
                 <a href="{% url 'home' %}" class="nav-link block {% if request.resolver_match.url_name == 'home' %}nav-link-active{% else %}nav-link-inactive{% endif %}">
                     <i class="fas fa-home mr-1"></i> Home
                 </a>
+                {% if can_edit %}
                 <a href="{% url 'trabalho_list' %}" class="nav-link block {% if request.resolver_match.url_name == 'trabalho_list' %}nav-link-active{% else %}nav-link-inactive{% endif %}">
                     <i class="fas fa-tasks mr-1"></i> Trabalhos
                 </a>
+                {% endif %}
                 <a href="{% url 'listar_sessoes' %}" class="nav-link block {% if request.resolver_match.url_name == 'listar_sessoes' %}nav-link-active{% else %}nav-link-inactive{% endif %}">
                     <i class="fas fa-calculator mr-1"></i> Contagens
                 </a>
