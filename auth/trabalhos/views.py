@@ -14,6 +14,7 @@ from rest_framework.permissions import IsAuthenticated
 from .forms import PontoDetailForm
 import unicodedata
 from django.views.decorators.http import require_POST
+from django.urls import reverse
 
 # Função para verificar se o usuário pode editar
 def can_edit(user):
@@ -336,6 +337,27 @@ def ponto_detail_delete_image(request, pk, image_id):
     image.delete()
     messages.success(request, "Imagem excluída com sucesso!")
     return redirect('ponto_detail', pk=pk)
+
+@Supervisao_required
+@require_POST
+def ponto_bulk_delete(request):
+    ids = request.POST.getlist('selected_pontos')
+    if not ids:
+        messages.warning(request, 'Nenhum ponto selecionado para exclusão.')
+    else:
+        deleted, _ = Ponto.objects.filter(id__in=ids).delete()
+        messages.success(request, f'{deleted} pontos excluídos com sucesso!')
+    cliente_id = request.POST.get('cliente_id')
+    codigo_id = request.POST.get('codigo_id')
+    url = reverse('trabalho_list')
+    params = []
+    if cliente_id:
+        params.append(f'cliente_id={cliente_id}')
+    if codigo_id:
+        params.append(f'codigo_id={codigo_id}')
+    if params:
+        url = f"{url}?{'&'.join(params)}"
+    return redirect(url)
 
 class ClienteViewSet(viewsets.ModelViewSet):
     queryset = Cliente.objects.all()

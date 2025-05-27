@@ -472,6 +472,24 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // Bulk-delete select-all logic
+    const selectAll = document.getElementById('select-all');
+    const checkboxes = document.querySelectorAll('.select-checkbox');
+    const bulkDeleteBtn = document.getElementById('bulk-delete-btn');
+    if (selectAll) {
+        selectAll.addEventListener('change', () => {
+            checkboxes.forEach(cb => { cb.checked = selectAll.checked; });
+            bulkDeleteBtn.disabled = !selectAll.checked;
+        });
+    }
+    checkboxes.forEach(cb => {
+        cb.addEventListener('change', () => {
+            const anyChecked = Array.from(checkboxes).some(c => c.checked);
+            bulkDeleteBtn.disabled = !anyChecked;
+            if (!anyChecked) selectAll.checked = false;
+        });
+    });
+
     // Bulk create points
     document.getElementById('bulkCreatePontosBtn')?.addEventListener('click', () => {
         showModal('bulkCreatePontosModal');

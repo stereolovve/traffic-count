@@ -28,6 +28,7 @@ urlpatterns = [
     path('ponto/<int:pk>/edit/', views.ponto_edit, name='ponto_edit'),
     path('ponto/<int:pk>/update/', views.ponto_update, name='ponto_update'),
     path('ponto/<int:pk>/delete/', views.ponto_delete, name='ponto_delete'),
+    path('ponto/bulk-delete/', views.ponto_bulk_delete, name='ponto_bulk_delete'),
     path('ponto/<int:pk>/', views.ponto_detail, name='ponto_detail'),
     # Add images to existing detail
     path('ponto/<int:pk>/add-images/<int:detail_id>/', views.ponto_detail_add_images, name='ponto_detail_add_images'),
