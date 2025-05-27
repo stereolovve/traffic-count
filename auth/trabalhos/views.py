@@ -21,15 +21,12 @@ def can_edit(user):
     Verifica se o usuário pode editar elementos.
     Permite apenas usuários com cargo Supervisao (incluindo variações acentuadas)
     """
-    # DEBUG: log user and attributes
-    print(f"can_edit called for user={getattr(user, 'username', None)} super={user.is_superuser} staff={user.is_staff}")
     from django.contrib.auth.models import Group
     if hasattr(user, 'profile') and hasattr(user.profile, 'cargo'):
         print(f"profile.cargo raw: {user.profile.cargo}")
     if hasattr(user, 'cargo'):
         print(f"user.cargo raw: {user.cargo}")
     # log groups
-    print(f"user.groups: {[g.name for g in user.groups.all()]}")
     # allow superusers and staff
     if user.is_superuser or user.is_staff:
         return True
