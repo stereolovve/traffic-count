@@ -39,9 +39,19 @@
             </form>
             
             {% if request.GET.ponto_id %}
-            <a href="{% url 'croquis_create' %}?ponto_id={{ request.GET.ponto_id }}" class="bg-green-600 hover:bg-green-700 text-white rounded px-4 py-2 flex items-center justify-center transition-colors w-full sm:w-auto">
-                <i class="fas fa-plus mr-2"></i> Adicionar Croqui
-            </a>
+            <div class="flex space-x-2">
+                <a href="{% url 'croquis_create' %}?ponto_id={{ request.GET.ponto_id }}" class="bg-green-600 hover:bg-green-700 text-white rounded px-4 py-2 flex items-center justify-center transition-colors">
+                    <i class="fas fa-plus mr-2"></i> Adicionar Croqui
+                </a>
+                <a href="{% url 'batch_upload_croquis' ponto_id=ponto.id %}" class="bg-indigo-600 hover:bg-indigo-700 text-white rounded px-4 py-2 flex items-center justify-center transition-colors">
+                    <i class="fas fa-upload mr-2"></i> Upload em Lote
+                </a>
+                <button id="toggleViewBtn" class="bg-blue-600 hover:bg-blue-700 text-white rounded px-4 py-2 flex items-center justify-center transition-colors">
+                    <i class="fas fa-th-large mr-2 grid-view-icon"></i>
+                    <i class="fas fa-list mr-2 list-view-icon hidden"></i>
+                    <span class="view-text">Visualização em Grade</span>
+                </button>
+            </div>
             {% endif %}
         </div>
         {% if not request.GET.cliente_id %}
@@ -191,14 +201,22 @@
             </div>
         </div>
         {% elif request.GET.ponto_id %}
-        <!-- Croquis List -->
+        <!-- Croquis List/Grid View -->
         <div class="mb-6">
             <div class="flex justify-between items-center mb-4">
                 <h1 class="text-2xl font-semibold">Croquis do Ponto {{ ponto.nome }}</h1>
-                <div>
+                <div class="flex space-x-2">
                     <a href="{% url 'croquis_create' %}?ponto_id={{ ponto.id }}" class="bg-green-600 hover:bg-green-700 text-white rounded px-4 py-2 flex items-center transition-colors">
                         <i class="fas fa-plus mr-2"></i> Adicionar Croqui
                     </a>
+                    <a href="{% url 'batch_upload_croquis' ponto_id=ponto.id %}" class="bg-indigo-600 hover:bg-indigo-700 text-white rounded px-4 py-2 flex items-center justify-center transition-colors">
+                        <i class="fas fa-upload mr-2"></i> Upload em Lote
+                    </a>
+                    <button id="toggleViewBtn" class="bg-blue-600 hover:bg-blue-700 text-white rounded px-4 py-2 flex items-center justify-center transition-colors">
+                        <i class="fas fa-th-large mr-2 grid-view-icon"></i>
+                        <i class="fas fa-list mr-2 list-view-icon hidden"></i>
+                        <span class="view-text">Visualização em Grade</span>
+                    </button>
                 </div>
             </div>
             
@@ -263,6 +281,59 @@
                     </table>
                 </div>
             </div>
+            
+            <!-- Gallery View (initially hidden) -->
+            <div id="galleryView" class="hidden mt-4">
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                    {% for croqui in croquis_list %}
+                    <div class="group relative bg-white rounded-lg shadow overflow-hidden hover:shadow-md transition-shadow">
+                        <a href="{% url 'croquis_detail' croqui.pk %}" class="block croqui-image">
+                            <div class="aspect-square overflow-hidden bg-gray-100">
+                                {% if croqui.imagem %}
+                                <img src="{{ croqui.imagem.url }}" alt="Croqui" class="h-full w-full object-cover transition-transform group-hover:scale-105">
+                                {% else %}
+                                <div class="flex h-full items-center justify-center">
+                                    <i class="fas fa-image text-gray-400 text-3xl"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="absolute top-2 right-2">
+                                <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium
+                                    {% if croqui.status == 'A' %}bg-green-100 text-green-800
+                                    {% elif croqui.status == 'R' %}bg-red-100 text-red-800
+                                    {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                                    {{ croqui.get_status_display }}
+                                </span>
+                            </div>
+                        </a>
+                        <div class="p-3">
+                            <div class="text-sm font-medium text-gray-900">{{ croqui.data_croqui|date:"d/m/Y" }}</div>
+                            <div class="mt-2 flex justify-between items-center">
+                                <div class="text-xs text-gray-500">ID: {{ croqui.id }}</div>
+                                <div class="flex space-x-2">
+                                    <a href="{% url 'croquis_edit' croqui.pk %}" class="text-indigo-600 hover:text-indigo-900" title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    {% if croqui.status == 'P' %}
+                                    <a href="{% url 'croquis_review' croqui.pk %}" class="text-green-600 hover:text-green-900" title="Revisar">
+                                        <i class="fas fa-check-circle"></i>
+                                    </a>
+                                    {% endif %}
+                                    <a href="{% url 'croquis_delete' croqui.pk %}" class="text-red-600 hover:text-red-900" title="Excluir">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="col-span-full text-center py-8 text-gray-500">
+                        <i class="fas fa-image text-gray-300 text-5xl mb-4"></i>
+                        <p>Nenhum croqui encontrado.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
         </div>
         {% endif %}
 
@@ -300,4 +371,65 @@
         {% endif %}
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Toggle between table and gallery views
+        const toggleViewBtn = document.getElementById('toggleViewBtn');
+        const tableView = document.getElementById('tableView');
+        const galleryView = document.getElementById('galleryView');
+        const gridViewIcon = document.querySelector('.grid-view-icon');
+        const listViewIcon = document.querySelector('.list-view-icon');
+        const viewText = document.querySelector('.view-text');
+        
+        if (toggleViewBtn) {
+            toggleViewBtn.addEventListener('click', function() {
+                if (tableView.classList.contains('hidden')) {
+                    // Switch to table view
+                    tableView.classList.remove('hidden');
+                    galleryView.classList.add('hidden');
+                    gridViewIcon.classList.remove('hidden');
+                    listViewIcon.classList.add('hidden');
+                    viewText.textContent = 'Visualização em Grade';
+                } else {
+                    // Switch to gallery view
+                    tableView.classList.add('hidden');
+                    galleryView.classList.remove('hidden');
+                    gridViewIcon.classList.add('hidden');
+                    listViewIcon.classList.remove('hidden');
+                    viewText.textContent = 'Visualização em Lista';
+                }
+            });
+        }
+        
+        // Lightbox for croqui images
+        const croquiImages = document.querySelectorAll('.croqui-image');
+        
+        croquiImages.forEach(image => {
+            image.addEventListener('click', function(e) {
+                // Only show lightbox if it has an image
+                const imgElement = this.querySelector('img');
+                if (!imgElement) return;
+                
+                e.preventDefault();
+                
+                const overlay = document.createElement('div');
+                overlay.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50';
+                
+                const img = document.createElement('img');
+                img.src = imgElement.src;
+                img.className = 'max-h-screen max-w-screen-lg object-contain';
+                
+                overlay.appendChild(img);
+                document.body.appendChild(overlay);
+                
+                overlay.addEventListener('click', function() {
+                    document.body.removeChild(overlay);
+                });
+            });
+        });
+    });
+</script>
 {% endblock %}

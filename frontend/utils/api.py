@@ -15,11 +15,25 @@ logging.getLogger(__name__).setLevel(logging.ERROR)
 # Cache apenas para token de autenticação
 @lru_cache(maxsize=1)
 def get_auth_token() -> Optional[str]:
+    # Try multiple possible locations for the token
     try:
-        with open("tokens.json", "r") as f:
-            tokens = json.load(f)
-            return tokens.get("access")
-    except:
+        # First try the standard location in the user's desktop directory
+        from utils.config import AUTH_TOKENS_FILE
+        if AUTH_TOKENS_FILE.exists():
+            with open(AUTH_TOKENS_FILE, "r") as f:
+                tokens = json.load(f)
+                return tokens.get("access")
+        
+        # Fallback to the local tokens.json if it exists
+        local_tokens = Path("tokens.json")
+        if local_tokens.exists():
+            with open(local_tokens, "r") as f:
+                tokens = json.load(f)
+                return tokens.get("access")
+                
+        return None
+    except Exception as e:
+        logging.error(f"Error retrieving auth token: {e}")
         return None
 
 async def async_api_request(method, endpoint, data=None, headers=None):
@@ -32,6 +46,12 @@ async def async_api_request(method, endpoint, data=None, headers=None):
         'Content-Type': 'application/json',
         'Accept': 'application/json'
     })
+    
+    # Adiciona token de autenticação se disponível e não já incluído
+    if 'Authorization' not in headers:
+        token = get_auth_token()
+        if token:
+            headers['Authorization'] = f"Bearer {token}"
     
     try:
         async with aiohttp.ClientSession() as session:
@@ -51,6 +71,10 @@ async def async_api_request(method, endpoint, data=None, headers=None):
                 elif response.status == 401:  # Unauthorized
                     logging.error("Erro de autenticação (401)")
                     return {"erro": "Erro de autenticação"}
+                elif response.status == 403:  # Forbidden
+                    error_text = await response.text()
+                    logging.error(f"Acesso negado (403): {error_text}")
+                    return {"erro": "Acesso negado: verifique suas permissões"}
                 elif response.status == 404:  # Not Found
                     logging.error("Recurso não encontrado (404)")
                     return {"erro": "Recurso não encontrado"}

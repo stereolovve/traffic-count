@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Upload em Lote de Croquis - {{ ponto.nome }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Breadcrumb -->
+    <nav class="mb-8 text-sm">
+        <ol class="list-reset flex text-gray-500">
+            <li><a href="{% url 'croquis_list' %}" class="text-blue-600 hover:text-blue-800">Croquis</a></li>
+            <li><span class="mx-2">/</span></li>
+            <li><a href="{% url 'croquis_list' %}?cliente_id={{ cliente.id }}" class="text-blue-600 hover:text-blue-800">{{ cliente.nome }}</a></li>
+            <li><span class="mx-2">/</span></li>
+            <li><a href="{% url 'croquis_list' %}?cliente_id={{ cliente.id }}&codigo_id={{ codigo.id }}" class="text-blue-600 hover:text-blue-800">{{ codigo.codigo }}</a></li>
+            <li><span class="mx-2">/</span></li>
+            <li><a href="{% url 'croquis_list' %}?cliente_id={{ cliente.id }}&codigo_id={{ codigo.id }}&ponto_id={{ ponto.id }}" class="text-blue-600 hover:text-blue-800">{{ ponto.nome }}</a></li>
+            <li><span class="mx-2">/</span></li>
+            <li class="text-gray-700">Upload em Lote</li>
+        </ol>
+    </nav>
+
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Upload em Lote de Croquis</h1>
+        <p class="text-gray-600">Selecione múltiplas imagens para upload simultâneo</p>
+    </div>
+
+    <!-- Context Info Card -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8 border-l-4 border-blue-500">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+                <h3 class="text-sm font-medium text-gray-500">Cliente</h3>
+                <p class="mt-1 text-lg font-semibold text-gray-900">{{ cliente.nome }}</p>
+            </div>
+            <div>
+                <h3 class="text-sm font-medium text-gray-500">Código</h3>
+                <p class="mt-1 text-lg font-semibold text-gray-900">{{ codigo.codigo }}</p>
+            </div>
+            <div>
+                <h3 class="text-sm font-medium text-gray-500">Ponto</h3>
+                <p class="mt-1 text-lg font-semibold text-gray-900">{{ ponto.nome }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Form -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <div class="p-6">
+            <form method="post" enctype="multipart/form-data" id="uploadForm">
+                {% csrf_token %}
+                
+                <div class="mb-6">
+                    <div id="dropzone" class="border-2 border-dashed border-gray-300 rounded-lg p-10 text-center cursor-pointer hover:bg-gray-50 transition-colors">
+                        <input type="file" name="images" id="fileInput" multiple accept="image/*" class="hidden">
+                        <div class="mb-4">
+                            <i class="fas fa-cloud-upload-alt text-5xl text-gray-400"></i>
+                        </div>
+                        <p class="text-lg text-gray-700 mb-2">Arraste e solte as imagens aqui</p>
+                        <p class="text-sm text-gray-500 mb-4">ou</p>
+                        <button type="button" id="browseButton" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md inline-flex items-center">
+                            <i class="fas fa-folder-open mr-2"></i>
+                            Selecionar Arquivos
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Preview Area -->
+                <div id="previewArea" class="hidden mb-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Imagens Selecionadas (<span id="fileCount">0</span>)</h3>
+                    <div id="imagePreview" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"></div>
+                </div>
+                
+                <!-- Actions -->
+                <div class="flex justify-end space-x-4">
+                    <a href="{% url 'croquis_list' %}?cliente_id={{ cliente.id }}&codigo_id={{ codigo.id }}&ponto_id={{ ponto.id }}" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-md inline-flex items-center">
+                        <i class="fas fa-times mr-2"></i>
+                        Cancelar
+                    </a>
+                    <button type="submit" id="submitButton" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md inline-flex items-center" disabled>
+                        <i class="fas fa-upload mr-2"></i>
+                        Enviar Croquis (<span id="submitCount">0</span>)
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const dropzone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('fileInput');
+        const browseButton = document.getElementById('browseButton');
+        const previewArea = document.getElementById('previewArea');
+        const imagePreview = document.getElementById('imagePreview');
+        const fileCount = document.getElementById('fileCount');
+        const submitCount = document.getElementById('submitCount');
+        const submitButton = document.getElementById('submitButton');
+        
+        // Open file dialog when browse button is clicked
+        browseButton.addEventListener('click', function() {
+            fileInput.click();
+        });
+        
+        // Handle drag and drop events
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropzone.addEventListener(eventName, preventDefaults, false);
+        });
+        
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropzone.addEventListener(eventName, highlight, false);
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropzone.addEventListener(eventName, unhighlight, false);
+        });
+        
+        function highlight() {
+            dropzone.classList.add('border-blue-500', 'bg-blue-50');
+            dropzone.classList.remove('border-gray-300');
+        }
+        
+        function unhighlight() {
+            dropzone.classList.remove('border-blue-500', 'bg-blue-50');
+            dropzone.classList.add('border-gray-300');
+        }
+        
+        // Handle file drop
+        dropzone.addEventListener('drop', handleDrop, false);
+        
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFiles(files);
+        }
+        
+        // Handle file selection via input
+        fileInput.addEventListener('change', function() {
+            handleFiles(this.files);
+        });
+        
+        function handleFiles(files) {
+            if (files.length > 0) {
+                previewArea.classList.remove('hidden');
+                updateFileCount(files.length);
+                
+                // Clear previous previews
+                imagePreview.innerHTML = '';
+                
+                // Create previews
+                Array.from(files).forEach(file => {
+                    if (!file.type.match('image.*')) {
+                        return;
+                    }
+                    
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const previewContainer = document.createElement('div');
+                        previewContainer.className = 'relative group';
+                        
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.className = 'w-full h-32 object-cover rounded-lg';
+                        
+                        const fileName = document.createElement('div');
+                        fileName.className = 'mt-1 text-xs text-gray-500 truncate';
+                        fileName.textContent = file.name;
+                        
+                        previewContainer.appendChild(img);
+                        previewContainer.appendChild(fileName);
+                        imagePreview.appendChild(previewContainer);
+                    }
+                    
+                    reader.readAsDataURL(file);
+                });
+            }
+        }
+        
+        function updateFileCount(count) {
+            fileCount.textContent = count;
+            submitCount.textContent = count;
+            submitButton.disabled = count === 0;
+        }
+        
+        // Form submission with loading state
+        const uploadForm = document.getElementById('uploadForm');
+        uploadForm.addEventListener('submit', function() {
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Enviando...';
+        });
+    });
+</script>
+{% endblock %}

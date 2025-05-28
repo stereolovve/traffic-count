@@ -3,19 +3,21 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
-from django.shortcuts import render, redirect
 from django.contrib import messages
-from django.http import HttpResponse
-from django.shortcuts import render
+from django.http import HttpResponse, JsonResponse
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from .models import Croquis
 from .forms import CroquisForm, CroquisReviewForm, CroquisFilterForm
+from .serializers import CroquisSerializer
 from django.utils import timezone
-from django.http import JsonResponse
 from trabalhos.models import Ponto, Cliente, Codigo
 from padroes.models import PadraoContagem
 from django.db.models import Q
+from rest_framework import viewsets, permissions
+from rest_framework.authentication import SessionAuthentication
+from rest_framework_simplejwt.authentication import JWTAuthentication
+import json
 
 @login_required
 def ajax_load_pontos(request):
@@ -208,7 +210,11 @@ class CroquisUpdateView(LoginRequiredMixin, UpdateView):
 class CroquisDeleteView(LoginRequiredMixin, DeleteView):
     model = Croquis
     template_name = 'croquis/croquis_confirm_delete.html'
-    success_url = reverse_lazy('croquis_list')
+    
+    def get_success_url(self):
+        # Retornar para a lista de croquis do ponto
+        ponto = self.object.ponto
+        return f"{reverse_lazy('croquis_list')}?cliente_id={ponto.codigo.cliente.id}&codigo_id={ponto.codigo.id}&ponto_id={ponto.id}"
 
 class CroquisReviewView(LoginRequiredMixin, UpdateView):
     model = Croquis
@@ -227,3 +233,80 @@ class CroquisReviewView(LoginRequiredMixin, UpdateView):
             'Croqui aprovado com sucesso!' if status == 'A' else 'Croqui reprovado com sucesso!'
         )
         return response
+
+
+@login_required
+def batch_upload_croquis(request, ponto_id):
+    """View para upload em lote de croquis para um ponto específico"""
+    ponto = get_object_or_404(Ponto, pk=ponto_id)
+    
+    if request.method == 'POST':
+        files = request.FILES.getlist('images')
+        success_count = 0
+        
+        for file in files:
+            # Create a croqui for each uploaded file
+            croqui = Croquis(
+                ponto=ponto,
+                codigo=ponto.codigo,
+                imagem=file,
+                data_croqui=timezone.now().date(),
+                lote=f"LOTE-{ponto.id}-{timezone.now().strftime('%Y%m%d')}",
+                movimento='Padrão',
+                hora_inicio='08:00',
+                hora_fim='18:00',
+                created_by=request.user,
+                status='P'
+            )
+            
+            # Set the first available pattern
+            padrao = PadraoContagem.objects.first()
+            if padrao:
+                croqui.padrao = padrao
+                
+            croqui.save()
+            success_count += 1
+            
+        messages.success(request, f"{success_count} croquis enviados com sucesso!")
+        return redirect(f"{reverse('croquis_list')}?cliente_id={ponto.codigo.cliente.id}&codigo_id={ponto.codigo.id}&ponto_id={ponto.id}")
+        
+    context = {
+        'ponto': ponto,
+        'codigo': ponto.codigo,
+        'cliente': ponto.codigo.cliente
+    }
+    return render(request, 'croquis/batch_upload.html', context)
+
+
+class CroquisViewSet(viewsets.ModelViewSet):
+    """API ViewSet para Croquis"""
+    queryset = Croquis.objects.all()
+    serializer_class = CroquisSerializer
+    authentication_classes = [JWTAuthentication, SessionAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_queryset(self):
+        queryset = Croquis.objects.all()
+        ponto_id = self.request.query_params.get('ponto_id', None)
+        codigo_id = self.request.query_params.get('codigo_id', None)
+        cliente_id = self.request.query_params.get('cliente_id', None)
+        status = self.request.query_params.get('status', None)
+        
+        if ponto_id:
+            queryset = queryset.filter(ponto_id=ponto_id)
+        if codigo_id:
+            queryset = queryset.filter(codigo_id=codigo_id)
+        if cliente_id:
+            queryset = queryset.filter(codigo__cliente_id=cliente_id)
+        if status:
+            queryset = queryset.filter(status=status)
+            
+        return queryset
+    
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user)
+        
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update({'request': self.request})
+        return context

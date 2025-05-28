@@ -1,6 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from . import views
+from .utils import api_check_auth
 
 router = DefaultRouter()
 router.register(r'clientes', views.ClienteViewSet)
@@ -40,4 +41,5 @@ urlpatterns = [
     # API URLs
     path('api/pontos/bulk-create/', views.bulk_create_pontos, name='bulk-create-pontos'),
     path('api/', include(router.urls)),
+    path('api/check-auth/', api_check_auth, name='api_check_auth'),
 ] 

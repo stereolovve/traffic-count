@@ -5,6 +5,7 @@ from rest_framework import viewsets, filters, status, permissions
 from rest_framework.decorators import action, api_view, permission_classes, authentication_classes
 from rest_framework.response import Response
 from rest_framework.authentication import SessionAuthentication
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from django_filters.rest_framework import DjangoFilterBackend
 from .models import Cliente, Codigo, Ponto, PontoDetail, PontoDetailImage
 from .serializers import ClienteSerializer, CodigoSerializer, PontoSerializer
@@ -362,6 +363,7 @@ def ponto_bulk_delete(request):
 class ClienteViewSet(viewsets.ModelViewSet):
     queryset = Cliente.objects.all()
     serializer_class = ClienteSerializer
+    authentication_classes = [JWTAuthentication, SessionAuthentication]
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
             permission_classes = [permissions.IsAuthenticated]
@@ -372,7 +374,7 @@ class ClienteViewSet(viewsets.ModelViewSet):
 class CodigoViewSet(viewsets.ModelViewSet):
     queryset = Codigo.objects.all()
     serializer_class = CodigoSerializer
-    authentication_classes = [SessionAuthentication]  # Ensure session authentication is used
+    authentication_classes = [JWTAuthentication, SessionAuthentication]  # Support both JWT and session auth
     
     def get_permissions(self):
         # Allow any authenticated user to perform all actions
@@ -380,6 +382,7 @@ class CodigoViewSet(viewsets.ModelViewSet):
         return [perm() for perm in permission_classes]
 
 class PontoViewSet(viewsets.ModelViewSet):
+    authentication_classes = [JWTAuthentication, SessionAuthentication]  # Support both JWT and session auth
     queryset = Ponto.objects.all()
     serializer_class = PontoSerializer
     filter_backends = [DjangoFilterBackend]

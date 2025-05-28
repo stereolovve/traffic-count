@@ -157,6 +157,44 @@ class RefreshTokenView(APIView):
             return Response({"detail": "Token inválido ou expirado!"}, status=401)
 
 
+class SessionTokenView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        """Generate JWT tokens for already authenticated users (via session)"""
+        try:
+            # User is already authenticated via session
+            user = request.user
+            refresh = RefreshToken.for_user(user)
+            
+            return Response({
+                "refresh": str(refresh),
+                "access": str(refresh.access_token),
+                "user": {
+                    "id": user.id,
+                    "username": user.username,
+                    "name": user.first_name,
+                    "last_name": user.last_name,
+                    "email": user.email,
+                    "setor": getattr(user, 'setor', ''),
+                },
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            logger.error(f"Error generating token from session: {e}")
+            return Response({"detail": "Erro ao gerar token."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def check_auth(request):
+    """Simple endpoint to verify if authentication is working"""
+    return Response({
+        "authenticated": True,
+        "user": request.user.username,
+        "auth_type": "JWT" if 'HTTP_AUTHORIZATION' in request.META else "Session"
+    })
+
+
 def register(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
