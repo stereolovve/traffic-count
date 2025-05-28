@@ -149,53 +149,9 @@
             document.getElementById('mobile-menu').classList.toggle('hidden');
         });
         
-        // Initialize API token from Django template if user is authenticated
+        // No automatic token initialization - using session authentication by default
         {% if user.is_authenticated %}
-        (function() {
-            function initializeToken() {
-                // Check if we need to fetch a new token
-                if (!window.apiUtils.isAuthenticated()) {
-                    // Make a request to get a token
-                    fetch('/auth/api/token/', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': window.apiUtils.getCookie('csrftoken')
-                        },
-                        body: JSON.stringify({
-                            username: "{{ user.username }}"
-                            // We'll use a token endpoint that doesn't require a password
-                            // for already authenticated sessions
-                        }),
-                        credentials: 'include'
-                    })
-                    .then(function(response) {
-                        if (!response.ok) {
-                            // If we can't get a token, we'll use session auth instead
-                            console.log('Using session authentication instead of JWT');
-                            throw new Error('Failed to get token');
-                        }
-                        return response.json();
-                    })
-                    .then(function(data) {
-                        if (data.access && data.refresh) {
-                            window.apiUtils.saveTokens(data.access, data.refresh);
-                            console.log('JWT authentication initialized');
-                        }
-                    })
-                    .catch(function(error) {
-                        console.log('Using session authentication:', error.message);
-                    });
-                }
-            }
-
-            // Run when DOM is loaded
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', initializeToken);
-            } else {
-                initializeToken();
-            }
-        })();
+        // User is authenticated via session
         {% endif %}
     </script>
 </body>

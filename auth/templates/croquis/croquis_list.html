@@ -37,22 +37,7 @@
                     <i class="fas fa-search"></i>
                 </button>
             </form>
-            
-            {% if request.GET.ponto_id %}
-            <div class="flex space-x-2">
-                <a href="{% url 'croquis_create' %}?ponto_id={{ request.GET.ponto_id }}" class="bg-green-600 hover:bg-green-700 text-white rounded px-4 py-2 flex items-center justify-center transition-colors">
-                    <i class="fas fa-plus mr-2"></i> Adicionar Croqui
-                </a>
-                <a href="{% url 'batch_upload_croquis' ponto_id=ponto.id %}" class="bg-indigo-600 hover:bg-indigo-700 text-white rounded px-4 py-2 flex items-center justify-center transition-colors">
-                    <i class="fas fa-upload mr-2"></i> Upload em Lote
-                </a>
-                <button id="toggleViewBtn" class="bg-blue-600 hover:bg-blue-700 text-white rounded px-4 py-2 flex items-center justify-center transition-colors">
-                    <i class="fas fa-th-large mr-2 grid-view-icon"></i>
-                    <i class="fas fa-list mr-2 list-view-icon hidden"></i>
-                    <span class="view-text">Visualização em Grade</span>
-                </button>
-            </div>
-            {% endif %}
+        </div>
         </div>
         {% if not request.GET.cliente_id %}
         <!-- Clientes List -->
@@ -206,7 +191,7 @@
             <div class="flex justify-between items-center mb-4">
                 <h1 class="text-2xl font-semibold">Croquis do Ponto {{ ponto.nome }}</h1>
                 <div class="flex space-x-2">
-                    <a href="{% url 'croquis_create' %}?ponto_id={{ ponto.id }}" class="bg-green-600 hover:bg-green-700 text-white rounded px-4 py-2 flex items-center transition-colors">
+                    <a href="{% url 'croquis_create' %}?ponto_id={{ ponto.id }}" class="bg-green-600 hover:bg-green-700 text-white rounded px-4 py-2 flex items-center justify-center transition-colors">
                         <i class="fas fa-plus mr-2"></i> Adicionar Croqui
                     </a>
                     <a href="{% url 'batch_upload_croquis' ponto_id=ponto.id %}" class="bg-indigo-600 hover:bg-indigo-700 text-white rounded px-4 py-2 flex items-center justify-center transition-colors">
@@ -220,7 +205,7 @@
                 </div>
             </div>
             
-            <div class="bg-white rounded-lg shadow overflow-hidden">
+            <div id="tableView" class="bg-white rounded-lg shadow overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
