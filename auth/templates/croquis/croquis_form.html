@@ -6,9 +6,15 @@
 {% block content %}
 <div class="container mx-auto px-4 py-8">
     <div class="mb-6">
+        {% if request.GET.ponto_id %}
+        <a href="{% url 'croquis_list' %}?cliente_id={{ form.initial.codigo.cliente.id }}&codigo_id={{ form.initial.codigo.id }}&ponto_id={{ form.initial.ponto.id }}" class="text-blue-600 hover:text-blue-800 inline-flex items-center">
+            <i class="fas fa-arrow-left mr-2"></i> Voltar para croquis do ponto {{ form.initial.ponto.nome }}
+        </a>
+        {% else %}
         <a href="{% url 'croquis_list' %}" class="text-blue-600 hover:text-blue-800 inline-flex items-center">
             <i class="fas fa-arrow-left mr-2"></i> Voltar para lista
         </a>
+        {% endif %}
     </div>
 
     <div class="bg-white shadow-md rounded-lg overflow-hidden">
@@ -16,6 +22,8 @@
             <h1 class="text-2xl font-bold text-gray-800 mb-6">
                 {% if form.instance.pk %}
                 Editar Croqui {{ form.instance.codigo }}
+                {% elif request.GET.ponto_id %}
+                Novo Croqui para {{ form.initial.ponto.nome }} ({{ form.initial.codigo.codigo }})
                 {% else %}
                 Novo Croqui
                 {% endif %}
@@ -43,6 +51,24 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {# ===================== COLUNA ESQ. ===================== #}
                     <div class="space-y-4">
+                        {% if request.GET.ponto_id %}
+                        {# Informações do ponto (somente leitura) #}
+                        <div class="bg-gray-50 p-4 rounded-lg mb-4">
+                            <h3 class="font-medium text-gray-800 mb-2">Informações do Ponto</h3>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <p class="text-sm text-gray-500">Código</p>
+                                    <p class="font-medium">{{ form.initial.codigo.codigo }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500">Ponto</p>
+                                    <p class="font-medium">{{ form.initial.ponto.nome }}</p>
+                                </div>
+                            </div>
+                            {{ form.codigo }}
+                            {{ form.ponto }}
+                        </div>
+                        {% else %}
                         {# Código (dropdown) #}
                         <div>
                             <label for="id_codigo" class="block text-sm font-medium text-gray-700">Código</label>
@@ -52,21 +78,22 @@
                             {% endif %}
                         </div>
 
-                        {# Lote (texto) #}
-                        <div>
-                            <label for="id_lote" class="block text-sm font-medium text-gray-700">Lote</label>
-                            {{ form.lote }}
-                            {% if form.lote.errors %}
-                            <p class="mt-1 text-sm text-red-600">{{ form.lote.errors.0 }}</p>
-                            {% endif %}
-                        </div>
-
                         {# Ponto (dropdown dependente) #}
                         <div>
                             <label for="id_ponto" class="block text-sm font-medium text-gray-700">Ponto</label>
                             {{ form.ponto }}
                             {% if form.ponto.errors %}
                             <p class="mt-1 text-sm text-red-600">{{ form.ponto.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                        
+                        {# Lote (texto) #}
+                        <div>
+                            <label for="id_lote" class="block text-sm font-medium text-gray-700">Lote</label>
+                            {{ form.lote }}
+                            {% if form.lote.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.lote.errors.0 }}</p>
                             {% endif %}
                         </div>
 

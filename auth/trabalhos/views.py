@@ -372,11 +372,11 @@ class ClienteViewSet(viewsets.ModelViewSet):
 class CodigoViewSet(viewsets.ModelViewSet):
     queryset = Codigo.objects.all()
     serializer_class = CodigoSerializer
+    authentication_classes = [SessionAuthentication]  # Ensure session authentication is used
+    
     def get_permissions(self):
-        if self.action in ['list', 'retrieve']:
-            permission_classes = [permissions.IsAuthenticated]
-        else:
-            permission_classes = [permissions.IsAuthenticated, IsSupervisaoPermission]
+        # Allow any authenticated user to perform all actions
+        permission_classes = [permissions.IsAuthenticated]
         return [perm() for perm in permission_classes]
 
 class PontoViewSet(viewsets.ModelViewSet):

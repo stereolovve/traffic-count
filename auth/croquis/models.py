@@ -5,6 +5,14 @@ from trabalhos.models import Cliente, Ponto, Codigo
 from padroes.models import PadraoContagem
 
 
+class Projeto(models.Model):
+    nome = models.CharField(max_length=255)
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
+    criado_em = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"{self.nome} ({self.cliente.nome})"
+
 class Croquis(models.Model):
     """
     Represents a Croqui, which is a graphical representation or sketch associated with a given 'Codigo' and 'Ponto'.
@@ -43,6 +51,13 @@ class Croquis(models.Model):
         db_column='codigo'
     )
     lote = models.CharField(max_length=100)
+
+    projeto = models.ForeignKey(
+        Projeto,
+        on_delete=models.CASCADE,
+        related_name='croquis',
+        null=True, blank=True  # se quiser deixar retrocompatível
+    )
     ponto = models.ForeignKey(
         Ponto, 
         on_delete=models.CASCADE, 
@@ -85,3 +100,13 @@ class Croquis(models.Model):
 
     def __str__(self):
         return f"{self.codigo} - {self.ponto} ({self.data_croqui})"
+
+class CroquiJob(models.Model):
+    croqui = models.ForeignKey(Croquis, on_delete=models.CASCADE, related_name='jobs')
+    revisor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    status = models.CharField(max_length=1, choices=[('P', 'Pendente'), ('A', 'Aprovado'), ('R', 'Reprovado')], default='P')
+    comentario = models.TextField(blank=True, null=True)
+    criado_em = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Job de {self.revisor.username} em {self.croqui}"

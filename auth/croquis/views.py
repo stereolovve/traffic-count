@@ -1,5 +1,5 @@
 #croquis/views.py
-from django.shortcuts import render
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
@@ -13,7 +13,8 @@ from .models import Croquis
 from .forms import CroquisForm, CroquisReviewForm, CroquisFilterForm
 from django.utils import timezone
 from django.http import JsonResponse
-from trabalhos.models import Ponto
+from trabalhos.models import Ponto, Cliente, Codigo
+from padroes.models import PadraoContagem
 from django.db.models import Q
 
 @login_required
@@ -72,6 +73,38 @@ class CroquisListView(LoginRequiredMixin, ListView):
         context['filter_form'] = CroquisFilterForm(self.request.GET)
         return context
 
+@login_required
+def croquis_list(request):
+    cliente_id = request.GET.get('cliente_id')
+    codigo_id = request.GET.get('codigo_id')
+    ponto_id = request.GET.get('ponto_id')
+    context = {}
+    if not cliente_id:
+        clientes = Cliente.objects.order_by('nome')
+        context['clientes'] = clientes
+    elif cliente_id and not codigo_id:
+        cliente = get_object_or_404(Cliente, pk=cliente_id)
+        codigos = Codigo.objects.filter(cliente=cliente).order_by('codigo')
+        context['cliente'] = cliente
+        context['codigos'] = codigos
+    elif codigo_id and not ponto_id:
+        codigo = get_object_or_404(Codigo, pk=codigo_id)
+        cliente = get_object_or_404(Cliente, pk=cliente_id)
+        pontos = Ponto.objects.filter(codigo=codigo).order_by('nome')
+        context['cliente'] = cliente
+        context['codigo'] = codigo
+        context['pontos'] = pontos
+    else:
+        ponto = get_object_or_404(Ponto, pk=ponto_id)
+        cliente = get_object_or_404(Cliente, pk=cliente_id)
+        codigo = get_object_or_404(Codigo, pk=codigo_id)
+        croquis_list = Croquis.objects.filter(ponto=ponto).order_by('-created_at')
+        context['cliente'] = cliente
+        context['codigo'] = codigo
+        context['ponto'] = ponto
+        context['croquis_list'] = croquis_list
+    return render(request, 'croquis/croquis_list.html', context)
+
 class CroquisDetailView(LoginRequiredMixin, DetailView):
     model = Croquis
     template_name = 'croquis/croquis_detail.html'
@@ -84,15 +117,62 @@ class CroquisDetailView(LoginRequiredMixin, DetailView):
 
 class CroquisCreateView(LoginRequiredMixin, CreateView):
     model = Croquis
-    form_class = CroquisForm
-    template_name = 'croquis/croquis_form.html'
-    success_url = reverse_lazy('croquis_list')
+    template_name = 'croquis/croquis_upload.html'  # Nova template simplificada
+    fields = ['imagem']  # Apenas o campo de imagem
+    
+    def get_success_url(self):
+        # Retornar para a lista de croquis do ponto
+        ponto_id = self.request.GET.get('ponto_id')
+        ponto = get_object_or_404(Ponto, pk=ponto_id)
+        return f"{reverse_lazy('croquis_list')}?cliente_id={ponto.codigo.cliente.id}&codigo_id={ponto.codigo.id}&ponto_id={ponto.id}"
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Adicionar informações do ponto ao contexto
+        ponto_id = self.request.GET.get('ponto_id')
+        if ponto_id:
+            ponto = get_object_or_404(Ponto, pk=ponto_id)
+            context['ponto'] = ponto
+            context['codigo'] = ponto.codigo
+            context['cliente'] = ponto.codigo.cliente
+        return context
 
     def form_valid(self, form):
+        # Preencher automaticamente os campos não exibidos no formulário
+        ponto_id = self.request.GET.get('ponto_id')
+        if not ponto_id:
+            messages.error(self.request, "É necessário especificar um ponto para criar um croqui.")
+            return self.form_invalid(form)
+            
+        ponto = get_object_or_404(Ponto, pk=ponto_id)
+        
+        # Definir os campos obrigatórios
+        form.instance.ponto = ponto
+        form.instance.codigo = ponto.codigo
         form.instance.created_by = self.request.user
-        form.instance.status = 'P'  # Garante que o status seja 'P'
+        form.instance.status = 'P'
+        
+        # Definir data atual para o croqui
+        from django.utils import timezone
+        form.instance.data_croqui = timezone.now().date()
+        
+        # Gerar um lote baseado na data e ponto
+        form.instance.lote = f"LOTE-{ponto.id}-{timezone.now().strftime('%Y%m%d')}"
+        
+        # Definir valores padrão para campos não exibidos
+        form.instance.movimento = 'Padrão'
+            
+        # Usar o primeiro padrão disponível
+        padrao = PadraoContagem.objects.first()
+        if padrao:
+            form.instance.padrao = padrao
+                
+        # Definir horários padrão
+        form.instance.hora_inicio = '08:00'
+        form.instance.hora_fim = '18:00'
+            
         response = super().form_valid(form)
-        messages.success(self.request, 'Croqui criado com sucesso!')
+        messages.success(self.request, 'Croqui enviado com sucesso!')
         return response
 
     def form_invalid(self, form):
@@ -108,9 +188,22 @@ class CroquisCreateView(LoginRequiredMixin, CreateView):
 
 class CroquisUpdateView(LoginRequiredMixin, UpdateView):
     model = Croquis
-    form_class = CroquisForm
-    template_name = 'croquis/croquis_form.html'
-    success_url = reverse_lazy('croquis_list')
+    fields = ['imagem']
+    template_name = 'croquis/croquis_upload.html'
+    
+    def get_success_url(self):
+        # Retornar para a lista de croquis do ponto
+        ponto = self.object.ponto
+        return f"{reverse_lazy('croquis_list')}?cliente_id={ponto.codigo.cliente.id}&codigo_id={ponto.codigo.id}&ponto_id={ponto.id}"
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Adicionar informações do ponto ao contexto
+        context['ponto'] = self.object.ponto
+        context['codigo'] = self.object.codigo
+        context['cliente'] = self.object.codigo.cliente
+        context['is_edit'] = True
+        return context
 
 class CroquisDeleteView(LoginRequiredMixin, DeleteView):
     model = Croquis

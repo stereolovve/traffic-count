@@ -1,8 +1,9 @@
 from django.urls import path
+from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('', views.CroquisListView.as_view(), name='croquis_list'),
+    path('', views.croquis_list, name='croquis_list'),
     path('<int:pk>/', views.CroquisDetailView.as_view(), name='croquis_detail'),
     path('new/', views.CroquisCreateView.as_view(), name='croquis_create'),
     path('<int:pk>/edit/', views.CroquisUpdateView.as_view(), name='croquis_edit'),
