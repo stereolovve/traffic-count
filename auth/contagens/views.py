@@ -9,7 +9,6 @@ from django.contrib.auth import get_user_model
 from django.views.decorators.csrf import csrf_exempt
 from datetime import datetime, timedelta
 from padroes.models import PadraoContagem
-from django.core.paginator import Paginator
 import csv
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment
@@ -29,7 +28,6 @@ def listar_sessoes(request):
     data = request.GET.get("data")
     padrao = request.GET.get("padrao")
     ativa = request.GET.get("ativa")
-    sessao_id = request.GET.get("id")
     sort_field = request.GET.get("sort", "-id")
 
     # Get list of researchers (users who have created sessions)
@@ -63,9 +61,6 @@ def listar_sessoes(request):
     if ponto:
         sessoes = sessoes.filter(ponto__icontains=ponto)
 
-    if sessao_id:
-        sessoes = sessoes.filter(id=sessao_id)
-
     if data:
         sessoes = sessoes.filter(data__icontains=data)
         
@@ -88,14 +83,9 @@ def listar_sessoes(request):
         else:
             sessoes = sessoes.order_by(sort_field)
 
-    # Paginate results
-    paginator = Paginator(sessoes, 20)
-    page_number = request.GET.get("page")
-    page_obj = paginator.get_page(page_number)
-
     # Prepare the data for the template
     sessoes_com_movimentos = []
-    for sessao in page_obj:
+    for sessao in sessoes:
         movimentos = sessao.movimentos if sessao.movimentos else []
         sessoes_com_movimentos.append({
             "sessao": sessao,
@@ -105,7 +95,6 @@ def listar_sessoes(request):
 
     return render(request, 'contagens/sessoes.html', {
         "sessoes": sessoes_com_movimentos,
-        "page_obj": page_obj,
         "current_sort": sort_field,
         "pesquisadores": pesquisadores,
         "codigos": codigos,
@@ -119,8 +108,7 @@ def listar_sessoes(request):
             "ponto": ponto,
             "data": data,
             "padrao": padrao,
-            "ativa": ativa,
-            "id": sessao_id
+            "ativa": ativa
         }
     })
 
