@@ -9,6 +9,7 @@ from django.contrib.auth import get_user_model
 from django.views.decorators.csrf import csrf_exempt
 from datetime import datetime, timedelta
 from padroes.models import PadraoContagem
+from django.core.paginator import Paginator
 import csv
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment
@@ -29,6 +30,7 @@ def listar_sessoes(request):
     padrao = request.GET.get("padrao")
     ativa = request.GET.get("ativa")
     sort_field = request.GET.get("sort", "-id")
+    page = request.GET.get('page', 1)
 
     # Get list of researchers (users who have created sessions)
     pesquisadores = User.objects.filter(
@@ -93,8 +95,15 @@ def listar_sessoes(request):
             "sessao_id": sessao.id
         })
 
+    # Add pagination
+    paginator = Paginator(sessoes_com_movimentos, 10)  # Show 10 items per page
+    try:
+        sessoes_paginadas = paginator.page(page)
+    except:
+        sessoes_paginadas = paginator.page(1)
+
     return render(request, 'contagens/sessoes.html', {
-        "sessoes": sessoes_com_movimentos,
+        "sessoes": sessoes_paginadas,
         "current_sort": sort_field,
         "pesquisadores": pesquisadores,
         "codigos": codigos,

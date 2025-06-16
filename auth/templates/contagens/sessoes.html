@@ -341,6 +341,26 @@
         .btn-actions:hover {
             background: #374151;
         }
+        .pagination-container {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .pagination-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 2.5rem;
+            height: 2.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .pagination-btn:hover {
+            transform: translateY(-2px);
+        }
     </style>
 </head>
 <body>
@@ -656,6 +676,37 @@
                 {% endfor %}
             </tbody>
         </table>
+
+        <!-- Pagination -->
+        {% if sessoes.paginator.num_pages > 1 %}
+        <div class="pagination-container mt-4 flex justify-center items-center space-x-2">
+            {% if sessoes.has_previous %}
+                <a href="?page=1{% if current_sort %}&sort={{ current_sort }}{% endif %}{% for key, value in filtros_ativos.items %}{% if value %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                   class="pagination-btn bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors">
+                    <i class="fas fa-angle-double-left"></i>
+                </a>
+                <a href="?page={{ sessoes.previous_page_number }}{% if current_sort %}&sort={{ current_sort }}{% endif %}{% for key, value in filtros_ativos.items %}{% if value %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                   class="pagination-btn bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors">
+                    <i class="fas fa-angle-left"></i>
+                </a>
+            {% endif %}
+
+            <span class="text-gray-700">
+                Página {{ sessoes.number }} de {{ sessoes.paginator.num_pages }}
+            </span>
+
+            {% if sessoes.has_next %}
+                <a href="?page={{ sessoes.next_page_number }}{% if current_sort %}&sort={{ current_sort }}{% endif %}{% for key, value in filtros_ativos.items %}{% if value %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                   class="pagination-btn bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors">
+                    <i class="fas fa-angle-right"></i>
+                </a>
+                <a href="?page={{ sessoes.paginator.num_pages }}{% if current_sort %}&sort={{ current_sort }}{% endif %}{% for key, value in filtros_ativos.items %}{% if value %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                   class="pagination-btn bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors">
+                    <i class="fas fa-angle-double-right"></i>
+                </a>
+            {% endif %}
+        </div>
+        {% endif %}
     </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

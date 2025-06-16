@@ -14,15 +14,19 @@ from pathlib import Path
 from datetime import timedelta
 import os
 import sys
+from dotenv import load_dotenv
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Load environment variables from the auth directory
+load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-s(lp#!=-4k63p=^@81=2)dzs+8-ul1=q1$bddd4jnke435lm-p'
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-s(lp#!=-4k63p=^@81=2)dzs+8-ul1=q1$bddd4jnke435lm-p')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -98,11 +102,11 @@ LOGOUT_REDIRECT_URL = 'login'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'autenticacao',
-        'USER': 'postgres',
-        'PASSWORD': 'Senh@011',
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'NAME': os.getenv('DB_NAME_AUTH', 'autenticacao'),
+        'USER': os.getenv('DB_USER', 'postgres'),
+        'PASSWORD': os.getenv('DB_PASSWORD', ''),
+        'HOST': os.getenv('DB_HOST', 'localhost'),
+        'PORT': os.getenv('DB_PORT', '5432'),
     }
 }
 

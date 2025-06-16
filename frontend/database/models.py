@@ -1,16 +1,65 @@
 #models.py
-from sqlalchemy import create_engine, Column, String, Integer, DateTime, Boolean, ForeignKey, UniqueConstraint, PrimaryKeyConstraint
+from sqlalchemy import create_engine, Column, String, Integer, DateTime, Boolean, ForeignKey, UniqueConstraint, PrimaryKeyConstraint, Index, text
 from sqlalchemy.orm import sessionmaker, declarative_base, relationship
 from datetime import datetime
 import os
+import logging
 from sqlalchemy.orm import relationship
+from urllib.parse import quote_plus
+from sqlalchemy.pool import QueuePool
+from dotenv import load_dotenv
+from pathlib import Path
+
+# Get the frontend directory path
+FRONTEND_DIR = Path(__file__).resolve().parent.parent
+
+# Load environment variables from the frontend directory
+load_dotenv(os.path.join(FRONTEND_DIR, '.env'))
+
 Base = declarative_base()
 
-db_path = os.path.join(os.getenv('USERPROFILE'), 'banco_dados_contador.db')
+# Configuração do PostgreSQL com senha do ambiente
+DB_USER = os.getenv('DB_USER', 'postgres')
+DB_PASSWORD = quote_plus(os.getenv('DB_PASSWORD', ''))  # Codifica caracteres especiais
+DB_HOST = os.getenv('DB_HOST', 'localhost')
+DB_PORT = os.getenv('DB_PORT', '5432')
+DB_NAME = os.getenv('DB_NAME', 'contadordb')
 
-engine = create_engine('sqlite:///banco_dados_contador.db')
+DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
-Session = sessionmaker(bind=engine)
+# Configuração do engine com pool de conexões e tratamento de erros
+try:
+    engine = create_engine(
+        DATABASE_URL,
+        poolclass=QueuePool,
+        pool_size=20,
+        max_overflow=10,
+        pool_timeout=30,
+        pool_recycle=1800,
+        pool_pre_ping=True,  # Verifica conexão antes de usar
+        echo=False,  # Desativa logs SQL
+        connect_args={
+            'connect_timeout': 10,  # Timeout de conexão em segundos
+            'options': '-c statement_timeout=10000 -c lock_timeout=10000'  # Timeouts em milissegundos
+        }
+    )
+    
+    # Testa a conexão
+    with engine.connect() as conn:
+        conn.execute(text("SELECT 1"))
+        conn.commit()
+        logging.info("Conexão com o banco de dados estabelecida com sucesso!")
+except Exception as e:
+    logging.error(f"Erro ao conectar ao banco de dados: {e}")
+    raise
+
+# Configuração da sessão com timeout
+Session = sessionmaker(
+    bind=engine,
+    expire_on_commit=False,  # Evita problemas de expiração
+    autocommit=False,
+    autoflush=False
+)
 
 class Categoria(Base):
     __tablename__ = 'categorias'
@@ -23,6 +72,7 @@ class Categoria(Base):
     criado_em = Column(DateTime, default=datetime.now)
     __table_args__ = (
         UniqueConstraint('padrao', 'veiculo', 'movimento', name='uq_categorias_padrao_veiculo_movimento'),
+        Index('idx_categorias_padrao_veiculo', 'padrao', 'veiculo'),  # Índice para melhorar performance
     )
 
     historicos = relationship("Historico", back_populates="categoria")
@@ -37,6 +87,10 @@ class Sessao(Base):
     padrao = Column(String)
     criada_em = Column(DateTime, default=datetime.now)
     ativa = Column(Boolean)
+
+    __table_args__ = (
+        Index('idx_sessoes_ativa', 'ativa'),  # Índice para filtrar sessões ativas
+    )
 
     contagens = relationship("Contagem", back_populates="sessao_obj")
 
@@ -54,6 +108,11 @@ class Contagem(Base):
     contagem_total = Column(Integer, default=0)
     periodo = Column(String)  # Formato HH:MM
 
+    __table_args__ = (
+        Index('idx_contagens_sessao', 'sessao'),  # Índice para melhorar joins
+        Index('idx_contagens_veiculo_movimento', 'veiculo', 'movimento'),  # Índice para consultas comuns
+    )
+
     sessao_obj = relationship("Sessao", back_populates="contagens")
 
     def __repr__(self):
@@ -69,6 +128,11 @@ class Historico(Base):
     timestamp = Column(DateTime, default=datetime.now)
     acao = Column(String)
 
+    __table_args__ = (
+        Index('idx_historico_timestamp', 'timestamp'),  # Índice para consultas por data
+        Index('idx_historico_sessao', 'sessao'),  # Índice para joins
+    )
+
     categoria = relationship("Categoria", back_populates="historicos")
 
     def __repr__(self):
@@ -76,4 +140,9 @@ class Historico(Base):
 
 
 def init_db():
-    Base.metadata.create_all(engine)
+    try:
+        Base.metadata.create_all(engine)
+        logging.info("Tabelas criadas com sucesso!")
+    except Exception as e:
+        logging.error(f"Erro ao criar tabelas: {e}")
+        raise

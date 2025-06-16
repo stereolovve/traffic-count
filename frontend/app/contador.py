@@ -31,10 +31,9 @@ from app.services.history_manager import HistoryManager
 from app.services.api_manager import ApiManager
 from app.services.excel_manager import ExcelManager
 from app.services.ui_manager import UIManager
+from sqlalchemy.sql import text
 
 logging.getLogger(__name__).setLevel(logging.ERROR)
-
-init_db()
 
 class ContadorPerplan(ft.Column):
     def __init__(self, page, username, app):
@@ -52,34 +51,62 @@ class ContadorPerplan(ft.Column):
         self.ultima_contagem = {}
         self.movimento_tabs = {}
         
+        # Inicializar banco de dados
+        try:
+            init_db()
+            logging.info("Banco de dados inicializado com sucesso")
+        except Exception as e:
+            error_msg = f"Erro ao inicializar banco de dados: {str(e)}"
+            logging.error(error_msg)
+            self.page.show_snack_bar(
+                ft.SnackBar(
+                    content=ft.Text("Erro ao conectar ao banco de dados. Verifique as configurações."),
+                    bgcolor=ft.colors.RED
+                )
+            )
+            # Voltar para a tela de login
+            self.app.show_login_page()
+            return
+        
         # Inicializar variáveis essenciais primeiro
-        self.session = Session()
-        self.session_lock = threading.Lock()
-        self.ui_components = {}
-        self.binds = {}  
-        self.labels = {}  
-        self.contagens = {}  
-        self.categorias = []  
-        self.details = {"Movimentos": []}
-        self.period_observacoes = {}
-        
-        # Inicializar serviços
-        self.session_manager = SessionManager(self)
-        self.history_manager = HistoryManager(self)
-        self.api_manager = ApiManager(self)
-        self.excel_manager = ExcelManager(self)
-        self.ui_manager = UIManager(self)
-        
-        # Inicializar outras configurações
-        inicializar_variaveis(self)
-        configurar_numpad_mappings(self)
-        
-        # Configurar UI
-        self.setup_ui()
-        self.page.update()
-        
-        # Carregar sessão ativa
-        asyncio.create_task(self.load_active_session())
+        try:
+            self.session = Session()
+            self.session_lock = threading.Lock()
+            self.ui_components = {}
+            self.binds = {}  
+            self.labels = {}  
+            self.contagens = {}  
+            self.categorias = []  
+            self.details = {"Movimentos": []}
+            self.period_observacoes = {}
+            
+            # Inicializar serviços
+            self.session_manager = SessionManager(self)
+            self.history_manager = HistoryManager(self)
+            self.api_manager = ApiManager(self)
+            self.excel_manager = ExcelManager(self)
+            self.ui_manager = UIManager(self)
+            
+            # Inicializar outras configurações
+            inicializar_variaveis(self)
+            configurar_numpad_mappings(self)
+            
+            # Configurar UI
+            self.setup_ui()
+            self.page.update()
+            
+            # Carregar sessão ativa
+            asyncio.create_task(self.load_active_session())
+        except Exception as e:
+            error_msg = f"Erro ao inicializar contador: {str(e)}"
+            logging.error(error_msg)
+            self.page.show_snack_bar(
+                ft.SnackBar(
+                    content=ft.Text("Erro ao inicializar o contador. Tente novamente."),
+                    bgcolor=ft.colors.RED
+                )
+            )
+            self.app.show_login_page()
 
     def validar_texto(self, texto):
         return re.sub(r'[^a-zA-Z0-9]', '', texto)
@@ -178,7 +205,47 @@ class ContadorPerplan(ft.Column):
             logging.error(f"Erro ao reiniciar aplicação: {ex}")
 
     def save_to_db(self, veiculo, movimento):
-        self.session_manager.save_to_db(veiculo, movimento)
+        try:
+            with self.session_lock:
+                # Criar uma nova sessão para esta operação
+                session = Session()
+                try:
+                    # Definir timeout para esta transação
+                    session.execute(text("SET LOCAL statement_timeout = '10s'"))
+                    session.execute(text("SET LOCAL lock_timeout = '10s'"))
+                    
+                    # Buscar ou criar contagem com lock
+                    contagem = session.query(Contagem).filter_by(
+                        sessao=self.sessao,
+                        veiculo=veiculo,
+                        movimento=movimento
+                    ).with_for_update(skip_locked=True).first()
+
+                    if not contagem:
+                        contagem = Contagem(
+                            sessao=self.sessao,
+                            veiculo=veiculo,
+                            movimento=movimento,
+                            count=0,
+                            periodo=self.details.get("current_timeslot", "00:00")
+                        )
+                        session.add(contagem)
+
+                    # Atualizar contagem
+                    contagem.count = self.contagens.get((veiculo, movimento), 0)
+                    session.commit()
+                    
+                    logging.info(f"✅ Contagem salva no banco para {veiculo} - {movimento}")
+                    
+                except Exception as e:
+                    session.rollback()
+                    raise
+                finally:
+                    session.close()
+                
+        except Exception as ex:
+            logging.error(f"Erro ao salvar no banco: {ex}")
+            # Não propaga o erro para não travar a interface
 
     def recover_active_countings(self):
         self.session_manager.recover_active_countings()
@@ -262,45 +329,129 @@ class ContadorPerplan(ft.Column):
 
     def increment(self, veiculo, movimento):
         try:
-            categoria = self.session.query(Categoria).filter_by(
-                padrao=self.ui_components['inicio'].padrao_dropdown.value,
-                veiculo=veiculo,
-                movimento=movimento
-            ).first()
-            if not categoria:
-                logging.warning(f"[WARNING] Categoria não encontrada para veiculo={veiculo}, movimento={movimento}")
-                return
-
+            # Incrementar contagem na memória primeiro
             key = (veiculo, movimento)
             self.contagens[key] = self.contagens.get(key, 0) + 1
+            
+            # Atualizar UI imediatamente
             self.update_labels(veiculo, movimento)
-            self.save_to_db(veiculo, movimento)
-            self.history_manager.salvar_historico(categoria.id, movimento, "increment")
-            logging.info(f"✅ Contagem salva para {veiculo} - {movimento}")
+            
+            # Criar uma nova sessão para esta operação
+            session = Session()
+            try:
+                # Buscar categoria
+                categoria = session.query(Categoria).filter_by(
+                    padrao=self.ui_components['inicio'].padrao_dropdown.value,
+                    veiculo=veiculo,
+                    movimento=movimento
+                ).first()
+                
+                if not categoria:
+                    logging.warning(f"[WARNING] Categoria não encontrada para veiculo={veiculo}, movimento={movimento}")
+                    return
+
+                # Registrar no histórico
+                self.history_manager.salvar_historico(categoria.id, movimento, "increment")
+                
+                # Salvar no banco em uma transação separada
+                try:
+                    contagem = session.query(Contagem).filter_by(
+                        sessao=self.sessao,
+                        veiculo=veiculo,
+                        movimento=movimento
+                    ).first()
+
+                    if not contagem:
+                        contagem = Contagem(
+                            sessao=self.sessao,
+                            veiculo=veiculo,
+                            movimento=movimento,
+                            count=0,
+                            periodo=self.details.get("current_timeslot", "00:00")
+                        )
+                        session.add(contagem)
+
+                    contagem.count = self.contagens[key]
+                    session.commit()
+                    logging.info(f"✅ Contagem incrementada para {veiculo} - {movimento}")
+                except Exception as db_error:
+                    session.rollback()
+                    logging.error(f"Erro ao salvar no banco: {db_error}")
+                    # Não propaga o erro para não travar a interface
+                
+            except Exception as e:
+                session.rollback()
+                raise
+            finally:
+                session.close()
 
         except Exception as ex:
             logging.error(f"Erro ao incrementar: {ex}")
+            # Não propaga o erro para não travar a interface
 
     def decrement(self, veiculo, movimento):
         try:
-            categoria = self.session.query(Categoria).filter_by(
-                padrao=self.ui_components['inicio'].padrao_dropdown.value,
-                veiculo=veiculo,
-                movimento=movimento
-            ).first()
-            if not categoria:
-                logging.warning(f"[WARNING] Categoria não encontrada para veiculo={veiculo}, movimento={movimento}")
-                return
-
+            # Decrementar contagem na memória primeiro
             key = (veiculo, movimento)
-            self.contagens[key] = max(self.contagens.get(key, 0) - 1, 0)
-            self.update_labels(veiculo, movimento)
-            self.save_to_db(veiculo, movimento)
-            self.history_manager.salvar_historico(categoria.id, movimento, "decrement")
-            logging.info(f"✅ Contagem salva para {veiculo} - {movimento}")
+            current_count = self.contagens.get(key, 0)
+            if current_count > 0:
+                self.contagens[key] = current_count - 1
+                
+                # Atualizar UI imediatamente
+                self.update_labels(veiculo, movimento)
+                
+                # Criar uma nova sessão para esta operação
+                session = Session()
+                try:
+                    # Buscar categoria
+                    categoria = session.query(Categoria).filter_by(
+                        padrao=self.ui_components['inicio'].padrao_dropdown.value,
+                        veiculo=veiculo,
+                        movimento=movimento
+                    ).first()
+                    
+                    if not categoria:
+                        logging.warning(f"[WARNING] Categoria não encontrada para veiculo={veiculo}, movimento={movimento}")
+                        return
+
+                    # Registrar no histórico
+                    self.history_manager.salvar_historico(categoria.id, movimento, "decrement")
+                    
+                    # Salvar no banco em uma transação separada
+                    try:
+                        contagem = session.query(Contagem).filter_by(
+                            sessao=self.sessao,
+                            veiculo=veiculo,
+                            movimento=movimento
+                        ).first()
+
+                        if not contagem:
+                            contagem = Contagem(
+                                sessao=self.sessao,
+                                veiculo=veiculo,
+                                movimento=movimento,
+                                count=0,
+                                periodo=self.details.get("current_timeslot", "00:00")
+                            )
+                            session.add(contagem)
+
+                        contagem.count = self.contagens[key]
+                        session.commit()
+                        logging.info(f"✅ Contagem decrementada para {veiculo} - {movimento}")
+                    except Exception as db_error:
+                        session.rollback()
+                        logging.error(f"Erro ao salvar no banco: {db_error}")
+                        # Não propaga o erro para não travar a interface
+                
+                except Exception as e:
+                    session.rollback()
+                    raise
+                finally:
+                    session.close()
 
         except Exception as ex:
             logging.error(f"Erro ao decrementar: {ex}")
+            # Não propaga o erro para não travar a interface
 
     def update_labels(self, veiculo, movimento):
         key = (veiculo, movimento)
