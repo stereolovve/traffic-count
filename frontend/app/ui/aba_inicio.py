@@ -531,7 +531,7 @@ class AbaInicio(ft.Column):
     def validar_horario(self, e):
         value = e.control.value
         # Aceita apenas formato HH:MM
-        if not re.match(r"^(?:[01]\\d|2[0-3]):[0-5]\\d$", value):
+        if not re.match(r"^(?:[01]\d|2[0-3]):[0-5]\d$", value):
             e.control.error_text = "Formato deve ser HH:MM"
             e.control.update()
         else:
