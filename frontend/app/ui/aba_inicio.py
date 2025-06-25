@@ -46,6 +46,16 @@ class AbaInicio(ft.Column):
         )
         self.inputs_container.content.controls.append(user_label)
 
+        # Campo de busca para o código
+        self.codigo_search_input = ft.TextField(
+            label="Pesquisar Código",
+            hint_text="Digite para filtrar...",
+            on_change=self.filtrar_codigos,
+            expand=True,
+            border_radius=8
+        )
+        self.inputs_container.content.controls.append(self.codigo_search_input)
+
         # Dropdowns para Código e Ponto
         self.codigo_dropdown = ft.Dropdown(
             label="Código",
@@ -101,31 +111,18 @@ class AbaInicio(ft.Column):
 
         self.selected_time = "00:00"
 
-        def picker_changed(e):
-            selected_seconds = e.control.value
-            hours, remainder = divmod(selected_seconds, 3600)
-            minutes = (remainder // 60)
-            adjusted_minutes = (minutes // 15) * 15
-            self.selected_time = f"{hours:02}:{adjusted_minutes:02}"
-            self.time_picker_button.text = f"{self.selected_time}"
-            self.time_picker_button.update()
-
-        self.time_picker = ft.CupertinoTimerPicker(
-            mode=ft.CupertinoTimerPickerMode.HOUR_MINUTE,
-            value=0,
-            minute_interval=15,
-            on_change=picker_changed
-        )
-
-        self.time_picker_button = ft.ElevatedButton(
-            text=f"{self.selected_time}",
-            style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=10)),
-            width=float('inf'),
-            height=50,
+        # Substituir time picker por campo de texto com máscara/validação
+        self.horario_input = ft.TextField(
+            label="Horário de Início",
+            hint_text="HH:MM",
+            value=self.selected_time,
             icon=ft.icons.ACCESS_ALARM,
-            on_click=lambda _: self.page.open(ft.AlertDialog(content=self.time_picker))
+            expand=True,
+            border_radius=8,
+            keyboard_type=ft.KeyboardType.NUMBER,
+            on_change=self.validar_horario
         )
-        self.inputs_container.content.controls.append(self.time_picker_button)
+        self.inputs_container.content.controls.append(self.horario_input)
 
         self.padrao_dropdown = ft.Dropdown(
             label="Selecione o Padrão",
@@ -249,10 +246,14 @@ class AbaInicio(ft.Column):
                         self.page.update()
                     return
             
+            # Ordenar alfabeticamente
+            response = sorted(response, key=lambda x: x['codigo'])
+            self.todos_codigos = response
             self.codigo_dropdown.options = [
                 ft.dropdown.Option(
                     key=str(codigo['id']),
-                    text=codigo['codigo']
+                    text=codigo['codigo'],
+                    data=codigo
                 ) for codigo in response
             ]
             
@@ -495,7 +496,7 @@ class AbaInicio(ft.Column):
                 "pesquisador": self.contador.username,
                 "codigo": self.codigo_ponto_input.value,
                 "ponto": self.nome_ponto_input.value,
-                "horario_inicio": self.selected_time,
+                "horario_inicio": self.horario_input.value,
                 "data_ponto": self.data_ponto_input.value,
                 "padrao": self.padrao_dropdown.value,
                 "movimentos": [
@@ -526,3 +527,30 @@ class AbaInicio(ft.Column):
             # Remover banner de loading
             if banner:
                 self.contador.hide_loading(banner)
+
+    def validar_horario(self, e):
+        value = e.control.value
+        # Aceita apenas formato HH:MM
+        if not re.match(r"^(?:[01]\\d|2[0-3]):[0-5]\\d$", value):
+            e.control.error_text = "Formato deve ser HH:MM"
+            e.control.update()
+        else:
+            e.control.error_text = None
+            self.selected_time = value
+            e.control.update()
+
+    def filtrar_codigos(self, e):
+        filtro = e.control.value.lower()
+        if hasattr(self, 'todos_codigos'):
+            codigos = self.todos_codigos
+        else:
+            codigos = [opt.data for opt in self.codigo_dropdown.options if hasattr(opt, 'data') and opt.data]
+        if not codigos:
+            return
+        opcoes_filtradas = []
+        for codigo in codigos:
+            if filtro in codigo['codigo'].lower() or (filtro and codigo['codigo'].lower().startswith(filtro)):
+                opcoes_filtradas.append(ft.dropdown.Option(key=str(codigo['id']), text=codigo['codigo'], data=codigo))
+        self.codigo_dropdown.options = opcoes_filtradas if filtro else [ft.dropdown.Option(key=str(c['id']), text=c['codigo'], data=c) for c in codigos]
+        self.codigo_dropdown.value = None
+        self.codigo_dropdown.update()
