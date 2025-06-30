@@ -52,7 +52,8 @@ INSTALLED_APPS = [
     'autenticacao',
     'croquis',
     'trabalhos',
-    'updates'
+    'updates',
+    'tickets'
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True

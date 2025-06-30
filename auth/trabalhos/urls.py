@@ -42,4 +42,6 @@ urlpatterns = [
     path('api/pontos/bulk-create/', views.bulk_create_pontos, name='bulk-create-pontos'),
     path('api/', include(router.urls)),
     path('api/check-auth/', api_check_auth, name='api_check_auth'),
+
+
 ] 

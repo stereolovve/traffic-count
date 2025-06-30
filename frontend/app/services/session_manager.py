@@ -72,19 +72,25 @@ class SessionManager:
                 self.contador.sessao = f"{base_sessao}_{counter}"
                 counter += 1
 
-
-            # 5. Carregar binds e categorias
+            # 5. Carregar binds e categorias da API (uma única vez)
             binds = await self.contador.api_manager.load_binds(session_data["padrao"])
             if binds:
                 self.contador.binds = binds
 
             categorias = await self.contador.api_manager.load_categories(session_data["padrao"])
             if categorias:
-                self.save_categories_in_local(categorias)
+                # Converter categorias da API para objetos Categoria e salvar no contador
+                self.contador.categorias = []
+                for cat_dict in categorias:
+                    categoria = Categoria(
+                        padrao=cat_dict['pattern_type'],
+                        veiculo=cat_dict['veiculo'],
+                        movimento=cat_dict['movimento'],
+                        bind=cat_dict.get('bind', 'N/A')
+                    )
+                    self.contador.categorias.append(categoria)
 
-            self.carregar_categorias_locais()
-
-            # 6. Criar sessão no banco local
+            # 6. Criar sessão no banco
             nova_sessao = Sessao(
                 sessao=self.contador.sessao,
                 details=json.dumps(self.contador.details),
@@ -230,15 +236,24 @@ class SessionManager:
 
             padrao_atual = self.contador.ui_components['inicio'].padrao_dropdown.value
             
+            # Carregar binds e categorias da API
             binds = await self.contador.api_manager.load_binds(padrao_atual)
             if binds:
                 self.contador.binds = binds
             
             categorias = await self.contador.api_manager.load_categories(padrao_atual)
             if categorias:
-                self.save_categories_in_local(categorias)
+                # Converter categorias da API para objetos Categoria
+                self.contador.categorias = []
+                for cat_dict in categorias:
+                    categoria = Categoria(
+                        padrao=cat_dict['pattern_type'],
+                        veiculo=cat_dict['veiculo'],
+                        movimento=cat_dict['movimento'],
+                        bind=cat_dict.get('bind', 'N/A')
+                    )
+                    self.contador.categorias.append(categoria)
             
-            self.carregar_categorias_locais()
             self.recover_active_countings()
             
             if 'contagem' in self.contador.ui_components:
@@ -335,94 +350,6 @@ class SessionManager:
         except Exception as ex:
             logging.error(f"[ERROR] Erro ao recuperar contagens: {ex}")
 
-    def save_categories_in_local(self, categorias):
-        try:
-            with self.contador.session_lock:
-                for categoria_dict in categorias:
-
-                    movimento = categoria_dict['movimento']
-
-                    # Verificar se já existe
-                    existe = self.session.query(Categoria).filter_by(
-                        padrao=categoria_dict['pattern_type'],
-                        veiculo=categoria_dict['veiculo'],
-                        movimento=movimento
-                    ).first()
-
-                    if not existe:
-                        nova_categoria = Categoria(
-                            padrao=categoria_dict['pattern_type'],
-                            veiculo=categoria_dict['veiculo'],
-                            movimento=movimento,
-                            bind=categoria_dict.get('bind', 'N/A')
-                        )
-                        self.session.add(nova_categoria)
-                    else:
-                        logging.debug(f"[DEBUG] Categoria já existente no banco: {categoria_dict['veiculo']} - {movimento}")
-
-                self.session.commit()
-                logging.debug("[DEBUG] Commit realizado!")
-
-        except Exception as ex:
-            logging.error(f"[ERROR] Erro ao salvar categorias no banco: {ex}")
-            self.session.rollback()
-
-    def _carregar_binds_locais(self, padrao=None):
-        try:
-            if not padrao:
-                return {}
-            
-            categorias = self.session.query(Categoria).filter_by(padrao=padrao).all()
-            binds_locais = {}
-            
-            for cat in categorias:
-                if cat.veiculo not in binds_locais and cat.bind != "N/A":
-                    binds_locais[cat.veiculo] = cat.bind
-                
-            return binds_locais
-        except Exception as ex:
-            logging.error(f"❌ Erro ao carregar binds locais: {ex}")
-            return {}
-
-    def carregar_categorias_locais(self, padrao=None):
-        # Verificar se ui_components existe e tem o componente 'inicio'
-        if not self.ui_components or 'inicio' not in self.ui_components:
-            logging.warning("[WARNING] UI components não inicializados corretamente")
-            return []
-            
-        padrao_atual = padrao or self.ui_components['inicio'].padrao_dropdown.value
-
-        if not padrao_atual:
-            logging.warning("[WARNING] Nenhum padrão selecionado")
-            return []
-
-        logging.debug(f"[DEBUG] Buscando categorias no banco para o padrão: {padrao_atual}")
-
-        with self.contador.session_lock:
-            try:
-                self.categorias = (
-                    self.session.query(Categoria)
-                    .filter(Categoria.padrao == padrao_atual)
-                    .order_by(Categoria.id)
-                    .all()
-                )
-                self.session.commit()
-
-
-                # Atualizar as categorias no contador também
-                self.contador.categorias = self.categorias
-
-                if 'contagem' in self.ui_components:
-                    self.ui_components['contagem'].setup_ui()
-                self.contador.page.update()
-
-            except Exception as ex:
-                logging.error(f"[ERROR] Erro ao carregar categorias locais: {ex}")
-                self.session.rollback()
-                self.categorias = []
-
-        return self.categorias
-
     async def end_session(self):
         try:
             
@@ -442,7 +369,7 @@ class SessionManager:
             with self.contador.session_lock:
                 sessao_concluida = self.session.query(Sessao).filter_by(sessao=self.contador.sessao).first()
                 if sessao_concluida:
-                    sessao_concluida.ativa = False 
+                    sessao_concluida.ativa = False
                     self.session.commit()
                 else:
                     logging.warning("Sessão não encontrada no banco local")

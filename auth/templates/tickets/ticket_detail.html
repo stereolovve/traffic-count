@@ -1,0 +1,335 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Ticket #{{ ticket.id }}{% endblock %}
+{% block page_title %}Ticket #{{ ticket.id }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .status-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        display: inline-block;
+    }
+    .status-aguardando { background-color: #fef3c7; color: #92400e; }
+    .status-iniciado { background-color: #dbeafe; color: #1e40af; }
+    .status-contando { background-color: #dcfce7; color: #166534; }
+    .status-pausado { background-color: #fef3c7; color: #92400e; }
+    .status-finalizado { background-color: #d1fae5; color: #065f46; }
+    
+    .prioridade-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        display: inline-block;
+    }
+    .prioridade-baixa { background-color: #dcfce7; color: #166534; }
+    .prioridade-media { background-color: #fef3c7; color: #92400e; }
+    .prioridade-alta { background-color: #fecaca; color: #991b1b; }
+    .prioridade-urgente { background-color: #fef2f2; color: #dc2626; }
+    
+    .info-card {
+        background: white;
+        border-radius: 0.75rem;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+    }
+    
+    .info-item {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .info-label {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #6b7280;
+        margin-bottom: 0.25rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    .info-value {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #111827;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+    
+    .btn {
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s;
+    }
+    
+    .btn-primary { background-color: #3b82f6; color: white; }
+    .btn-primary:hover { background-color: #2563eb; }
+    
+    .btn-secondary { background-color: #6b7280; color: white; }
+    .btn-secondary:hover { background-color: #4b5563; }
+    
+    .btn-success { background-color: #10b981; color: white; }
+    .btn-success:hover { background-color: #059669; }
+    
+    .btn-warning { background-color: #f59e0b; color: white; }
+    .btn-warning:hover { background-color: #d97706; }
+    
+    .btn-danger { background-color: #ef4444; color: white; }
+    .btn-danger:hover { background-color: #dc2626; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">Ticket #{{ ticket.id }}</h1>
+                <p class="text-gray-600 mt-2">{{ ticket.codigo.codigo }} - {{ ticket.data|date:"d/m/Y" }}</p>
+            </div>
+            <div class="action-buttons">
+                <a href="{% url 'ticket_edit' ticket.pk %}" class="btn btn-primary">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                    </svg>
+                    Editar
+                </a>
+                <a href="{% url 'ticket_list' %}" class="btn btn-secondary">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Voltar
+                </a>
+            </div>
+        </div>
+
+        <!-- Status e Prioridade -->
+        <div class="info-card">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-4">
+                    <span class="status-badge status-{{ ticket.status|lower }}">
+                        {{ ticket.get_status_display }}
+                    </span>
+                    <span class="prioridade-badge prioridade-{{ ticket.prioridade|lower }}">
+                        {{ ticket.get_prioridade_display }}
+                    </span>
+                </div>
+                <div class="text-sm text-gray-500">
+                    Criado em {{ ticket.criado_em|date:"d/m/Y H:i" }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Informações Principais -->
+        <div class="info-card">
+            <h2 class="text-xl font-semibold mb-4 text-gray-900">Informações Principais</h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Código</span>
+                    <span class="info-value">{{ ticket.codigo.codigo }} - {{ ticket.codigo.descricao }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Cliente</span>
+                    <span class="info-value">{{ ticket.codigo.cliente.nome }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Data</span>
+                    <span class="info-value">{{ ticket.data|date:"d/m/Y" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Turno</span>
+                    <span class="info-value">{{ ticket.get_turno_display }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Período</span>
+                    <span class="info-value">{{ ticket.periodo_formatado }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Horas do Período</span>
+                    <span class="info-value">{{ ticket.horas_periodo_formatada }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Duração do Vídeo</span>
+                    <span class="info-value">{{ ticket.duracao_formatada }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Nível</span>
+                    <span class="info-value">{{ ticket.nivel }}/10</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Identificação -->
+        <div class="info-card">
+            <h2 class="text-xl font-semibold mb-4 text-gray-900">Identificação</h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">CAM</span>
+                    <span class="info-value">{{ ticket.cam }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">MOV</span>
+                    <span class="info-value">{{ ticket.mov }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Padrão</span>
+                    <span class="info-value">{{ ticket.padrao.pattern_type }} - {{ ticket.padrao.veiculo }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Responsáveis -->
+        <div class="info-card">
+            <h2 class="text-xl font-semibold mb-4 text-gray-900">Responsáveis</h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Coordenador</span>
+                    <span class="info-value">{{ ticket.coordenador.username }} ({{ ticket.coordenador.name }} {{ ticket.coordenador.last_name }})</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Pesquisador</span>
+                    <span class="info-value">
+                        {% if ticket.pesquisador %}
+                            {{ ticket.pesquisador.username }} ({{ ticket.pesquisador.name }} {{ ticket.pesquisador.last_name }})
+                        {% else %}
+                            <span class="text-gray-400">Não atribuído</span>
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Datas Importantes -->
+        <div class="info-card">
+            <h2 class="text-xl font-semibold mb-4 text-gray-900">Datas Importantes</h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Criado em</span>
+                    <span class="info-value">{{ ticket.criado_em|date:"d/m/Y H:i" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Atualizado em</span>
+                    <span class="info-value">{{ ticket.atualizado_em|date:"d/m/Y H:i" }}</span>
+                </div>
+                {% if ticket.data_atribuicao %}
+                <div class="info-item">
+                    <span class="info-label">Atribuído em</span>
+                    <span class="info-value">{{ ticket.data_atribuicao|date:"d/m/Y H:i" }}</span>
+                </div>
+                {% endif %}
+                {% if ticket.data_finalizacao %}
+                <div class="info-item">
+                    <span class="info-label">Finalizado em</span>
+                    <span class="info-value">{{ ticket.data_finalizacao|date:"d/m/Y H:i" }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Observações -->
+        {% if ticket.observacao %}
+        <div class="info-card">
+            <h2 class="text-xl font-semibold mb-4 text-gray-900">Observações</h2>
+            <div class="bg-gray-50 rounded-lg p-4">
+                <p class="text-gray-700 whitespace-pre-wrap">{{ ticket.observacao }}</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Ações -->
+        <div class="info-card">
+            <h2 class="text-xl font-semibold mb-4 text-gray-900">Ações</h2>
+            <div class="action-buttons">
+                {% if ticket.pode_ser_atribuido %}
+                <button class="btn btn-primary" onclick="atribuirPesquisador()">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                    </svg>
+                    Atribuir Pesquisador
+                </button>
+                {% endif %}
+                
+                {% if ticket.pode_ser_iniciado %}
+                <form method="post" action="{% url 'ticket_change_status' ticket.pk %}" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="status" value="INICIADO">
+                    <button type="submit" class="btn btn-success">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Iniciar
+                    </button>
+                </form>
+                {% endif %}
+                
+                {% if ticket.pode_ser_pausado %}
+                <form method="post" action="{% url 'ticket_change_status' ticket.pk %}" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="status" value="PAUSADO">
+                    <button type="submit" class="btn btn-warning">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Pausar
+                    </button>
+                </form>
+                {% endif %}
+                
+                {% if ticket.pode_ser_finalizado %}
+                <form method="post" action="{% url 'ticket_change_status' ticket.pk %}" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="status" value="FINALIZADO">
+                    <button type="submit" class="btn btn-success">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        Finalizar
+                    </button>
+                </form>
+                {% endif %}
+                
+                <form method="post" action="{% url 'ticket_delete' ticket.pk %}" style="display: inline;" onsubmit="return confirm('Tem certeza que deseja excluir este ticket?')">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                        Excluir
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function atribuirPesquisador() {
+    // Implementar modal para atribuir pesquisador
+    alert('Funcionalidade de atribuição de pesquisador será implementada');
+}
+</script>
+{% endblock %} 

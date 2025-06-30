@@ -20,10 +20,10 @@ Base = declarative_base()
 
 # Configuração do PostgreSQL com senha do ambiente
 DB_USER = os.getenv('DB_USER', 'postgres')
-DB_PASSWORD = quote_plus(os.getenv('DB_PASSWORD', ''))  # Codifica caracteres especiais
-DB_HOST = os.getenv('DB_HOST', 'localhost')
+DB_PASSWORD = quote_plus(os.getenv('DB_PASSWORD', 'Contadormuitof0da'))  # Codifica caracteres especiais
+DB_HOST = os.getenv('DB_HOST', 'database-1.cvis2mu421qm.sa-east-1.rds.amazonaws.com')
 DB_PORT = os.getenv('DB_PORT', '5432')
-DB_NAME = os.getenv('DB_NAME', 'contadordb')
+DB_NAME = os.getenv('DB_NAME', 'contadortestdb')
 
 DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
@@ -86,10 +86,10 @@ class Sessao(Base):
     details = Column(String)
     padrao = Column(String)
     criada_em = Column(DateTime, default=datetime.now)
-    ativa = Column(Boolean)
+    ativa = Column(Boolean, default=True)
 
     __table_args__ = (
-        Index('idx_sessoes_ativa', 'ativa'),  # Índice para filtrar sessões ativas
+        Index('idx_sessoes_ativa', 'ativa'),
     )
 
     contagens = relationship("Contagem", back_populates="sessao_obj")

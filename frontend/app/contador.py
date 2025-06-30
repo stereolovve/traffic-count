@@ -607,12 +607,6 @@ class ContadorPerplan(ft.Column):
             self.listener = None
             self.pressed_keys.clear()
 
-    def save_categories_in_local(self, categorias):
-        self.session_manager.save_categories_in_local(categorias)
-
-    def _carregar_binds_locais(self, padrao=None):
-        self.session_manager._carregar_binds_locais(padrao)
-            
     def logout_user(self, e):
         try:
             # Parar o listener se estiver ativo
@@ -636,16 +630,23 @@ class ContadorPerplan(ft.Column):
     def show_dialog_end_session(self, e):
         self.session_manager.show_dialog_end_session(e)
 
-    def carregar_categorias_locais(self, padrao=None):
-        self.session_manager.carregar_categorias_locais(padrao)
-
     def inicializar_arquivo_excel(self):
         return self.excel_manager.initialize_excel_file()
 
     async def load_categories(self, pattern_type):
         categorias = await self.api_manager.load_categories(pattern_type)
         if categorias:
-            self.save_categories_in_local(categorias)
+            # Converter categorias da API para objetos Categoria
+            self.categorias = []
+            for cat_dict in categorias:
+                categoria = Categoria(
+                    padrao=cat_dict['pattern_type'],
+                    veiculo=cat_dict['veiculo'],
+                    movimento=cat_dict['movimento'],
+                    bind=cat_dict.get('bind', 'N/A')
+                )
+                self.categorias.append(categoria)
+            
             if 'contagem' in self.ui_components:
                 self.ui_components['contagem'].setup_ui()
             self.page.update()

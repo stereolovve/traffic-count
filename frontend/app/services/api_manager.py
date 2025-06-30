@@ -62,7 +62,7 @@ class ApiManager:
                 "data": data_ponto,
                 "horario_inicio": horario_inicio,
                 "usuario": self.username,
-                "ativa": True,
+                "status": "ativa",
                 "movimentos": movimentos,
                 "padrao": padrao
             }
