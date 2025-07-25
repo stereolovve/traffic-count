@@ -50,7 +50,6 @@ INSTALLED_APPS = [
     'contagens',
     'padroes',
     'autenticacao',
-    'croquis',
     'trabalhos',
     'updates',
     'tickets'

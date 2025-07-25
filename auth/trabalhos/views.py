@@ -294,15 +294,10 @@ def ponto_detail(request, pk):
     # prefetch images to display thumbnails
     details = ponto.details.prefetch_related('images').all().order_by('-created_at')
     
-    # Buscar croquis relacionados ao ponto do modelo Croquis
-    from croquis.models import Croquis
-    croquis_relacionados = Croquis.objects.filter(ponto=ponto).select_related('created_by', 'aprovado_por', 'padrao').order_by('-created_at')
-    
     return render(request, 'trabalhos/ponto_detail.html', {
         'ponto': ponto,
         'form': form,
         'details': details,
-        'croquis_relacionados': croquis_relacionados,
         'can_edit': can_edit(request.user) if request.user.is_authenticated else False,
     })
 
