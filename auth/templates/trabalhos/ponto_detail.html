@@ -1,191 +1,596 @@
 {% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ ponto.nome }} - Traffic Count{% endblock %}
+
+{% block page_title %}{{ ponto.nome }}{% endblock %}
+
 {% block content %}
   {% if messages %}
     {% for msg in messages %}
-      <div class="p-4 mb-4 text-white bg-blue-500 rounded">{{ msg }}</div>
+      <div class="p-4 mb-4 text-white bg-blue-500 rounded-lg shadow-md">{{ msg }}</div>
     {% endfor %}
   {% endif %}
-  <div class="max-w-3xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-    <!-- Breadcrumb navigation -->
-    <nav class="mb-6 flex items-center text-sm font-medium text-gray-500">
-      <a href="{% url 'trabalho_list' %}?cliente_id={{ ponto.codigo.cliente.id }}&codigo_id={{ ponto.codigo.id }}" class="hover:text-blue-600">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-        </svg>
-        Voltar para lista de pontos
-      </a>
+  
+  <div class="space-y-6">
+    <!-- Enhanced Breadcrumb -->
+    <nav class="bg-white rounded-lg shadow-sm border border-gray-200 px-6 py-4">
+      <ol class="flex items-center space-x-2 text-sm">
+        <li>
+          <a href="{% url 'home' %}" class="flex items-center text-blue-600 hover:text-blue-800 transition-colors duration-200">
+            <i class="fas fa-home mr-2"></i>
+            Home
+          </a>
+        </li>
+        <i class="fas fa-chevron-right text-gray-400 text-xs"></i>
+        <li>
+          <a href="{% url 'trabalho_list' %}" class="text-blue-600 hover:text-blue-800 transition-colors duration-200">
+            <i class="fas fa-building mr-2"></i>
+            Clientes
+          </a>
+        </li>
+        <i class="fas fa-chevron-right text-gray-400 text-xs"></i>
+        <li>
+          <a href="{% url 'trabalho_list' %}?cliente_id={{ ponto.codigo.cliente.id }}" class="text-blue-600 hover:text-blue-800 transition-colors duration-200">
+            <i class="fas fa-code mr-2"></i>
+            {{ ponto.codigo.cliente.nome }}
+          </a>
+        </li>
+        <i class="fas fa-chevron-right text-gray-400 text-xs"></i>
+        <li>
+          <a href="{% url 'trabalho_list' %}?cliente_id={{ ponto.codigo.cliente.id }}&codigo_id={{ ponto.codigo.id }}" class="text-blue-600 hover:text-blue-800 transition-colors duration-200">
+            <i class="fas fa-map-marker-alt mr-2"></i>
+            {{ ponto.codigo.codigo }}
+          </a>
+        </li>
+        <i class="fas fa-chevron-right text-gray-400 text-xs"></i>
+        <li class="flex items-center font-semibold text-gray-800">
+          <i class="fas fa-map-pin mr-2"></i>
+          {{ ponto.nome }}
+        </li>
+      </ol>
     </nav>
-    <div class="bg-white shadow sm:rounded-lg p-6">
-      <h1 class="text-3xl font-bold text-gray-900">{{ ponto.nome }}</h1>
-      <p class="mt-1 text-sm text-gray-600">Código: {{ ponto.codigo }}</p>
-      <p class="mt-1 text-sm text-gray-600">Localização: {{ ponto.localizacao }}</p>
+
+    <!-- Ponto Info Card -->
+    <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+      <div class="bg-gradient-to-r from-indigo-600 to-indigo-700 px-8 py-6">
+        <div class="flex justify-between items-center">
+          <div>
+            <h1 class="text-2xl font-bold text-white flex items-center">
+              <i class="fas fa-map-pin mr-3"></i>
+              {{ ponto.nome }}
+            </h1>
+            <p class="text-indigo-100 mt-1">{{ ponto.codigo.codigo }} - {{ ponto.codigo.cliente.nome }}</p>
+          </div>
+          <div class="text-right text-indigo-100">
+            <p class="text-sm">Localização:</p>
+            <p class="font-medium">{{ ponto.localizacao|default:"Não informada" }}</p>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Card de Movimentos -->
-    <div class="mt-8 bg-white shadow sm:rounded-lg p-6">
-      <div class="flex justify-between items-center mb-4">
-        <h2 class="text-2xl font-semibold text-gray-800">Movimentos</h2>
-        <button type="button" id="addMovimentoBtn" class="px-4 py-2 bg-blue-600 text-white font-medium rounded-md shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-          Adicionar Movimento
-        </button>
+    <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+      <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
+        <div class="flex justify-between items-center">
+          <h2 class="text-xl font-bold text-white flex items-center">
+            <i class="fas fa-route mr-3"></i>
+            Movimentos
+          </h2>
+          <button type="button" id="addMovimentoBtn" class="bg-white hover:bg-gray-50 text-blue-600 font-semibold py-2 px-4 rounded-lg shadow-md transition-all duration-200 transform hover:scale-105 flex items-center">
+            <i class="fas fa-plus mr-2"></i>
+            Adicionar Movimento
+          </button>
+        </div>
       </div>
-      <div class="mt-4 space-y-4" id="movimentos-container">
-        {% if details %}
-          {% for detail in details %}
-            {% if detail.movimento %}
-              <div class="p-4 border rounded-lg">
-                <div class="flex justify-between items-start">
-                  <div>
-                    <p class="font-medium text-gray-700">{{ detail.movimento }}</p>
-                    <p class="text-sm text-gray-500">{{ detail.created_at|date:"d/m/Y H:i" }}</p>
+      <div class="p-6">
+        <div class="space-y-4" id="movimentos-container">
+          {% if details %}
+            {% for detail in details %}
+              {% if detail.movimento %}
+                <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 hover:bg-gray-100 transition-colors duration-200">
+                  <div class="flex justify-between items-start">
+                    <div class="flex-grow">
+                      <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                          <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-route text-blue-600 text-sm"></i>
+                          </div>
+                        </div>
+                        <div class="ml-3">
+                          <p class="font-medium text-gray-900">{{ detail.movimento }}</p>
+                          <p class="text-sm text-gray-500 mt-1">
+                            <i class="fas fa-clock mr-1"></i>
+                            {{ detail.created_at|date:"d/m/Y H:i" }}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <form method="post" action="{% url 'ponto_detail_delete' ponto.id detail.id %}" onsubmit="return confirm('Tem certeza que deseja excluir este movimento?');" class="ml-4">
+                      {% csrf_token %}
+                      <input type="hidden" name="delete_type" value="movimento">
+                      <button type="submit" class="text-red-600 hover:text-red-800 hover:bg-red-50 p-2 rounded-lg transition-all duration-200">
+                        <i class="fas fa-trash text-sm"></i>
+                      </button>
+                    </form>
                   </div>
-                  <form method="post" action="{% url 'ponto_detail_delete' ponto.id detail.id %}" onsubmit="return confirm('Tem certeza que deseja excluir este movimento?');" class="ml-2">
-                    {% csrf_token %}
-                    <input type="hidden" name="delete_type" value="movimento">
-                    <button type="submit" class="text-red-600 hover:text-red-800">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                    </button>
-                  </form>
                 </div>
+              {% endif %}
+            {% endfor %}
+          {% else %}
+            <div class="text-center py-8">
+              <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-route text-gray-400 text-2xl"></i>
               </div>
-            {% endif %}
-          {% endfor %}
-        {% else %}
-          <p class="text-gray-500">Nenhum movimento cadastrado.</p>
-        {% endif %}
-      </div>
-      <!-- Form para adicionar movimento -->
-      <div id="movimento-form" class="hidden mt-4 p-4 border rounded-lg">
-        <form method="post" class="space-y-4">
-          {% csrf_token %}
-          <input type="hidden" name="form_type" value="movimento">
-          <div>
-            <label for="movimento" class="block text-sm font-medium text-gray-700">Descrição do Movimento</label>
-            <input type="text" name="movimento" id="movimento" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500">
-          </div>
-          <div>
-            <button type="submit" class="w-full inline-flex justify-center py-2 px-4 bg-blue-600 text-white font-medium rounded-md shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-              Salvar Movimento
-            </button>
-          </div>
-        </form>
+              <p class="text-gray-500 font-medium">Nenhum movimento cadastrado</p>
+              <p class="text-gray-400 text-sm">Adicione movimentos para este ponto</p>
+            </div>
+          {% endif %}
+        </div>
+        
+        <!-- Form para adicionar movimento -->
+        <div id="movimento-form" class="hidden mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <form method="post" class="space-y-4">
+            {% csrf_token %}
+            <input type="hidden" name="form_type" value="movimento">
+            <div>
+              <label for="movimento" class="block text-sm font-semibold text-gray-700 mb-2">
+                <i class="fas fa-route mr-2 text-blue-600"></i>Descrição do Movimento
+              </label>
+              <input type="text" name="movimento" id="movimento" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200" placeholder="Ex: Entrada de veículos pela Rua A">
+            </div>
+            <div class="flex gap-3">
+              <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 flex items-center justify-center">
+                <i class="fas fa-save mr-2"></i>
+                Salvar Movimento
+              </button>
+              <button type="button" onclick="document.getElementById('movimento-form').classList.add('hidden')" class="px-4 py-3 bg-gray-300 hover:bg-gray-400 text-gray-700 font-semibold rounded-lg transition-all duration-200">
+                Cancelar
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
 
     <!-- Card de Observações -->
-    <div class="mt-8 bg-white shadow sm:rounded-lg p-6">
-      <div class="flex justify-between items-center mb-4">
-        <h2 class="text-2xl font-semibold text-gray-800">Observações</h2>
-        <button type="button" id="addObservacaoBtn" class="px-4 py-2 bg-blue-600 text-white font-medium rounded-md shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-          Adicionar Observação
-        </button>
+    <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+      <div class="bg-gradient-to-r from-green-600 to-green-700 px-6 py-4">
+        <div class="flex justify-between items-center">
+          <h2 class="text-xl font-bold text-white flex items-center">
+            <i class="fas fa-sticky-note mr-3"></i>
+            Observações
+          </h2>
+          <button type="button" id="addObservacaoBtn" class="bg-white hover:bg-gray-50 text-green-600 font-semibold py-2 px-4 rounded-lg shadow-md transition-all duration-200 transform hover:scale-105 flex items-center">
+            <i class="fas fa-plus mr-2"></i>
+            Adicionar Observação
+          </button>
+        </div>
       </div>
-      <div class="mt-4 space-y-4">
-        {% if details %}
-          {% for detail in details %}
-            {% if detail.observacao %}
-              <div class="p-4 border rounded-lg">
-                <div class="flex justify-between items-start">
-                  <div class="flex-grow">
-                    <p class="mt-2 text-gray-700">{{ detail.observacao }}</p>
-                    <p class="text-sm text-gray-500 mt-2">{{ detail.created_at|date:"d/m/Y H:i" }}</p>
+      <div class="p-6">
+        <div class="space-y-4">
+          {% if details %}
+            {% for detail in details %}
+              {% if detail.observacao %}
+                <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 hover:bg-gray-100 transition-colors duration-200">
+                  <div class="flex justify-between items-start">
+                    <div class="flex-grow">
+                      <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                          <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-sticky-note text-green-600 text-sm"></i>
+                          </div>
+                        </div>
+                        <div class="ml-3 flex-grow">
+                          <p class="text-gray-900 leading-relaxed">{{ detail.observacao }}</p>
+                          <p class="text-sm text-gray-500 mt-2">
+                            <i class="fas fa-clock mr-1"></i>
+                            {{ detail.created_at|date:"d/m/Y H:i" }}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <form method="post" action="{% url 'ponto_detail_delete' ponto.id detail.id %}" onsubmit="return confirm('Tem certeza que deseja excluir esta observação?');" class="ml-4">
+                      {% csrf_token %}
+                      <input type="hidden" name="delete_type" value="observacao">
+                      <button type="submit" class="text-red-600 hover:text-red-800 hover:bg-red-50 p-2 rounded-lg transition-all duration-200">
+                        <i class="fas fa-trash text-sm"></i>
+                      </button>
+                    </form>
                   </div>
-                  <form method="post" action="{% url 'ponto_detail_delete' ponto.id detail.id %}" onsubmit="return confirm('Tem certeza que deseja excluir esta observação?');" class="ml-2">
-                    {% csrf_token %}
-                    <input type="hidden" name="delete_type" value="observacao">
-                    <button type="submit" class="text-red-600 hover:text-red-800">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                    </button>
-                  </form>
                 </div>
+              {% endif %}
+            {% endfor %}
+          {% else %}
+            <div class="text-center py-8">
+              <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-sticky-note text-gray-400 text-2xl"></i>
               </div>
-            {% endif %}
-          {% endfor %}
-        {% else %}
-          <p class="text-gray-500">Nenhuma observação cadastrada.</p>
-        {% endif %}
-      </div>
-      <!-- Form para adicionar observação -->
-      <div id="observacao-form" class="hidden mt-4 p-4 border rounded-lg">
-        <form method="post" class="space-y-4">
-          {% csrf_token %}
-          <input type="hidden" name="form_type" value="observacao">
-          <div>
-            <label for="observacao" class="block text-sm font-medium text-gray-700">Observação</label>
-            <textarea name="observacao" id="observacao" rows="4" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"></textarea>
-          </div>
-          <div>
-            <button type="submit" class="w-full inline-flex justify-center py-2 px-4 bg-blue-600 text-white font-medium rounded-md shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-              Salvar Observação
-            </button>
-          </div>
-        </form>
+              <p class="text-gray-500 font-medium">Nenhuma observação cadastrada</p>
+              <p class="text-gray-400 text-sm">Adicione observações importantes sobre este ponto</p>
+            </div>
+          {% endif %}
+        </div>
+        
+        <!-- Form para adicionar observação -->
+        <div id="observacao-form" class="hidden mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+          <form method="post" class="space-y-4">
+            {% csrf_token %}
+            <input type="hidden" name="form_type" value="observacao">
+            <div>
+              <label for="observacao" class="block text-sm font-semibold text-gray-700 mb-2">
+                <i class="fas fa-sticky-note mr-2 text-green-600"></i>Observação
+              </label>
+              <textarea name="observacao" id="observacao" rows="4" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 resize-none" placeholder="Digite suas observações sobre este ponto..."></textarea>
+            </div>
+            <div class="flex gap-3">
+              <button type="submit" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 flex items-center justify-center">
+                <i class="fas fa-save mr-2"></i>
+                Salvar Observação
+              </button>
+              <button type="button" onclick="document.getElementById('observacao-form').classList.add('hidden')" class="px-4 py-3 bg-gray-300 hover:bg-gray-400 text-gray-700 font-semibold rounded-lg transition-all duration-200">
+                Cancelar
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
 
     <!-- Card de Croquis -->
-    <div class="mt-8 bg-white shadow sm:rounded-lg p-6">
-      <div class="flex justify-between items-center mb-4">
-        <h2 class="text-2xl font-semibold text-gray-800">Croquis</h2>
-        <button type="button" id="addCroquisBtn" class="px-4 py-2 bg-blue-600 text-white font-medium rounded-md shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-          Adicionar Croqui
-        </button>
-      </div>
-      <div class="mt-4 grid grid-cols-3 gap-4">
-        {% if details %}
-          {% for detail in details %}
-            {% if detail.images.all %}
-              {% for img in detail.images.all %}
-                <div class="p-2 border rounded-lg">
-                  <div class="relative group">
-                    <a href="{{ img.image.url }}" target="_blank">
-                      <img src="{{ img.image.url }}" alt="Croqui" class="w-full h-32 object-cover rounded-md cursor-pointer" />
-                    </a>
-                    <form method="post" action="{% url 'ponto_detail_delete_image' ponto.id img.id %}" onsubmit="return confirm('Tem certeza que deseja excluir este croqui?');" class="absolute top-1 right-1">
-                      {% csrf_token %}
-                      <button type="submit" class="bg-red-600 text-white p-1 rounded-full hover:bg-red-800 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
-                    </form>
-                  </div>
-                  <p class="text-sm text-gray-500 mt-2">{{ detail.created_at|date:"d/m/Y H:i" }}</p>
-                </div>
-              {% endfor %}
-            {% endif %}
-          {% endfor %}
-        {% else %}
-          <p class="text-gray-500 col-span-3">Nenhum croqui cadastrado.</p>
-        {% endif %}
-      </div>
-      <!-- Form para adicionar croqui -->
-      <div id="croqui-form" class="hidden mt-4 p-4 border rounded-lg">
-        <form method="post" enctype="multipart/form-data" class="space-y-4">
-          {% csrf_token %}
-          <input type="hidden" name="form_type" value="croqui">
-          <div>
-            <label for="imagens" class="block text-sm font-medium text-gray-700">Selecione os arquivos PNG</label>
-            <input type="file" name="imagens" id="imagens" accept=".png" multiple class="mt-1 block w-full text-gray-600">
-            <p class="text-xs text-gray-500 mt-1">Segure Ctrl (ou Shift) para selecionar múltiplos arquivos.</p>
-            <div id="croqui-preview" class="mt-2 grid grid-cols-4 gap-4"></div>
-          </div>
-          <div>
-            <button type="submit" class="w-full inline-flex justify-center py-2 px-4 bg-blue-600 text-white font-medium rounded-md shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-              Salvar Croquis
+    <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+      <div class="bg-gradient-to-r from-purple-600 to-purple-700 px-6 py-4">
+        <div class="flex justify-between items-center">
+          <h2 class="text-xl font-bold text-white flex items-center">
+            <i class="fas fa-images mr-3"></i>
+            Croquis
+          </h2>
+          <div class="flex space-x-3">
+            <!-- Link para ir ao módulo de croquis -->
+            <a href="{% url 'croquis_list' %}?cliente_id={{ ponto.codigo.cliente.id }}&codigo_id={{ ponto.codigo.id }}&ponto_id={{ ponto.id }}" 
+               class="bg-white hover:bg-gray-50 text-purple-600 font-semibold py-2 px-4 rounded-lg shadow-md transition-all duration-200 transform hover:scale-105 flex items-center">
+              <i class="fas fa-external-link-alt mr-2"></i>
+              Gerenciar Croquis
+            </a>
+            <button type="button" id="addCroquisBtn" class="bg-purple-800 hover:bg-purple-900 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-all duration-200 transform hover:scale-105 flex items-center">
+              <i class="fas fa-upload mr-2"></i>
+              Upload Manual
             </button>
           </div>
-        </form>
+        </div>
+      </div>
+      <div class="p-8">
+
+      <!-- Croquis do Sistema (Modelo Croquis) -->
+      {% if croquis_relacionados %}
+      <div class="mb-8">
+        <h3 class="text-xl font-semibold text-gray-700 mb-6 flex items-center">
+          <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+            <i class="fas fa-cogs text-green-600"></i>
+          </div>
+          Croquis do Sistema
+          <span class="ml-auto bg-green-100 text-green-800 text-sm font-medium px-3 py-1 rounded-full">{{ croquis_relacionados|length }}</span>
+        </h3>
+        <div class="grid grid-cols-1 gap-8">
+          {% for croqui in croquis_relacionados %}
+            <div class="border border-gray-200 rounded-xl p-8 bg-gray-50 hover:bg-gray-100 transition-all duration-200 hover:shadow-md">
+              <div class="relative group mb-6">
+                <div class="cursor-pointer croqui-preview" 
+                     data-image="{{ croqui.imagem.url }}"
+                     data-title="Croqui {{ croqui.movimento }}"
+                     data-movimento="{{ croqui.movimento }}"
+                     data-padrao="{{ croqui.padrao.nome }}"
+                     data-data="{{ croqui.data_croqui|date:'d/m/Y' }}"
+                     data-lote="{{ croqui.lote }}"
+                     data-tipo="sistema">
+                  <img src="{{ croqui.imagem.url }}" alt="Croqui {{ croqui.movimento }}" class="w-full h-96 object-contain rounded-lg cursor-pointer hover:opacity-90 transition-all duration-200 bg-white border" />
+                  <div class="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-10 transition-all duration-200 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-search-plus text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-3xl"></i>
+                  </div>
+                </div>
+                <div class="absolute top-2 right-2">
+                  {% if croqui.status == 'A' %}
+                    <span class="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded-full">Aprovado</span>
+                  {% elif croqui.status == 'R' %}
+                    <span class="bg-red-100 text-red-800 text-xs font-medium px-2 py-1 rounded-full">Reprovado</span>
+                  {% else %}
+                    <span class="bg-yellow-100 text-yellow-800 text-xs font-medium px-2 py-1 rounded-full">Pendente</span>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="space-y-3">
+                <div class="flex justify-between items-start">
+                  <h4 class="font-medium text-gray-900">{{ croqui.movimento }}</h4>
+                  <span class="text-xs text-gray-500">{{ croqui.lote }}</span>
+                </div>
+                <div class="text-sm text-gray-600">
+                  <p><strong>Padrão:</strong> {{ croqui.padrao.nome }}</p>
+                  <p><strong>Data:</strong> {{ croqui.data_croqui|date:"d/m/Y" }}</p>
+                  {% if croqui.hora_inicio and croqui.hora_fim %}
+                    <p><strong>Horário:</strong> {{ croqui.hora_inicio|time:"H:i" }} - {{ croqui.hora_fim|time:"H:i" }}</p>
+                  {% endif %}
+                </div>
+                {% if croqui.observacao %}
+                  <div class="text-sm text-gray-600">
+                    <p><strong>Observação:</strong> {{ croqui.observacao|truncatechars:100 }}</p>
+                  </div>
+                {% endif %}
+                <div class="text-xs text-gray-500 border-t pt-2">
+                  <p>Criado por: {{ croqui.created_by.username }} em {{ croqui.created_at|date:"d/m/Y H:i" }}</p>
+                  {% if croqui.aprovado_por %}
+                    <p>Aprovado por: {{ croqui.aprovado_por.username }} em {{ croqui.aprovado_em|date:"d/m/Y H:i" }}</p>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Croquis Manuais (Sistema Antigo) -->
+      <div>
+        <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-3 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          Croquis Manuais
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {% if details %}
+            {% for detail in details %}
+              {% if detail.images.all %}
+                {% for img in detail.images.all %}
+                  <div class="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-all duration-200">
+                    <div class="relative group">
+                      <div class="cursor-pointer croqui-preview" 
+                           data-image="{{ img.image.url }}"
+                           data-title="Croqui Manual"
+                           data-data="{{ detail.created_at|date:'d/m/Y H:i' }}"
+                           data-tipo="manual">
+                        <img src="{{ img.image.url }}" alt="Croqui Manual" class="w-full h-80 object-contain rounded-lg cursor-pointer hover:opacity-90 transition-all duration-200 bg-gray-50 border" />
+                        <div class="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-10 transition-all duration-200 rounded-lg flex items-center justify-center">
+                          <i class="fas fa-search-plus text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-xl"></i>
+                        </div>
+                      </div>
+                      <form method="post" action="{% url 'ponto_detail_delete_image' ponto.id img.id %}" onsubmit="return confirm('Tem certeza que deseja excluir este croqui?');" class="absolute top-1 right-1">
+                        {% csrf_token %}
+                        <button type="submit" class="bg-red-600 text-white p-1 rounded-full hover:bg-red-800 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </form>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-3">{{ detail.created_at|date:"d/m/Y H:i" }}</p>
+                  </div>
+                {% endfor %}
+              {% endif %}
+            {% endfor %}
+          {% else %}
+            <p class="text-gray-500 col-span-3">Nenhum croqui manual cadastrado.</p>
+          {% endif %}
+        </div>
+      </div>
+
+      {% if not croquis_relacionados and not details %}
+        <div class="text-center py-8">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-400 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          <h3 class="text-lg font-medium text-gray-900 mb-2">Nenhum croqui encontrado</h3>
+          <p class="text-gray-500 mb-4">Adicione croquis usando o sistema de croquis ou faça upload manual.</p>
+          <div class="flex justify-center space-x-3">
+            <a href="{% url 'croquis_list' %}?cliente_id={{ ponto.codigo.cliente.id }}&codigo_id={{ ponto.codigo.id }}&ponto_id={{ ponto.id }}" 
+               class="px-4 py-2 bg-green-600 text-white font-medium rounded-md shadow hover:bg-green-700">
+              Ir para Croquis
+            </a>
+            <button type="button" onclick="document.getElementById('addCroquisBtn').click()" class="px-4 py-2 bg-blue-600 text-white font-medium rounded-md shadow hover:bg-blue-700">
+              Upload Manual
+            </button>
+          </div>
+        </div>
+      {% endif %}
+
+        <!-- Form para adicionar croqui manual -->
+        <div id="croqui-form" class="hidden mt-6 p-4 bg-purple-50 border border-purple-200 rounded-lg">
+          <form method="post" enctype="multipart/form-data" class="space-y-4">
+            {% csrf_token %}
+            <input type="hidden" name="form_type" value="croqui">
+            <div>
+              <label for="imagens" class="block text-sm font-semibold text-gray-700 mb-2">
+                <i class="fas fa-upload mr-2 text-purple-600"></i>Selecione os arquivos PNG
+              </label>
+              <input type="file" name="imagens" id="imagens" accept=".png" multiple class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100">
+              <p class="text-xs text-gray-500 mt-2">
+                <i class="fas fa-info-circle mr-1"></i>
+                Segure Ctrl (ou Shift) para selecionar múltiplos arquivos PNG.
+              </p>
+              <div id="croqui-preview" class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4"></div>
+            </div>
+            <div class="flex gap-3">
+              <button type="submit" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 flex items-center justify-center">
+                <i class="fas fa-save mr-2"></i>
+                Salvar Croquis
+              </button>
+              <button type="button" onclick="document.getElementById('croqui-form').classList.add('hidden')" class="px-4 py-3 bg-gray-300 hover:bg-gray-400 text-gray-700 font-semibold rounded-lg transition-all duration-200">
+                Cancelar
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Preview de Imagem -->
+  <div id="imageModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
+    <div class="relative max-w-4xl max-h-screen p-4 w-full">
+      <!-- Botão Fechar -->
+      <button onclick="closeImageModal()" class="absolute top-2 right-2 z-10 bg-black bg-opacity-50 hover:bg-opacity-75 text-white rounded-full p-2 transition-all duration-200">
+        <i class="fas fa-times text-xl"></i>
+      </button>
+      
+      <!-- Container da Imagem -->
+      <div class="bg-white rounded-lg overflow-hidden shadow-2xl">
+        <!-- Header com informações -->
+        <div class="bg-gradient-to-r from-purple-600 to-purple-700 p-4 text-white">
+          <h3 id="modalTitle" class="text-lg font-bold"></h3>
+          <div id="modalInfo" class="text-purple-100 text-sm mt-1"></div>
+        </div>
+        
+        <!-- Imagem -->
+        <div class="relative">
+          <img id="modalImage" src="" alt="" class="w-full max-h-96 object-contain bg-gray-100" />
+          
+          <!-- Loading -->
+          <div id="imageLoading" class="absolute inset-0 bg-gray-100 flex items-center justify-center">
+            <div class="flex items-center space-x-2 text-gray-500">
+              <i class="fas fa-spinner fa-spin"></i>
+              <span>Carregando imagem...</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Footer com ações -->
+        <div class="p-4 bg-gray-50 flex justify-between items-center">
+          <div class="text-sm text-gray-600">
+            <span id="modalType"></span>
+          </div>
+          <div class="flex space-x-3">
+            <button onclick="downloadImage()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors duration-200 flex items-center">
+              <i class="fas fa-download mr-2"></i>
+              Download
+            </button>
+            <button onclick="openImageNewTab()" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors duration-200 flex items-center">
+              <i class="fas fa-external-link-alt mr-2"></i>
+              Abrir em Nova Aba
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
   <script>
+    // Variáveis globais para o modal
+    let currentImageUrl = '';
+    
+    // Função para abrir o modal de imagem
+    function openImageModal(imageUrl, title, movimento, padrao, data, lote, tipo) {
+      currentImageUrl = imageUrl;
+      const modal = document.getElementById('imageModal');
+      const modalImage = document.getElementById('modalImage');
+      const modalTitle = document.getElementById('modalTitle');
+      const modalInfo = document.getElementById('modalInfo');
+      const modalType = document.getElementById('modalType');
+      const imageLoading = document.getElementById('imageLoading');
+      
+      // Mostrar loading
+      imageLoading.classList.remove('hidden');
+      modalImage.style.display = 'none';
+      
+      // Configurar conteúdo do modal
+      modalTitle.textContent = title;
+      modalType.textContent = tipo === 'sistema' ? 'Croqui do Sistema' : 'Croqui Manual';
+      
+      // Configurar informações baseadas no tipo
+      if (tipo === 'sistema') {
+        modalInfo.innerHTML = `
+          <div class="flex flex-wrap gap-4 text-sm">
+            <span><i class="fas fa-route mr-1"></i>Movimento: ${movimento}</span>
+            <span><i class="fas fa-chart-line mr-1"></i>Padrão: ${padrao}</span>
+            <span><i class="fas fa-calendar mr-1"></i>Data: ${data}</span>
+            <span><i class="fas fa-tag mr-1"></i>Lote: ${lote}</span>
+          </div>
+        `;
+      } else {
+        modalInfo.innerHTML = `
+          <div class="flex flex-wrap gap-4 text-sm">
+            <span><i class="fas fa-clock mr-1"></i>Criado em: ${data}</span>
+          </div>
+        `;
+      }
+      
+      // Carregar imagem
+      modalImage.onload = function() {
+        imageLoading.classList.add('hidden');
+        modalImage.style.display = 'block';
+      };
+      
+      modalImage.onerror = function() {
+        imageLoading.innerHTML = `
+          <div class="flex items-center space-x-2 text-red-500">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span>Erro ao carregar imagem</span>
+          </div>
+        `;
+      };
+      
+      modalImage.src = imageUrl;
+      modalImage.alt = title;
+      
+      // Mostrar modal
+      modal.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+    
+    // Função para fechar o modal
+    function closeImageModal() {
+      const modal = document.getElementById('imageModal');
+      modal.classList.add('hidden');
+      document.body.style.overflow = 'auto';
+      currentImageUrl = '';
+    }
+    
+    // Função para download da imagem
+    function downloadImage() {
+      if (currentImageUrl) {
+        const link = document.createElement('a');
+        link.href = currentImageUrl;
+        link.download = currentImageUrl.split('/').pop();
+        link.click();
+      }
+    }
+    
+    // Função para abrir em nova aba
+    function openImageNewTab() {
+      if (currentImageUrl) {
+        window.open(currentImageUrl, '_blank');
+      }
+    }
+    
     document.addEventListener('DOMContentLoaded', () => {
+      // Event listeners para os previews de croqui
+      document.querySelectorAll('.croqui-preview').forEach(element => {
+        element.addEventListener('click', function() {
+          const imageUrl = this.dataset.image;
+          const title = this.dataset.title;
+          const movimento = this.dataset.movimento || '';
+          const padrao = this.dataset.padrao || '';
+          const data = this.dataset.data;
+          const lote = this.dataset.lote || '';
+          const tipo = this.dataset.tipo;
+          
+          openImageModal(imageUrl, title, movimento, padrao, data, lote, tipo);
+        });
+      });
+      
+      // Fechar modal com ESC
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          closeImageModal();
+        }
+      });
+      
+      // Fechar modal clicando fora
+      document.getElementById('imageModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+          closeImageModal();
+        }
+      });
+      
       // Botões para mostrar/esconder formulários
       const addMovimentoBtn = document.getElementById('addMovimentoBtn');
       const addObservacaoBtn = document.getElementById('addObservacaoBtn');
@@ -195,52 +600,122 @@
       const observacaoForm = document.getElementById('observacao-form');
       const croquisForm = document.getElementById('croqui-form');
       
+      // Função para esconder todos os formulários
+      function hideAllForms() {
+        if (movimentoForm) movimentoForm.classList.add('hidden');
+        if (observacaoForm) observacaoForm.classList.add('hidden');
+        if (croquisForm) croquisForm.classList.add('hidden');
+      }
+      
       // Toggle formulário de movimento
       if (addMovimentoBtn && movimentoForm) {
         addMovimentoBtn.addEventListener('click', () => {
-          movimentoForm.classList.toggle('hidden');
-          if (observacaoForm) observacaoForm.classList.add('hidden');
-          if (croquisForm) croquisForm.classList.add('hidden');
+          const isHidden = movimentoForm.classList.contains('hidden');
+          hideAllForms();
+          if (isHidden) {
+            movimentoForm.classList.remove('hidden');
+            // Focus no campo de input
+            setTimeout(() => {
+              const input = movimentoForm.querySelector('#movimento');
+              if (input) input.focus();
+            }, 100);
+          }
         });
       }
       
       // Toggle formulário de observação
       if (addObservacaoBtn && observacaoForm) {
         addObservacaoBtn.addEventListener('click', () => {
-          observacaoForm.classList.toggle('hidden');
-          if (movimentoForm) movimentoForm.classList.add('hidden');
-          if (croquisForm) croquisForm.classList.add('hidden');
+          const isHidden = observacaoForm.classList.contains('hidden');
+          hideAllForms();
+          if (isHidden) {
+            observacaoForm.classList.remove('hidden');
+            // Focus no campo de textarea
+            setTimeout(() => {
+              const textarea = observacaoForm.querySelector('#observacao');
+              if (textarea) textarea.focus();
+            }, 100);
+          }
         });
       }
       
       // Toggle formulário de croqui
       if (addCroquisBtn && croquisForm) {
         addCroquisBtn.addEventListener('click', () => {
-          croquisForm.classList.toggle('hidden');
-          if (movimentoForm) movimentoForm.classList.add('hidden');
-          if (observacaoForm) observacaoForm.classList.add('hidden');
+          const isHidden = croquisForm.classList.contains('hidden');
+          hideAllForms();
+          if (isHidden) {
+            croquisForm.classList.remove('hidden');
+          }
         });
       }
       
-      // Preview para croquis
+      // Preview aprimorado para croquis
       const croquisInput = document.getElementById('imagens');
       const croquisPreview = document.getElementById('croqui-preview');
       
       if (croquisInput && croquisPreview) {
         croquisInput.addEventListener('change', () => {
           croquisPreview.innerHTML = '';
-          Array.from(croquisInput.files).forEach(file => {
+          
+          if (croquisInput.files.length === 0) return;
+          
+          Array.from(croquisInput.files).forEach((file, index) => {
+            // Validar tipo de arquivo
+            if (!file.type.startsWith('image/')) {
+              console.warn(`Arquivo ${file.name} não é uma imagem válida`);
+              return;
+            }
+            
             const reader = new FileReader();
             reader.onload = e => {
+              const previewContainer = document.createElement('div');
+              previewContainer.className = 'relative group';
+              
               const img = document.createElement('img');
               img.src = e.target.result;
-              img.className = 'w-24 h-24 object-cover rounded-md';
-              croquisPreview.appendChild(img);
+              img.className = 'w-full h-24 object-cover rounded-lg border-2 border-gray-200 hover:border-purple-300 transition-all duration-200';
+              img.alt = `Preview ${index + 1}`;
+              
+              const fileName = document.createElement('p');
+              fileName.className = 'text-xs text-gray-500 mt-1 truncate text-center';
+              fileName.textContent = file.name;
+              
+              previewContainer.appendChild(img);
+              previewContainer.appendChild(fileName);
+              croquisPreview.appendChild(previewContainer);
             };
+            
+            reader.onerror = () => {
+              console.error(`Erro ao ler o arquivo ${file.name}`);
+            };
+            
             reader.readAsDataURL(file);
           });
         });
       }
+      
+      // Adicionar animações de entrada nos cards
+      const cards = document.querySelectorAll('.bg-white.rounded-xl');
+      cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+          card.style.transition = 'all 0.6s ease-out';
+          card.style.opacity = '1';
+          card.style.transform = 'translateY(0)';
+        }, index * 150);
+      });
+      
+      // Lazy loading para imagens de croquis
+      const images = document.querySelectorAll('img[src*="croquis"], img[src*="ponto_details"]');
+      images.forEach(img => {
+        img.loading = 'lazy';
+        img.addEventListener('error', function() {
+          this.style.background = '#f3f4f6';
+          this.alt = 'Imagem não encontrada';
+        });
+      });
     });
   </script>
 {% endblock %}

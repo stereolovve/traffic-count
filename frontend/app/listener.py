@@ -8,8 +8,8 @@ import threading
 
 
 def on_key_press(self, key):
-    # Tecla única: F12 para salvar rapidamente
     from pynput.keyboard import Key, KeyCode
+    # Tecla única: F12 para salvar rapidamente
     if key == Key.f12:
         try:
             self.save_contagens(None)
@@ -47,7 +47,6 @@ def on_key_press(self, key):
                     aba_contagem.movimento_tabs.selected_index = (
                         aba_contagem.movimento_tabs.selected_index - 1
                     ) % len(aba_contagem.movimento_tabs.tabs)
-                    
                     self.page.update()
                     return
                 

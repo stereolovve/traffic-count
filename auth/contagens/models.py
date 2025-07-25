@@ -13,7 +13,15 @@ class Session(models.Model):
     movimentos = models.JSONField(default=list)
     data = models.CharField(max_length=10, null=True, blank=True)
     criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, default=1)
-    ativa = models.BooleanField(default=True)
+    status = models.CharField(
+        max_length=20,
+        choices=[
+            ("Aguardando", "Aguardando"),
+            ("Em andamento", "Em andamento"),
+            ("Concluída", "Concluída"),
+        ],
+        default="Aguardando",
+    )
     padrao = models.CharField(max_length=100, blank=True, null=True, help_text="Tipo de padrão utilizado na contagem")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

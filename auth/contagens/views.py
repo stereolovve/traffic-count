@@ -16,6 +16,8 @@ from openpyxl.styles import Font, PatternFill, Alignment
 from openpyxl.utils import get_column_letter
 import os
 from pathlib import Path
+from django.views.decorators.http import require_http_methods
+import json
 import logging
 
 User = get_user_model()
@@ -28,6 +30,7 @@ def listar_sessoes(request):
     ponto = request.GET.get("ponto")
     data = request.GET.get("data")
     padrao = request.GET.get("padrao")
+    id_sessao = request.GET.get("id", '')
     ativa = request.GET.get("ativa")
     sort_field = request.GET.get("sort", "-id")
     page = request.GET.get('page', 1)
@@ -49,10 +52,12 @@ def listar_sessoes(request):
     sessoes = Session.objects.all().select_related('criado_por')
 
     # Apply filters
-    if status == "ativas":
-        sessoes = sessoes.filter(ativa=True)
-    elif status == "finalizadas":
-        sessoes = sessoes.filter(ativa=False)
+    if status == "aguardando":
+        sessoes = sessoes.filter(status="Aguardando")
+    elif status == "em_andamento":
+        sessoes = sessoes.filter(status="Em andamento")
+    elif status == "concluida":
+        sessoes = sessoes.filter(status="Concluída")
 
     if pesquisador:
         sessoes = sessoes.filter(criado_por__username__icontains=pesquisador)
@@ -69,9 +74,19 @@ def listar_sessoes(request):
     if padrao:
         sessoes = sessoes.filter(padrao=padrao)
         
+    if id_sessao:
+        try:
+            sessoes = sessoes.filter(id=int(id_sessao))
+        except ValueError:
+            # Se não for um número válido, ignorar o filtro
+            pass
+        
     if ativa is not None and ativa != '':
         ativa_bool = ativa.lower() == 'true'
-        sessoes = sessoes.filter(ativa=ativa_bool)
+        if ativa_bool:
+            sessoes = sessoes.filter(status__in=["Aguardando", "Em andamento"])
+        else:
+            sessoes = sessoes.filter(status="Concluída")
 
     # Apply sorting
     if sort_field:
@@ -117,7 +132,7 @@ def listar_sessoes(request):
             "ponto": ponto,
             "data": data,
             "padrao": padrao,
-            "ativa": ativa
+            "id": id_sessao
         }
     })
 
@@ -339,13 +354,13 @@ def finalizar_sessao(request):
         # Para API, não verificamos o usuário logado, pois a autenticação é por token
         # Na interface web, isso é verificado pelo Django automaticamente
         
-        if not sessao.ativa:
+        if sessao.status == "Concluída":
             return JsonResponse({
                 'status': 'success',
                 'message': 'Esta sessão já está finalizada'
             }, status=200)
         
-        sessao.ativa = False
+        sessao.status = "Concluída"
         sessao.save()
         
         return JsonResponse({
@@ -422,11 +437,11 @@ def exportar_csv(request, sessao_id):
             ['Ponto', sessao.ponto],
             ['Data', sessao.data],
             ['Horário', sessao.horario_inicio],
-            ['Status', 'Finalizada' if not sessao.ativa else 'Ativa'],
+            ['Status', sessao.status],
             ['Criado Por', sessao.criado_por.username],
             ['Email do Pesquisador', sessao.criado_por.email],
             ['Data de Criação', sessao.created_at.strftime('%d/%m/%Y %H:%M:%S') if sessao.created_at else 'N/A'],
-            ['Data de Finalização', sessao.updated_at.strftime('%d/%m/%Y %H:%M:%S') if not sessao.ativa and sessao.updated_at else 'N/A'],
+            ['Data de Finalização', sessao.updated_at.strftime('%d/%m/%Y %H:%M:%S') if sessao.status == "Concluída" and sessao.updated_at else 'N/A'],
         ]
         
         for row_idx, (header, value) in enumerate(info_headers, 1):
@@ -542,6 +557,8 @@ def registrar_sessao(request):
             horario_inicio = data.get("horario_inicio")
             username = data.get("usuario")
             ativa = data.get("ativa", True) 
+            # Converte o status booleano para o formato do modelo
+            status_sessao = "Em andamento" if ativa else "Concluída" 
             movimentos = data.get("movimentos")
             padrao = data.get("padrao", "")
 
@@ -560,7 +577,7 @@ def registrar_sessao(request):
                     "data": data_sessao,
                     "horario_inicio": horario_inicio,
                     "criado_por": usuario,
-                    "ativa": ativa,
+                    "status": status_sessao,
                     "movimentos": movimentos,
                     "padrao": padrao
                 }
@@ -572,7 +589,7 @@ def registrar_sessao(request):
                 sessao.ponto = ponto
                 sessao.data = data_sessao
                 sessao.horario_inicio = horario_inicio
-                sessao.ativa = ativa
+                sessao.status = status_sessao
                 sessao.movimentos = movimentos
                 sessao.padrao = padrao
                 sessao.save()
@@ -651,3 +668,22 @@ def finalizar_por_nome(request):
     except Exception as e:
         logging.error(f"[ERRO] Erro ao finalizar sessão por nome: {e}")
         return JsonResponse({"erro": str(e)}, status=500)
+
+
+
+@require_http_methods(["GET"])
+def get_pontos_por_codigo(request):
+    """
+    API endpoint para buscar pontos baseados no código selecionado
+    """
+    codigo = request.GET.get('codigo', '')
+    
+    if not codigo:
+        return JsonResponse({'pontos': []})
+    
+    # Buscar pontos únicos para o código específico
+    pontos = Session.objects.filter(codigo=codigo).values_list('ponto', flat=True).distinct().order_by('ponto')
+    
+    return JsonResponse({
+        'pontos': list(pontos)
+    })

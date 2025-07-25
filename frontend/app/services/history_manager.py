@@ -1,8 +1,6 @@
-from datetime import datetime
 import logging
-from database.models import Session, Historico
+from database.models import Historico
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy import text
 
 class HistoryManager:
     def __init__(self, contador):
@@ -18,37 +16,20 @@ class HistoryManager:
             acao: Tipo de ação realizada (increment, decrement, reset, etc.)
         """
         try:
-            # Criar uma nova sessão para esta operação
-            session = Session()
-            try:
-                # Configurar timeouts para esta sessão
-                session.execute(text("SET LOCAL statement_timeout = '5s'"))
-                session.execute(text("SET LOCAL lock_timeout = '5s'"))
-                
-                # Criar registro de histórico
-                historico = Historico(
-                    sessao=self.contador.sessao,
-                    categoria_id=categoria_id,
-                    movimento=movimento,
-                    timestamp=datetime.now(),
-                    acao=acao
-                )
-                
-                # Adicionar e commitar em uma única transação
-                session.add(historico)
-                session.commit()
-                logging.info(f"✅ Histórico salvo: {acao} - {movimento}")
-                
-            except Exception as e:
-                session.rollback()
-                logging.error(f"[ERROR] Erro ao salvar histórico: {e}")
-                # Não propaga o erro para não travar a interface
-            finally:
-                session.close()
-                
+            novo_historico = Historico(
+                sessao=self.contador.sessao,
+                categoria_id=categoria_id,
+                movimento=movimento,
+                acao=acao
+            )
+            with self.contador.session_lock:
+                self.contador.session.add(novo_historico)
+                self.contador.session.commit()
+            logging.info(f"[INFO] Histórico salvo com sucesso para ação: {acao}")
         except Exception as ex:
             logging.error(f"[ERROR] Erro ao salvar histórico: {ex}")
-            # Não propaga o erro para não travar a interface
+            with self.contador.session_lock:
+                self.contador.session.rollback()
                 
     def carregar_historico(self, page_size=30):
         """

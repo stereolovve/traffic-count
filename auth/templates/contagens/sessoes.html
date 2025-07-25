@@ -1,799 +1,1169 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %}Sessões{% endblock %}
-{% block content %}
-<!DOCTYPE html>
-<html lang="pt">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sessões</title>
-    <link rel="stylesheet" type="text/css" href="{% static 'contagens/styles.css' %}">
-    <link rel="shortcut icon" type="image/png" href="{% static 'img/icone.png' %}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            margin: 20px;
-            padding: 20px;
-            background-color: #f4f4f4;
-        }
-        .container {
-            max-width: 90%;
-            margin: auto;
-        }
-        h2 {
-            text-align: center;
-            color: #333;
-            font-size: 24px;
-            margin-bottom: 20px;
-        }
-        .filter-container {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-        }
-        .filter-title {
-            font-weight: bold;
-            margin-bottom: 15px;
-            color: #333;
-            font-size: 18px;
-            border-bottom: 1px solid #ddd;
-            padding-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .filter-title i {
-            color: #007BFF;
-        }
-        .filter-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-        .filter-group {
-            flex: 1;
-            min-width: 200px;
-            position: relative;
-        }
-        .filter-label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: #555;
-            font-size: 14px;
-        }
-        .filter-input, .filter-select {
-            width: 100%;
-            padding: 10px 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 6px;
-            font-size: 14px;
-            transition: all 0.3s ease;
-            background-color: #fff;
-        }
-        .filter-input:focus, .filter-select:focus {
-            border-color: #007BFF;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
-        }
-        .filter-select {
-            cursor: pointer;
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23555' viewBox='0 0 16 16'%3E%3Cpath d='M8 11.5l-6-6h12z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 12px center;
-            padding-right: 35px;
-        }
-        .filter-buttons {
-            display: flex;
-            justify-content: flex-end;
-            gap: 12px;
-            margin-top: 20px;
-            padding-top: 15px;
-            border-top: 1px solid #eee;
-        }
-        .btn-filter, .btn-reset {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .btn-filter {
-            background: #007BFF;
-            color: white;
-        }
-        .btn-filter:hover {
-            background: #0056b3;
-            transform: translateY(-2px);
-        }
-        .btn-reset {
-            background: #6c757d;
-            color: white;
-        }
-        .btn-reset:hover {
-            background: #5a6268;
-            transform: translateY(-2px);
-        }
-        .active-filters {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid #eee;
-        }
-        .filter-tag {
-            background: #e3f2fd;
-            color: #0056b3;
-            padding: 5px 10px;
-            border-radius: 4px;
-            font-size: 12px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        .filter-tag i {
-            cursor: pointer;
-            font-size: 10px;
-        }
-        .filter-tag i:hover {
-            color: #dc3545;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: #fff;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-        }
-        th, td {
-            padding: 12px;
-            border: 1px solid #ddd;
-            text-align: left;
-            font-size: 14px;
-        }
-        th {
-            background: #007BFF;
-            color: white;
-            text-transform: uppercase;
-        }
-        tr:nth-child(even) {
-            background: #f9f9f9;
-        }
-        tr:hover {
-            background-color: #e8f0ff;
-            transition: 0.3s ease-in-out;
-        }
-        .details-link {
-            display: inline-block;
-            background: #28a745;
-            color: white;
-            padding: 6px 12px;
-            border-radius: 5px;
-            font-size: 14px;
-            text-decoration: none;
-            font-weight: bold;
-            transition: 0.3s;
-        }
-        .details-link:hover {
-            background: #218838;
-            transform: scale(1.05);
-        }
-        .badge {
-            background: #007BFF;
-            color: white;
-            padding: 4px 8px;
-            font-size: 12px;
-            border-radius: 4px;
-            font-weight: bold;
-        }
-        .badge-success {
-            background-color: #28a745;
-        }
-        .badge-danger {
-            background-color: #dc3545;
-        }
-        .empty-row {
-            text-align: center;
-            font-weight: bold;
-            color: #888;
-            padding: 20px;
-        }
-        .sort-icon {
-            margin-left: 5px;
-            font-size: 12px;
-        }
-        .sorting-active {
-            background-color: #0056b3;
-        }
-        /* Responsivo */
-        @media (max-width: 768px) {
-            table {
-                font-size: 12px;
-            }
-            th, td {
-                padding: 8px;
-            }
-            .details-link {
-                padding: 5px 10px;
-                font-size: 12px;
-            }
-            .filter-row {
-                flex-direction: column;
-            }
-            .filter-group {
-                width: 100%;
-            }
-            .filter-buttons {
-                flex-direction: column;
-            }
-            .btn-filter, .btn-reset {
-                width: 100%;
-                justify-content: center;
-            }
-        }
-        .btn-finalizar {
-            background-color: #ef4444;
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 0.5rem;
-            transition: all 0.3s ease;
-        }
-        .btn-finalizar:hover {
-            background-color: #b91c1c;
-        }
-        
-        .btn-csv {
-            background-color: #22c55e;
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 0.5rem;
-            transition: all 0.3s ease;
-        }
-        .btn-csv:hover {
-            background-color: #15803d;
-        }
-        .actions-container {
-            position: relative;
-            display: inline-block;
-        }
-        
-        .popup-menu {
-            position: absolute;
-            background: white;
-            border-radius: 0.5rem;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-            z-index: 1000;
-            min-width: 200px;
-            display: none;
-            right: 0;
-            top: 100%;
-            margin-top: 0.5rem;
-        }
-        
-        .popup-menu::before {
-            content: '';
-            position: absolute;
-            top: -8px;
-            right: 16px;
-            width: 16px;
-            height: 16px;
-            background: white;
-            transform: rotate(45deg);
-            box-shadow: -2px -2px 4px rgba(0, 0, 0, 0.05);
-        }
-        
-        .popup-menu-content {
-            position: relative;
-            background: white;
-            border-radius: 0.5rem;
-            overflow: hidden;
-        }
-        
-        .popup-menu-item {
-            padding: 0.75rem 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            color: #374151;
-        }
-        
-        .popup-menu-item:hover {
-            background: #f3f4f6;
-        }
-        
-        .popup-menu-item.danger {
-            color: #ef4444;
-        }
-        
-        .popup-menu-item.danger:hover {
-            background: #fef2f2;
-        }
-        
-        .btn-actions {
-            background: #4b5563;
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 0.5rem;
-            transition: all 0.3s;
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .btn-actions:hover {
-            background: #374151;
-        }
-        .pagination-container {
-            margin-top: 2rem;
-            padding: 1rem;
-            background: white;
-            border-radius: 0.5rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        
-        .pagination-btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 2.5rem;
-            height: 2.5rem;
-            transition: all 0.3s ease;
-        }
-        
-        .pagination-btn:hover {
-            transform: translateY(-2px);
-        }
-    </style>
-</head>
-<body>
-    {% csrf_token %}
-    <div class="container">
-        <h2><i class="fas fa-list"></i> Contagens</h2>
-        
-        <div class="filter-container">
-            <div class="filter-title">
-                <i class="fas fa-filter"></i>
-                Filtros
-            </div>
-            <form method="get" id="filter-form">
-                <div class="filter-row">
-                    <div class="filter-group">
-                        <label class="filter-label">Status</label>
-                        <select name="status" class="filter-select">
-                            <option value="">Todos os Status</option>
-                            <option value="ativas" {% if filtros_ativos.status == 'ativas' %}selected{% endif %}>Ativas</option>
-                            <option value="finalizadas" {% if filtros_ativos.status == 'finalizadas' %}selected{% endif %}>Finalizadas</option>
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label class="filter-label">Pesquisador</label>
-                        <select name="usuario" class="filter-select select2">
-                            <option value="">Todos os Pesquisadores</option>
-                            {% for pesquisador in pesquisadores %}
-                                <option value="{{ pesquisador.username }}" {% if filtros_ativos.pesquisador == pesquisador.username %}selected{% endif %}>
-                                    {{ pesquisador.username }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label class="filter-label">ID da Sessão</label>
-                        <input type="text" name="id" class="filter-input" placeholder="Digite o ID" value="{{ filtros_ativos.id }}">
-                    </div>
-                </div>
-                <div class="filter-row">
-                    <div class="filter-group">
-                        <label class="filter-label">Código</label>
-                        <select name="codigo" class="filter-select select2">
-                            <option value="">Todos os Códigos</option>
-                            {% for codigo in codigos %}
-                                <option value="{{ codigo }}" {% if filtros_ativos.codigo == codigo %}selected{% endif %}>
-                                    {{ codigo }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label class="filter-label">Ponto</label>
-                        <select name="ponto" class="filter-select select2">
-                            <option value="">Todos os Pontos</option>
-                            {% for ponto in pontos %}
-                                <option value="{{ ponto }}" {% if filtros_ativos.ponto == ponto %}selected{% endif %}>
-                                    {{ ponto }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label class="filter-label">Data</label>
-                        <select name="data" class="filter-select select2">
-                            <option value="">Todas as Datas</option>
-                            {% for data in datas %}
-                                <option value="{{ data }}" {% if filtros_ativos.data == data %}selected{% endif %}>
-                                    {{ data }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-                <div class="filter-row">
-                    <div class="filter-group">
-                        <label class="filter-label">Padrão</label>
-                        <select name="padrao" class="filter-select select2">
-                            <option value="">Todos os Padrões</option>
-                            {% for pattern_type in padroes %}
-                                <option value="{{ pattern_type }}" {% if filtros_ativos.padrao == pattern_type %}selected{% endif %}>
-                                    {{ pattern_type }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-                <input type="hidden" name="sort" id="sort-field" value="{{ current_sort|default:'-id' }}">
-                
-                {% if filtros_ativos.status or filtros_ativos.pesquisador or filtros_ativos.codigo or filtros_ativos.ponto or filtros_ativos.data or filtros_ativos.padrao %}
-                <div class="active-filters">
-                    {% if filtros_ativos.status %}
-                        <div class="filter-tag">
-                            <span>Status: {{ filtros_ativos.status }}</span>
-                            <i class="fas fa-times" onclick="removeFilter('status')"></i>
-                        </div>
-                    {% endif %}
-                    {% if filtros_ativos.pesquisador %}
-                        <div class="filter-tag">
-                            <span>Pesquisador: {{ filtros_ativos.pesquisador }}</span>
-                            <i class="fas fa-times" onclick="removeFilter('usuario')"></i>
-                        </div>
-                    {% endif %}
-                    {% if filtros_ativos.codigo %}
-                        <div class="filter-tag">
-                            <span>Código: {{ filtros_ativos.codigo }}</span>
-                            <i class="fas fa-times" onclick="removeFilter('codigo')"></i>
-                        </div>
-                    {% endif %}
-                    {% if filtros_ativos.ponto %}
-                        <div class="filter-tag">
-                            <span>Ponto: {{ filtros_ativos.ponto }}</span>
-                            <i class="fas fa-times" onclick="removeFilter('ponto')"></i>
-                        </div>
-                    {% endif %}
-                    {% if filtros_ativos.data %}
-                        <div class="filter-tag">
-                            <span>Data: {{ filtros_ativos.data }}</span>
-                            <i class="fas fa-times" onclick="removeFilter('data')"></i>
-                        </div>
-                    {% endif %}
-                    {% if filtros_ativos.padrao %}
-                        <div class="filter-tag">
-                            <span>Padrão: {{ filtros_ativos.padrao }}</span>
-                            <i class="fas fa-times" onclick="removeFilter('padrao')"></i>
-                        </div>
-                    {% endif %}
-                </div>
-                {% endif %}
 
-                <div class="filter-buttons">
-                    <button type="button" class="btn-reset" onclick="resetFilters()">
-                        <i class="fas fa-undo"></i>
-                        Limpar Filtros
-                    </button>
-                    <button type="submit" class="btn-filter">
-                        <i class="fas fa-search"></i>
-                        Aplicar Filtros
-                    </button>
+{% block title %}Sessões de Contagem - Traffic Count{% endblock %}
+
+{% block page_title %}Sessões de Contagem{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+    /* Select2 Custom Styling */
+    .select2-container--default .select2-selection--single {
+        height: 42px !important;
+        border: 2px solid #e5e7eb !important;
+        border-radius: 8px !important;
+        padding-left: 12px !important;
+    }
+    
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 38px !important;
+        color: #374151 !important;
+    }
+    
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 38px !important;
+    }
+    
+    .select2-container--default.select2-container--focus .select2-selection--single {
+        border-color: #3b82f6 !important;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+    }
+    
+    /* Filter Expandable */
+    .filter-container {
+        transition: all 0.3s ease;
+    }
+    
+    .filter-header {
+        cursor: pointer;
+        user-select: none;
+    }
+    
+    .filter-content {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+    }
+    
+    .filter-content.expanded {
+        max-height: 1000px;
+    }
+    
+    .filter-toggle-icon {
+        transition: transform 0.3s ease;
+    }
+    
+    .filter-toggle-icon.rotated {
+        transform: rotate(180deg);
+    }
+    
+    .filter-summary {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 8px;
+    }
+    
+    .filter-summary-tag {
+        background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
+        color: #3730a3;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 500;
+    }
+    
+    .quick-filter-bar {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+    
+    .quick-filter-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .quick-filter-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: #4b5563;
+        white-space: nowrap;
+    }
+    
+    .quick-filter-select {
+        min-width: 120px;
+        padding: 6px 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        font-size: 13px;
+        background: white;
+        cursor: pointer;
+    }
+    
+    .quick-filter-select:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+    }
+    /* Filter Tags */
+    .filter-tag {
+        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        color: white;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+    }
+    
+    .filter-tag i {
+        cursor: pointer;
+        padding: 2px;
+        border-radius: 50%;
+        transition: all 0.2s;
+    }
+    
+    .filter-tag i:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: scale(1.1);
+    }
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .status-active {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+    }
+    
+    .status-finished {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+        box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+    }
+    
+    /* Movement Badges */
+    .movement-badge {
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        color: white;
+        padding: 3px 8px;
+        border-radius: 8px;
+        font-size: 10px;
+        font-weight: 500;
+        margin: 1px;
+        display: inline-block;
+    }
+    
+    /* Table Enhancements */
+    .table-modern {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    
+    .table-modern th {
+        background: linear-gradient(135deg, #1f2937, #111827);
+        color: white;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 16px 12px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .table-modern th:hover {
+        background: linear-gradient(135deg, #374151, #1f2937);
+    }
+    
+    .table-modern td {
+        padding: 16px 12px;
+        border-bottom: 1px solid #f3f4f6;
+        vertical-align: middle;
+    }
+    
+    .table-modern tr:hover {
+        background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+    }
+    
+    /* Action Menu */
+    .action-menu {
+        position: relative;
+    }
+    
+    .action-btn {
+        background: linear-gradient(135deg, #6b7280, #4b5563);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+    
+    .action-btn:hover {
+        background: linear-gradient(135deg, #4b5563, #374151);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+    
+    .action-dropdown {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        z-index: 1000;
+        min-width: 180px;
+        border: 1px solid #e5e7eb;
+        overflow: hidden;
+        display: none;
+    }
+    
+    .action-dropdown::before {
+        content: '';
+        position: absolute;
+        top: -6px;
+        right: 16px;
+        width: 12px;
+        height: 12px;
+        background: white;
+        transform: rotate(45deg);
+        border-left: 1px solid #e5e7eb;
+        border-top: 1px solid #e5e7eb;
+    }
+    
+    .dropdown-item {
+        padding: 12px 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 13px;
+        color: #374151;
+        text-decoration: none;
+    }
+    
+    .dropdown-item:hover {
+        background: #f3f4f6;
+        color: #1f2937;
+    }
+    
+    .dropdown-item.danger {
+        color: #ef4444;
+    }
+    
+    .dropdown-item.danger:hover {
+        background: #fef2f2;
+        color: #dc2626;
+    }
+    
+    /* Pagination */
+    .pagination-modern {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+        margin-top: 24px;
+        padding: 20px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+    
+    .pagination-btn {
+        padding: 8px 12px;
+        border-radius: 8px;
+        background: #f3f4f6;
+        color: #6b7280;
+        text-decoration: none;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 40px;
+        height: 40px;
+        font-weight: 500;
+    }
+    
+    .pagination-btn:hover {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+    }
+    
+    .pagination-info {
+        color: #6b7280;
+        font-weight: 500;
+        margin: 0 16px;
+    }
+    
+    /* Sort Icons */
+    .sort-icon {
+        margin-left: 6px;
+        opacity: 0.7;
+        transition: all 0.2s;
+    }
+    
+    .sort-active .sort-icon {
+        opacity: 1;
+        color: #3b82f6;
+    }
+    
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #6b7280;
+    }
+    
+    .empty-state i {
+        font-size: 48px;
+        margin-bottom: 16px;
+        opacity: 0.5;
+    }
+    
+    .empty-state h3 {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #374151;
+    }
+    
+    .empty-state p {
+        font-size: 14px;
+        margin-bottom: 0;
+    }
+    
+    /* Loading state for select fields */
+    .loading-select {
+        position: relative;
+    }
+    
+    .loading-select::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        right: 30px;
+        width: 16px;
+        height: 16px;
+        border: 2px solid #f3f3f3;
+        border-top: 2px solid #3b82f6;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        z-index: 10;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .select-disabled {
+        opacity: 0.6;
+        pointer-events: none;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .table-modern {
+            font-size: 12px;
+        }
+        
+        .table-modern th,
+        .table-modern td {
+            padding: 8px 6px;
+        }
+        
+        .filter-group {
+            min-width: 100% !important;
+        }
+        
+        .action-btn {
+            padding: 6px 12px;
+            font-size: 11px;
+        }
+        
+        .quick-filter-bar {
+            display: none;
+        }
+        
+        .filter-header .flex {
+            justify-content: space-between;
+        }
+    }
+    
+    @media (max-width: 1024px) {
+        .quick-filter-bar {
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .quick-filter-group {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 4px;
+        }
+        
+        .quick-filter-select {
+            min-width: 100px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Compact Expandable Filters Section -->
+    <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden filter-container">
+        <!-- Compact Filter Header -->
+        <div class="filter-header bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4" onclick="toggleFilters()">
+            <div class="flex items-center justify-between text-white">
+                <div class="flex items-center">
+                    <i class="fas fa-filter mr-3 text-lg"></i>
+                    <h2 class="text-lg font-bold">Filtros</h2>
+                    <!-- Show active filter count -->
+                    {% if filtros_ativos.status or filtros_ativos.pesquisador or filtros_ativos.codigo or filtros_ativos.ponto or filtros_ativos.data or filtros_ativos.padrao or filtros_ativos.id %}
+                        <span class="ml-3 bg-white text-blue-600 px-2 py-1 rounded-full text-xs font-semibold">
+                            {{ filtros_ativos|length }} ativo{{ filtros_ativos|length|pluralize:"s" }}
+                        </span>
+                    {% endif %}
                 </div>
-            </form>
+                <div class="flex items-center">
+                    <i class="fas fa-chevron-down filter-toggle-icon text-lg"></i>
+                </div>
+            </div>
+            
+            <!-- Active filters summary -->
+            {% if filtros_ativos.status or filtros_ativos.pesquisador or filtros_ativos.codigo or filtros_ativos.ponto or filtros_ativos.data or filtros_ativos.padrao or filtros_ativos.id %}
+            <div class="filter-summary mt-3 pt-3 border-t border-blue-500">
+                {% if filtros_ativos.status %}
+                    <span class="filter-summary-tag">Status: {{ filtros_ativos.status }}</span>
+                {% endif %}
+                {% if filtros_ativos.pesquisador %}
+                    <span class="filter-summary-tag">Pesquisador: {{ filtros_ativos.pesquisador }}</span>
+                {% endif %}
+                {% if filtros_ativos.id %}
+                    <span class="filter-summary-tag">ID: {{ filtros_ativos.id }}</span>
+                {% endif %}
+                {% if filtros_ativos.codigo %}
+                    <span class="filter-summary-tag">Código: {{ filtros_ativos.codigo }}</span>
+                {% endif %}
+                {% if filtros_ativos.ponto %}
+                    <span class="filter-summary-tag">Ponto: {{ filtros_ativos.ponto }}</span>
+                {% endif %}
+                {% if filtros_ativos.data %}
+                    <span class="filter-summary-tag">Data: {{ filtros_ativos.data }}</span>
+                {% endif %}
+                {% if filtros_ativos.padrao %}
+                    <span class="filter-summary-tag">Padrão: {{ filtros_ativos.padrao }}</span>
+                {% endif %}
+            </div>
+            {% endif %}
         </div>
         
-        <table>
-            <thead>
-                <tr>
-                    <th onclick="sortTable('id')" class="{% if request.GET.sort == 'id' or request.GET.sort == '-id' or not request.GET.sort %}sorting-active{% endif %}">
-                        ID
-                        {% if request.GET.sort == 'id' %}
-                            <i class="fas fa-sort-up sort-icon"></i>
-                        {% elif request.GET.sort == '-id' or not request.GET.sort %}
-                            <i class="fas fa-sort-down sort-icon"></i>
-                        {% else %}
-                            <i class="fas fa-sort sort-icon"></i>
-                        {% endif %}
-                    </th>
-                    <th onclick="sortTable('sessao')">
-                        Nome da Sessão
-                        {% if request.GET.sort == 'sessao' %}
-                            <i class="fas fa-sort-up sort-icon"></i>
-                        {% elif request.GET.sort == '-sessao' %}
-                            <i class="fas fa-sort-down sort-icon"></i>
-                        {% else %}
-                            <i class="fas fa-sort sort-icon"></i>
-                        {% endif %}
-                    </th>
-                    <th onclick="sortTable('codigo')">
-                        Código
-                        {% if request.GET.sort == 'codigo' %}
-                            <i class="fas fa-sort-up sort-icon"></i>
-                        {% elif request.GET.sort == '-codigo' %}
-                            <i class="fas fa-sort-down sort-icon"></i>
-                        {% else %}
-                            <i class="fas fa-sort sort-icon"></i>
-                        {% endif %}
-                    </th>
-                    <th onclick="sortTable('ponto')">
-                        Ponto
-                        {% if request.GET.sort == 'ponto' %}
-                            <i class="fas fa-sort-up sort-icon"></i>
-                        {% elif request.GET.sort == '-ponto' %}
-                            <i class="fas fa-sort-down sort-icon"></i>
-                        {% else %}
-                            <i class="fas fa-sort sort-icon"></i>
-                        {% endif %}
-                    </th>
-                    <th onclick="sortTable('data')">
-                        Data
-                        {% if request.GET.sort == 'data' %}
-                            <i class="fas fa-sort-up sort-icon"></i>
-                        {% elif request.GET.sort == '-data' %}
-                            <i class="fas fa-sort-down sort-icon"></i>
-                        {% else %}
-                            <i class="fas fa-sort sort-icon"></i>
-                        {% endif %}
-                    </th>
-                    <th>Horário</th>
-                    <th onclick="sortTable('padrao')">
-                        Padrão
-                        {% if request.GET.sort == 'padrao' %}
-                            <i class="fas fa-sort-up sort-icon"></i>
-                        {% elif request.GET.sort == '-padrao' %}
-                            <i class="fas fa-sort-down sort-icon"></i>
-                        {% else %}
-                            <i class="fas fa-sort sort-icon"></i>
-                        {% endif %}
-                    </th>
-                    <th onclick="sortTable('ativa')">
-                        Status
-                        {% if request.GET.sort == 'ativa' %}
-                            <i class="fas fa-sort-up sort-icon"></i>
-                        {% elif request.GET.sort == '-ativa' %}
-                            <i class="fas fa-sort-down sort-icon"></i>
-                        {% else %}
-                            <i class="fas fa-sort sort-icon"></i>
-                        {% endif %}
-                    </th>
-                    <th>Movimentos</th>
-                    <th onclick="sortTable('criado_por')">
-                        Criado Por
-                        {% if request.GET.sort == 'criado_por' %}
-                            <i class="fas fa-sort-up sort-icon"></i>
-                        {% elif request.GET.sort == '-criado_por' %}
-                            <i class="fas fa-sort-down sort-icon"></i>
-                        {% else %}
-                            <i class="fas fa-sort sort-icon"></i>
-                        {% endif %}
-                    </th>
-                    <th onclick="sortTable('created_at')">
-                        Data de Criação
-                        {% if request.GET.sort == 'created_at' %}
-                            <i class="fas fa-sort-up sort-icon"></i>
-                        {% elif request.GET.sort == '-created_at' %}
-                            <i class="fas fa-sort-down sort-icon"></i>
-                        {% else %}
-                            <i class="fas fa-sort sort-icon"></i>
-                        {% endif %}
-                    </th>
-                    <th onclick="sortTable('updated_at')">
-                        Data de Finalização
-                        {% if request.GET.sort == 'updated_at' %}
-                            <i class="fas fa-sort-up sort-icon"></i>
-                        {% elif request.GET.sort == '-updated_at' %}
-                            <i class="fas fa-sort-down sort-icon"></i>
-                        {% else %}
-                            <i class="fas fa-sort sort-icon"></i>
-                        {% endif %}
-                    </th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for sessao in sessoes %}
-                <tr>
-                    <td><span class="badge">#{{ sessao.sessao_id }}</span></td>
-                    <td>{{ sessao.sessao.sessao }}</td>
-                    <td>{{ sessao.sessao.codigo }}</td>
-                    <td>{{ sessao.sessao.ponto }}</td>
-                    <td>{{ sessao.sessao.data|default:"-" }}</td>
-                    <td>{{ sessao.sessao.horario_inicio }}</td>
-                    <td>{{ sessao.sessao.padrao }}</td>
-                    <td>
-                        {% if sessao.sessao.ativa %}
-                            <span class="badge badge-success">Ativa</span>
-                        {% else %}
-                            <span class="badge badge-danger">Finalizada</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if sessao.movimentos %}
-                            {% for movimento in sessao.movimentos %}
-                                <span class="badge">{{ movimento }}</span>
-                            {% endfor %}
-                        {% else %}
-                            <span style="color: gray;">Nenhum</span>
-                        {% endif %}
-                    </td>
-                    <td>{{ sessao.sessao.criado_por.username }}</td>
-                    <td>{{ sessao.sessao.created_at|date:"d/m/Y H:i"|default:"-" }}</td>
-                    <td>
-                        {% if not sessao.sessao.ativa %}
-                            {{ sessao.sessao.updated_at|date:"d/m/Y H:i"|default:"-" }}
-                        {% else %}
-                            <span style="color: gray;">-</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <div class="actions-container">
-                            <button class="btn-actions js-toggle-menu">
-                                <i class="fas fa-ellipsis-v"></i> Ações
-                            </button>
-                            <div class="popup-menu">
-                                <div class="popup-menu-content">
-                                    <a href="{% url 'detalhes_sessao' sessao.sessao_id %}" class="popup-menu-item">
-                                        <i class="fas fa-eye"></i> Ver Detalhes
+        <!-- Expandable Filter Content -->
+        <div class="filter-content" id="filter-content">
+            <div class="p-6">
+                <form method="get" id="filter-form" class="space-y-6">
+                    <!-- First Row -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="filter-group">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-toggle-on mr-2 text-blue-600"></i>Status
+                            </label>
+                            <select name="status" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200">
+                                <option value="">Todos os Status</option>
+                                <option value="aguardando" {% if filtros_ativos.status == 'aguardando' %}selected{% endif %}>Aguardando</option>
+                                <option value="em_andamento" {% if filtros_ativos.status == 'em_andamento' %}selected{% endif %}>Em Andamento</option>
+                                <option value="concluida" {% if filtros_ativos.status == 'concluida' %}selected{% endif %}>Concluída</option>
+                            </select>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-user mr-2 text-green-600"></i>Pesquisador
+                            </label>
+                            <select name="usuario" class="filter-select select2 w-full">
+                                <option value="">Todos os Pesquisadores</option>
+                                {% for pesquisador in pesquisadores %}
+                                    <option value="{{ pesquisador.username }}" {% if filtros_ativos.pesquisador == pesquisador.username %}selected{% endif %}>
+                                        {{ pesquisador.username }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-hashtag mr-2 text-purple-600"></i>ID da Sessão
+                            </label>
+                            <input type="text" name="id" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200" placeholder="Digite o ID" value="{{ filtros_ativos.id }}">
+                        </div>
+                    </div>
+                    
+                    <!-- Second Row -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="filter-group">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-code mr-2 text-orange-600"></i>Código
+                            </label>
+                            <select name="codigo" id="codigo-select" class="filter-select select2 w-full">
+                                <option value="">Todos os Códigos</option>
+                                {% for codigo in codigos %}
+                                    <option value="{{ codigo }}" {% if filtros_ativos.codigo == codigo %}selected{% endif %}>
+                                        {{ codigo }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-map-marker-alt mr-2 text-red-600"></i>Ponto
+                                <span class="text-xs text-gray-500 ml-1">(Filtre por código primeiro)</span>
+                            </label>
+                            <div class="relative">
+                                <select name="ponto" id="ponto-select" class="filter-select select2 w-full">
+                                    <option value="">Todos os Pontos</option>
+                                    {% for ponto in pontos %}
+                                        <option value="{{ ponto }}" {% if filtros_ativos.ponto == ponto %}selected{% endif %}>
+                                            {{ ponto }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-calendar mr-2 text-indigo-600"></i>Data
+                            </label>
+                            <select name="data" class="filter-select select2 w-full">
+                                <option value="">Todas as Datas</option>
+                                {% for data in datas %}
+                                    <option value="{{ data }}" {% if filtros_ativos.data == data %}selected{% endif %}>
+                                        {{ data }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Third Row -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="filter-group">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-chart-line mr-2 text-teal-600"></i>Padrão
+                            </label>
+                            <select name="padrao" class="filter-select select2 w-full">
+                                <option value="">Todos os Padrões</option>
+                                {% for pattern_type in padroes %}
+                                    <option value="{{ pattern_type }}" {% if filtros_ativos.padrao == pattern_type %}selected{% endif %}>
+                                        {{ pattern_type }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <input type="hidden" name="sort" id="sort-field" value="{{ current_sort|default:'-id' }}">
+                    
+                    <!-- Active Filters Display -->
+                    {% if filtros_ativos.status or filtros_ativos.pesquisador or filtros_ativos.codigo or filtros_ativos.ponto or filtros_ativos.data or filtros_ativos.padrao or filtros_ativos.id %}
+                    <div class="border-t border-gray-200 pt-6">
+                        <h3 class="text-sm font-semibold text-gray-700 mb-3">Filtros Ativos:</h3>
+                        <div class="flex flex-wrap gap-2">
+                            {% if filtros_ativos.status %}
+                                <div class="filter-tag">
+                                    <span>Status: {{ filtros_ativos.status }}</span>
+                                    <i class="fas fa-times" onclick="removeFilter('status')"></i>
+                                </div>
+                            {% endif %}
+                            {% if filtros_ativos.pesquisador %}
+                                <div class="filter-tag">
+                                    <span>Pesquisador: {{ filtros_ativos.pesquisador }}</span>
+                                    <i class="fas fa-times" onclick="removeFilter('usuario')"></i>
+                                </div>
+                            {% endif %}
+                            {% if filtros_ativos.id %}
+                                <div class="filter-tag">
+                                    <span>ID: {{ filtros_ativos.id }}</span>
+                                    <i class="fas fa-times" onclick="removeFilter('id')"></i>
+                                </div>
+                            {% endif %}
+                            {% if filtros_ativos.codigo %}
+                                <div class="filter-tag">
+                                    <span>Código: {{ filtros_ativos.codigo }}</span>
+                                    <i class="fas fa-times" onclick="removeFilter('codigo')"></i>
+                                </div>
+                            {% endif %}
+                            {% if filtros_ativos.ponto %}
+                                <div class="filter-tag">
+                                    <span>Ponto: {{ filtros_ativos.ponto }}</span>
+                                    <i class="fas fa-times" onclick="removeFilter('ponto')"></i>
+                                </div>
+                            {% endif %}
+                            {% if filtros_ativos.data %}
+                                <div class="filter-tag">
+                                    <span>Data: {{ filtros_ativos.data }}</span>
+                                    <i class="fas fa-times" onclick="removeFilter('data')"></i>
+                                </div>
+                            {% endif %}
+                            {% if filtros_ativos.padrao %}
+                                <div class="filter-tag">
+                                    <span>Padrão: {{ filtros_ativos.padrao }}</span>
+                                    <i class="fas fa-times" onclick="removeFilter('padrao')"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Action Buttons -->
+                    <div class="flex justify-end gap-4 pt-6 border-t border-gray-200">
+                        <button type="button" onclick="resetFilters()" class="px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105 flex items-center gap-2">
+                            <i class="fas fa-undo"></i>
+                            Limpar Filtros
+                        </button>
+                        <button type="submit" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105 flex items-center gap-2">
+                            <i class="fas fa-search"></i>
+                            Aplicar Filtros
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- Enhanced Data Table -->
+    <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="table-modern min-w-full">
+                <thead>
+                    <tr>
+                        <th onclick="sortTable('id')" class="cursor-pointer hover:bg-gray-700 transition-colors {% if request.GET.sort == 'id' or request.GET.sort == '-id' or not request.GET.sort %}sort-active{% endif %}">
+                            <div class="flex items-center justify-between">
+                                <span><i class="fas fa-hashtag mr-2"></i>ID</span>
+                                {% if request.GET.sort == 'id' %}
+                                    <i class="fas fa-sort-up sort-icon"></i>
+                                {% elif request.GET.sort == '-id' or not request.GET.sort %}
+                                    <i class="fas fa-sort-down sort-icon"></i>
+                                {% else %}
+                                    <i class="fas fa-sort sort-icon"></i>
+                                {% endif %}
+                            </div>
+                        </th>
+                        <th onclick="sortTable('sessao')" class="cursor-pointer hover:bg-gray-700 transition-colors">
+                            <div class="flex items-center justify-between">
+                                <span><i class="fas fa-list-alt mr-2"></i>Nome da Sessão</span>
+                                {% if request.GET.sort == 'sessao' %}
+                                    <i class="fas fa-sort-up sort-icon"></i>
+                                {% elif request.GET.sort == '-sessao' %}
+                                    <i class="fas fa-sort-down sort-icon"></i>
+                                {% else %}
+                                    <i class="fas fa-sort sort-icon"></i>
+                                {% endif %}
+                            </div>
+                        </th>
+                        <th onclick="sortTable('codigo')" class="cursor-pointer hover:bg-gray-700 transition-colors">
+                            <div class="flex items-center justify-between">
+                                <span><i class="fas fa-code mr-2"></i>Código</span>
+                                {% if request.GET.sort == 'codigo' %}
+                                    <i class="fas fa-sort-up sort-icon"></i>
+                                {% elif request.GET.sort == '-codigo' %}
+                                    <i class="fas fa-sort-down sort-icon"></i>
+                                {% else %}
+                                    <i class="fas fa-sort sort-icon"></i>
+                                {% endif %}
+                            </div>
+                        </th>
+                        <th onclick="sortTable('ponto')" class="cursor-pointer hover:bg-gray-700 transition-colors">
+                            <div class="flex items-center justify-between">
+                                <span><i class="fas fa-map-marker-alt mr-2"></i>Ponto</span>
+                                {% if request.GET.sort == 'ponto' %}
+                                    <i class="fas fa-sort-up sort-icon"></i>
+                                {% elif request.GET.sort == '-ponto' %}
+                                    <i class="fas fa-sort-down sort-icon"></i>
+                                {% else %}
+                                    <i class="fas fa-sort sort-icon"></i>
+                                {% endif %}
+                            </div>
+                        </th>
+                        <th onclick="sortTable('data')" class="cursor-pointer hover:bg-gray-700 transition-colors">
+                            <div class="flex items-center justify-between">
+                                <span><i class="fas fa-calendar mr-2"></i>Data</span>
+                                {% if request.GET.sort == 'data' %}
+                                    <i class="fas fa-sort-up sort-icon"></i>
+                                {% elif request.GET.sort == '-data' %}
+                                    <i class="fas fa-sort-down sort-icon"></i>
+                                {% else %}
+                                    <i class="fas fa-sort sort-icon"></i>
+                                {% endif %}
+                            </div>
+                        </th>
+                        <th>
+                            <span><i class="fas fa-clock mr-2"></i>Horário</span>
+                        </th>
+                        <th onclick="sortTable('padrao')" class="cursor-pointer hover:bg-gray-700 transition-colors">
+                            <div class="flex items-center justify-between">
+                                <span><i class="fas fa-chart-line mr-2"></i>Padrão</span>
+                                {% if request.GET.sort == 'padrao' %}
+                                    <i class="fas fa-sort-up sort-icon"></i>
+                                {% elif request.GET.sort == '-padrao' %}
+                                    <i class="fas fa-sort-down sort-icon"></i>
+                                {% else %}
+                                    <i class="fas fa-sort sort-icon"></i>
+                                {% endif %}
+                            </div>
+                        </th>
+                        <th onclick="sortTable('status')" class="cursor-pointer hover:bg-gray-700 transition-colors">
+                            <div class="flex items-center justify-between">
+                                <span><i class="fas fa-toggle-on mr-2"></i>Status</span>
+                                {% if request.GET.sort == 'status' %}
+                                    <i class="fas fa-sort-up sort-icon"></i>
+                                {% elif request.GET.sort == '-status' %}
+                                    <i class="fas fa-sort-down sort-icon"></i>
+                                {% else %}
+                                    <i class="fas fa-sort sort-icon"></i>
+                                {% endif %}
+                            </div>
+                        </th>
+                        <th>
+                            <span><i class="fas fa-arrows-alt mr-2"></i>Movimentos</span>
+                        </th>
+                        <th onclick="sortTable('criado_por')" class="cursor-pointer hover:bg-gray-700 transition-colors">
+                            <div class="flex items-center justify-between">
+                                <span><i class="fas fa-user mr-2"></i>Criado Por</span>
+                                {% if request.GET.sort == 'criado_por' %}
+                                    <i class="fas fa-sort-up sort-icon"></i>
+                                {% elif request.GET.sort == '-criado_por' %}
+                                    <i class="fas fa-sort-down sort-icon"></i>
+                                {% else %}
+                                    <i class="fas fa-sort sort-icon"></i>
+                                {% endif %}
+                            </div>
+                        </th>
+                        <th onclick="sortTable('created_at')" class="cursor-pointer hover:bg-gray-700 transition-colors">
+                            <div class="flex items-center justify-between">
+                                <span><i class="fas fa-calendar-plus mr-2"></i>Criação</span>
+                                {% if request.GET.sort == 'created_at' %}
+                                    <i class="fas fa-sort-up sort-icon"></i>
+                                {% elif request.GET.sort == '-created_at' %}
+                                    <i class="fas fa-sort-down sort-icon"></i>
+                                {% else %}
+                                    <i class="fas fa-sort sort-icon"></i>
+                                {% endif %}
+                            </div>
+                        </th>
+                        <th onclick="sortTable('updated_at')" class="cursor-pointer hover:bg-gray-700 transition-colors">
+                            <div class="flex items-center justify-between">
+                                <span><i class="fas fa-calendar-check mr-2"></i>Finalização</span>
+                                {% if request.GET.sort == 'updated_at' %}
+                                    <i class="fas fa-sort-up sort-icon"></i>
+                                {% elif request.GET.sort == '-updated_at' %}
+                                    <i class="fas fa-sort-down sort-icon"></i>
+                                {% else %}
+                                    <i class="fas fa-sort sort-icon"></i>
+                                {% endif %}
+                            </div>
+                        </th>
+                        <th>
+                            <span><i class="fas fa-cog mr-2"></i>Ações</span>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sessao in sessoes %}
+                    <tr class="hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200">
+                        <td class="font-mono text-sm">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                #{{ sessao.sessao_id }}
+                            </span>
+                        </td>
+                        <td class="font-medium text-gray-900">{{ sessao.sessao.sessao }}</td>
+                        <td>
+                            <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                                {{ sessao.sessao.codigo }}
+                            </span>
+                        </td>
+                        <td class="text-gray-700">{{ sessao.sessao.ponto }}</td>
+                        <td class="text-gray-700">{{ sessao.sessao.data|default:"-" }}</td>
+                        <td class="text-gray-700">{{ sessao.sessao.horario_inicio }}</td>
+                        <td class="text-gray-700">{{ sessao.sessao.padrao }}</td>
+                        <td>
+                            {% if sessao.sessao.status == "Aguardando" or sessao.sessao.status == "Em andamento" %}
+                                <span class="status-badge status-active">
+                                    <i class="fas fa-play mr-1"></i>{{ sessao.sessao.status }}
+                                </span>
+                            {% else %}
+                                <span class="status-badge status-finished">
+                                    <i class="fas fa-stop mr-1"></i>{{ sessao.sessao.status }}
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if sessao.movimentos %}
+                                <div class="flex flex-wrap gap-1">
+                                    {% for movimento in sessao.movimentos %}
+                                        <span class="movement-badge">{{ movimento }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <span class="text-gray-400 italic">Nenhum</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="flex items-center">
+                                <div class="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center mr-2">
+                                    <span class="text-xs font-medium text-gray-600">
+                                        {{ sessao.sessao.criado_por.username|make_list|first|upper }}
+                                    </span>
+                                </div>
+                                <span class="text-sm text-gray-700">{{ sessao.sessao.criado_por.username }}</span>
+                            </div>
+                        </td>
+                        <td class="text-sm text-gray-600">{{ sessao.sessao.created_at|date:"d/m/Y H:i"|default:"-" }}</td>
+                        <td class="text-sm text-gray-600">
+                            {% if sessao.sessao.status == "Concluída" %}
+                                {{ sessao.sessao.updated_at|date:"d/m/Y H:i"|default:"-" }}
+                            {% else %}
+                                <span class="text-gray-400 italic">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="action-menu">
+                                <button class="action-btn js-toggle-menu">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                    Ações
+                                </button>
+                                <div class="action-dropdown">
+                                    <a href="{% url 'detalhes_sessao' sessao.sessao_id %}" class="dropdown-item">
+                                        <i class="fas fa-eye text-blue-500"></i>
+                                        Ver Detalhes
                                     </a>
-                                    {% if sessao.sessao.ativa %}
-                                    <div class="popup-menu-item danger js-finalizar" data-sessao-id="{{ sessao.sessao_id }}">
-                                        <i class="fas fa-stop-circle"></i> Finalizar Sessão
+                                    {% if sessao.sessao.status == "Aguardando" or sessao.sessao.status == "Em andamento" %}
+                                    <div class="dropdown-item danger js-finalizar" data-sessao-id="{{ sessao.sessao_id }}">
+                                        <i class="fas fa-stop-circle"></i>
+                                        Finalizar Sessão
                                     </div>
                                     {% endif %}
-                                    <div class="popup-menu-item js-exportar" data-sessao-id="{{ sessao.sessao_id }}">
-                                        <i class="fas fa-file-csv"></i> Exportar CSV
+                                    <div class="dropdown-item js-exportar" data-sessao-id="{{ sessao.sessao_id }}">
+                                        <i class="fas fa-file-csv text-green-500"></i>
+                                        Exportar CSV
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="12" class="empty-row">Nenhuma sessão encontrada com os filtros aplicados.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-
-        <!-- Pagination -->
-        {% if sessoes.paginator.num_pages > 1 %}
-        <div class="pagination-container mt-4 flex justify-center items-center space-x-2">
-            {% if sessoes.has_previous %}
-                <a href="?page=1{% if current_sort %}&sort={{ current_sort }}{% endif %}{% for key, value in filtros_ativos.items %}{% if value %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
-                   class="pagination-btn bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors">
-                    <i class="fas fa-angle-double-left"></i>
-                </a>
-                <a href="?page={{ sessoes.previous_page_number }}{% if current_sort %}&sort={{ current_sort }}{% endif %}{% for key, value in filtros_ativos.items %}{% if value %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
-                   class="pagination-btn bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors">
-                    <i class="fas fa-angle-left"></i>
-                </a>
-            {% endif %}
-
-            <span class="text-gray-700">
-                Página {{ sessoes.number }} de {{ sessoes.paginator.num_pages }}
-            </span>
-
-            {% if sessoes.has_next %}
-                <a href="?page={{ sessoes.next_page_number }}{% if current_sort %}&sort={{ current_sort }}{% endif %}{% for key, value in filtros_ativos.items %}{% if value %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
-                   class="pagination-btn bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors">
-                    <i class="fas fa-angle-right"></i>
-                </a>
-                <a href="?page={{ sessoes.paginator.num_pages }}{% if current_sort %}&sort={{ current_sort }}{% endif %}{% for key, value in filtros_ativos.items %}{% if value %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
-                   class="pagination-btn bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors">
-                    <i class="fas fa-angle-double-right"></i>
-                </a>
-            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="12" class="empty-state">
+                            <i class="fas fa-search"></i>
+                            <h3>Nenhuma sessão encontrada</h3>
+                            <p>Não foi possível encontrar sessões com os filtros aplicados.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
-        {% endif %}
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    <script>
-        $(document).ready(function() {
-            $('.select2').each(function() {
-                let placeholder = $(this).attr('name');
-                placeholder = placeholder.charAt(0).toUpperCase() + placeholder.slice(1);
-                $(this).select2({
-                    placeholder: `Selecione um ${placeholder}`,
-                    allowClear: true,
-                    width: '100%',
-                    language: {
-                        noResults: function() {
-                            return "Nenhum resultado encontrado";
-                        }
+    <!-- Enhanced Pagination -->
+    {% if sessoes.paginator.num_pages > 1 %}
+    <div class="pagination-modern">
+        {% if sessoes.has_previous %}
+            <a href="?page=1{% if current_sort %}&sort={{ current_sort }}{% endif %}{% for key, value in filtros_ativos.items %}{% if value %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+               class="pagination-btn">
+                <i class="fas fa-angle-double-left"></i>
+            </a>
+            <a href="?page={{ sessoes.previous_page_number }}{% if current_sort %}&sort={{ current_sort }}{% endif %}{% for key, value in filtros_ativos.items %}{% if value %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+               class="pagination-btn">
+                <i class="fas fa-angle-left"></i>
+            </a>
+        {% endif %}
+
+        <span class="pagination-info">
+            Página {{ sessoes.number }} de {{ sessoes.paginator.num_pages }}
+        </span>
+
+        {% if sessoes.has_next %}
+            <a href="?page={{ sessoes.next_page_number }}{% if current_sort %}&sort={{ current_sort }}{% endif %}{% for key, value in filtros_ativos.items %}{% if value %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+               class="pagination-btn">
+                <i class="fas fa-angle-right"></i>
+            </a>
+            <a href="?page={{ sessoes.paginator.num_pages }}{% if current_sort %}&sort={{ current_sort }}{% endif %}{% for key, value in filtros_ativos.items %}{% if value %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+               class="pagination-btn">
+                <i class="fas fa-angle-double-right"></i>
+            </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // Initialize Select2 with enhanced styling
+        $('.select2').each(function() {
+            let placeholder = $(this).attr('name');
+            placeholder = placeholder.charAt(0).toUpperCase() + placeholder.slice(1);
+            $(this).select2({
+                placeholder: `Selecione um ${placeholder}`,
+                allowClear: true,
+                width: '100%',
+                language: {
+                    noResults: function() {
+                        return "Nenhum resultado encontrado";
+                    },
+                    searching: function() {
+                        return "Pesquisando...";
                     }
-                });
-            });
-
-            // Close all menus when clicking outside
-            $(document).on('click', function(e) {
-                if (!$(e.target).closest('.actions-container').length) {
-                    $('.popup-menu').hide();
-                }
-            });
-
-            // Toggle menu
-            $('.js-toggle-menu').on('click', function(e) {
-                e.stopPropagation();
-                const menu = $(this).siblings('.popup-menu');
-                $('.popup-menu').not(menu).hide();
-                menu.toggle();
-            });
-
-            // Action handlers
-            $('.js-finalizar').on('click', function() {
-                const sessaoId = $(this).data('sessao-id');
-                finalizarSessao(sessaoId);
-            });
-
-            $('.js-exportar').on('click', function() {
-                const sessaoId = $(this).data('sessao-id');
-                exportarCSV(sessaoId);
+                },
+                theme: "default"
             });
         });
 
-        function sortTable(field) {
-            const sortField = document.getElementById('sort-field');
-            let currentSort = sortField.value;
+        // Dynamic filter for Ponto based on Codigo selection
+        $('#codigo-select').on('change', function() {
+            const codigoSelecionado = $(this).val();
+            const pontoSelect = $('#ponto-select');
+            const pontoSelectContainer = pontoSelect.parent();
             
-            if (currentSort === field) {
-                sortField.value = '-' + field;
-            } else if (currentSort === '-' + field) {
-                sortField.value = field;
+            // Show loading state
+            pontoSelectContainer.addClass('loading-select');
+            pontoSelect.addClass('select-disabled');
+            
+            // Reset ponto selection
+            pontoSelect.val('').trigger('change');
+            
+            if (codigoSelecionado) {
+                // Fetch pontos for selected codigo
+                $.ajax({
+                    url: '{% url "pontos_por_codigo" %}',
+                    method: 'GET',
+                    data: {
+                        'codigo': codigoSelecionado
+                    },
+                    success: function(data) {
+                        // Clear existing options except the first one
+                        pontoSelect.find('option:not(:first)').remove();
+                        
+                        // Add new options
+                        if (data.pontos && data.pontos.length > 0) {
+                            data.pontos.forEach(function(ponto) {
+                                const isSelected = '{{ filtros_ativos.ponto }}' === ponto ? 'selected' : '';
+                                pontoSelect.append(`<option value="${ponto}" ${isSelected}>${ponto}</option>`);
+                            });
+                            
+                            // Update label to show filtered state
+                            const label = pontoSelect.closest('.filter-group').find('label');
+                            label.find('.text-gray-500').text(`(${data.pontos.length} pontos encontrados)`);
+                        } else {
+                            // Update label to show no results
+                            const label = pontoSelect.closest('.filter-group').find('label');
+                            label.find('.text-gray-500').text('(Nenhum ponto encontrado)');
+                        }
+                        
+                        // Refresh Select2
+                        pontoSelect.trigger('change');
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Erro ao buscar pontos:', error);
+                        showNotification('Erro ao buscar pontos para o código selecionado', 'error');
+                        
+                        // Reset label
+                        const label = pontoSelect.closest('.filter-group').find('label');
+                        label.find('.text-gray-500').text('(Erro ao carregar)');
+                    },
+                    complete: function() {
+                        // Remove loading state
+                        pontoSelectContainer.removeClass('loading-select');
+                        pontoSelect.removeClass('select-disabled');
+                    }
+                });
             } else {
-                sortField.value = field;
+                // Reset to original pontos list when no codigo is selected
+                pontoSelect.find('option:not(:first)').remove();
+                {% for ponto in pontos %}
+                    pontoSelect.append('<option value="{{ ponto }}">{{ ponto }}</option>');
+                {% endfor %}
+                
+                // Reset label
+                const label = pontoSelect.closest('.filter-group').find('label');
+                label.find('.text-gray-500').text('(Filtre por código primeiro)');
+                
+                // Remove loading state
+                pontoSelectContainer.removeClass('loading-select');
+                pontoSelect.removeClass('select-disabled');
+            }
+        });
+
+        // Trigger change event on page load if there's a pre-selected codigo
+        const codigoInicial = $('#codigo-select').val();
+        if (codigoInicial) {
+            $('#codigo-select').trigger('change');
+        }
+
+        // Enhanced menu handling
+        $(document).on('click', function(e) {
+            if (!$(e.target).closest('.action-menu').length) {
+                $('.action-dropdown').hide();
+            }
+        });
+
+        // Toggle action menu
+        $('.js-toggle-menu').on('click', function(e) {
+            e.stopPropagation();
+            const menu = $(this).siblings('.action-dropdown');
+            $('.action-dropdown').not(menu).hide();
+            menu.toggle();
+        });
+
+        // Action handlers with enhanced UX
+        $('.js-finalizar').on('click', function() {
+            const sessaoId = $(this).data('sessao-id');
+            finalizarSessao(sessaoId);
+        });
+
+        $('.js-exportar').on('click', function() {
+            const sessaoId = $(this).data('sessao-id');
+            exportarCSV(sessaoId);
+        });
+
+        // Add loading states and animations
+        $('form').on('submit', function() {
+            const submitBtn = $(this).find('button[type="submit"]');
+            submitBtn.prop('disabled', true);
+            submitBtn.html('<i class="fas fa-spinner fa-spin mr-2"></i>Carregando...');
+        });
+
+        // Auto-collapse filter if no filters are active and screen is small
+        if (window.innerWidth < 768 && !hasActiveFilters()) {
+            // Keep collapsed on mobile by default
+        } else if (hasActiveFilters()) {
+            // Auto-expand if there are active filters
+            const filterContent = document.getElementById('filter-content');
+            const toggleIcon = document.querySelector('.filter-toggle-icon');
+            if (filterContent && toggleIcon) {
+                filterContent.classList.add('expanded');
+                toggleIcon.classList.add('rotated');
+            }
+        }
+    });
+
+    function hasActiveFilters() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const filterParams = ['status', 'usuario', 'id', 'codigo', 'ponto', 'data', 'padrao'];
+        return filterParams.some(param => urlParams.get(param));
+    }
+
+    function toggleFilters() {
+        const filterContent = document.getElementById('filter-content');
+        const toggleIcon = document.querySelector('.filter-toggle-icon');
+        
+        if (filterContent.classList.contains('expanded')) {
+            filterContent.classList.remove('expanded');
+            toggleIcon.classList.remove('rotated');
+        } else {
+            filterContent.classList.add('expanded');
+            toggleIcon.classList.add('rotated');
+            
+            // Re-initialize Select2 after expansion to ensure proper rendering
+            setTimeout(() => {
+                $('.select2').trigger('change');
+            }, 300);
+        }
+    }
+
+    function removeFilter(filterName) {
+        const input = document.querySelector(`[name="${filterName}"]`);
+        if (input) {
+            input.value = '';
+            if ($(input).hasClass('select2')) {
+                $(input).val(null).trigger('change');
             }
             
+            // Special handling for codigo filter removal
+            if (filterName === 'codigo') {
+                // Also clear ponto filter since it's dependent
+                const pontoInput = document.querySelector('[name="ponto"]');
+                if (pontoInput) {
+                    pontoInput.value = '';
+                    if ($(pontoInput).hasClass('select2')) {
+                        $(pontoInput).val(null).trigger('change');
+                    }
+                }
+            }
+            
+            showLoadingState();
             document.getElementById('filter-form').submit();
+        }
+    }
+
+    function resetFilters() {
+        const inputs = document.querySelectorAll('#filter-form input:not(#sort-field), #filter-form select');
+        inputs.forEach(input => {
+            input.value = '';
+        });
+        $('.select2').val(null).trigger('change');
+        
+        showLoadingState();
+        document.getElementById('filter-form').submit();
+    }
+
+    function sortTable(field) {
+        const sortField = document.getElementById('sort-field');
+        let currentSort = sortField.value;
+        
+        if (currentSort === field) {
+            sortField.value = '-' + field;
+        } else if (currentSort === '-' + field) {
+            sortField.value = field;
+        } else {
+            sortField.value = field;
         }
         
-        function resetFilters() {
-            const inputs = document.querySelectorAll('#filter-form input:not(#sort-field), #filter-form select');
-            inputs.forEach(input => {
-                input.value = '';
-            });
-            $('.select2').val(null).trigger('change');
-            document.getElementById('filter-form').submit();
-        }
+        // Add visual feedback
+        showLoadingState();
+        document.getElementById('filter-form').submit();
+    }
+    
+    function finalizarSessao(sessaoId) {
+        showConfirmDialog(
+            'Finalizar Sessão',
+            'Tem certeza que deseja finalizar esta sessão? Esta ação não pode ser desfeita.',
+            'warning'
+        ).then((confirmed) => {
+            if (!confirmed) return;
 
-        function removeFilter(filterName) {
-            const input = document.querySelector(`[name="${filterName}"]`);
-            if (input) {
-                input.value = '';
-                if ($(input).hasClass('select2')) {
-                    $(input).val(null).trigger('change');
-                }
-                document.getElementById('filter-form').submit();
-            }
-        }
-
-        function finalizarSessao(sessaoId) {
-            if (!confirm('Tem certeza que deseja finalizar esta sessão?')) {
-                return;
-            }
+            showLoadingNotification('Finalizando sessão...');
 
             fetch('/contagens/finalizar-sessao/', {
                 method: 'POST',
@@ -822,22 +1192,135 @@
             .catch(error => {
                 showNotification('Erro ao finalizar sessão: ' + error.message, 'error');
             });
-        }
+        });
+    }
 
-        function exportarCSV(sessaoId) {
-            window.location.href = `/contagens/exportar-csv/${sessaoId}`;
-        }
+    function exportarCSV(sessaoId) {
+        showLoadingNotification('Preparando exportação...');
+        
+        // Create temporary notification for download
+        const notification = showNotification('Download iniciado!', 'info', 3000);
+        
+        window.location.href = `/contagens/exportar-csv/${sessaoId}`;
+    }
 
-        function showNotification(message, type) {
-            const notification = document.createElement('div');
-            notification.className = `fixed bottom-4 right-4 px-4 py-2 rounded-lg shadow-lg ${
-                type === 'success' ? 'bg-green-500' : 'bg-red-500'
-            } text-white`;
-            notification.textContent = message;
-            document.body.appendChild(notification);
-            setTimeout(() => notification.remove(), type === 'success' ? 2000 : 3000);
-        }
-    </script>
-</body>
-</html>
+    function showLoadingState() {
+        const overlay = document.createElement('div');
+        overlay.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+        overlay.innerHTML = `
+            <div class="bg-white rounded-lg p-6 flex items-center gap-3">
+                <i class="fas fa-spinner fa-spin text-blue-600 text-xl"></i>
+                <span class="text-gray-700 font-medium">Carregando...</span>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+    }
+
+    function showNotification(message, type = 'info', duration = 3000) {
+        const colors = {
+            success: 'bg-green-500',
+            error: 'bg-red-500',
+            warning: 'bg-yellow-500',
+            info: 'bg-blue-500'
+        };
+
+        const icons = {
+            success: 'fas fa-check-circle',
+            error: 'fas fa-exclamation-circle',
+            warning: 'fas fa-exclamation-triangle',
+            info: 'fas fa-info-circle'
+        };
+
+        const notification = document.createElement('div');
+        notification.className = `fixed bottom-4 right-4 ${colors[type]} text-white px-6 py-4 rounded-lg shadow-lg z-50 flex items-center gap-3 transform transition-all duration-300 translate-x-full`;
+        notification.innerHTML = `
+            <i class="${icons[type]}"></i>
+            <span class="font-medium">${message}</span>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Animate in
+        setTimeout(() => {
+            notification.classList.remove('translate-x-full');
+        }, 100);
+        
+        // Animate out and remove
+        setTimeout(() => {
+            notification.classList.add('translate-x-full');
+            setTimeout(() => notification.remove(), 300);
+        }, duration);
+        
+        return notification;
+    }
+
+    function showLoadingNotification(message) {
+        return showNotification(`<i class="fas fa-spinner fa-spin mr-2"></i>${message}`, 'info', 2000);
+    }
+
+    function showConfirmDialog(title, message, type = 'warning') {
+        return new Promise((resolve) => {
+            const colors = {
+                warning: 'text-yellow-600 bg-yellow-100',
+                danger: 'text-red-600 bg-red-100',
+                info: 'text-blue-600 bg-blue-100'
+            };
+
+            const icons = {
+                warning: 'fas fa-exclamation-triangle',
+                danger: 'fas fa-exclamation-circle',
+                info: 'fas fa-info-circle'
+            };
+
+            const overlay = document.createElement('div');
+            overlay.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+            overlay.innerHTML = `
+                <div class="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4 transform transition-all duration-300 scale-95">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 rounded-full ${colors[type]} flex items-center justify-center">
+                            <i class="${icons[type]} text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900">${title}</h3>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 mb-6">${message}</p>
+                    <div class="flex gap-3 justify-end">
+                        <button class="cancel-btn px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-medium transition-colors">
+                            Cancelar
+                        </button>
+                        <button class="confirm-btn px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors">
+                            Confirmar
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(overlay);
+            
+            // Animate in
+            setTimeout(() => {
+                overlay.querySelector('.bg-white').classList.add('scale-100');
+                overlay.querySelector('.bg-white').classList.remove('scale-95');
+            }, 100);
+
+            overlay.querySelector('.cancel-btn').onclick = () => {
+                overlay.remove();
+                resolve(false);
+            };
+
+            overlay.querySelector('.confirm-btn').onclick = () => {
+                overlay.remove();
+                resolve(true);
+            };
+
+            overlay.onclick = (e) => {
+                if (e.target === overlay) {
+                    overlay.remove();
+                    resolve(false);
+                }
+            };
+        });
+    }
+</script>
 {% endblock %}

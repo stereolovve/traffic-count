@@ -216,7 +216,6 @@ class MyApp:
             
             self.page.update()
             
-            logging.info("Interface alterada para tela de login")
         except Exception as ex:
             logging.error(f"Erro ao mudar para tela de login: {ex}")
 
@@ -253,7 +252,6 @@ class MyApp:
             # Atualizar a página
             self.page.update()
             
-            logging.info("Interface alterada para tela de login")
         except Exception as ex:
             logging.error(f"Erro ao mudar para tela de login: {ex}")
          
@@ -277,7 +275,6 @@ class MyApp:
             # Atualizar a página
             self.page.update()
             
-            logging.info("Interface alterada para tela de registro")
         except Exception as ex:
             logging.error(f"Erro ao mudar para tela de registro: {ex}")
 

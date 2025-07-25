@@ -15,6 +15,8 @@ class User(AbstractUser):
         ('DIG', 'Digitação'),
         ('P&D', 'Perci'),
         ('SUPER', 'Supervisao'),
+        ('ENG', 'Engenharia'),
+        ('ADM', 'Administrativo'),
     ], default='CON')
 
     preferences = models.JSONField(default=dict, blank=True)

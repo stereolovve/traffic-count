@@ -111,7 +111,6 @@ body {
 {% block content %}
 <div class="overlay">
     <div class="dashboard">
-        {% if user.is_authenticated %}
         <div class="welcome-section">
             <h2 class="welcome-title">Bem-vindo, {{ user.name }}!</h2>
             <p class="welcome-subtitle">Confira o resumo das suas atividades abaixo</p>
@@ -249,28 +248,52 @@ body {
                 </div>
             </div>
         </div>
-        {% else %}
+    </div>
+</div>
+{% endblock %}
+
+{% block login_content %}
+<div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8">
         <div class="text-center">
+            <img src="{% static 'img/icone.png' %}" alt="Traffic Count Logo" class="mx-auto h-12 w-auto mb-6">
             <h2 class="text-3xl font-extrabold text-gray-900 mb-4">
                 Bem-vindo ao Traffic Count
             </h2>
             <p class="text-lg text-gray-600 mb-8">
-                Por favor, faça login para acessar o sistema
+                Sistema de contagem
             </p>
-            <div class="space-y-4">
-                <a href="{% url 'login' %}" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 w-full justify-center">
-                    <i class="fas fa-sign-in-alt mr-2"></i>
-                    Fazer Login
-                </a>
-                <div class="text-gray-600">
-                    Não tem uma conta?
-                    <a href="{% url 'register' %}" class="font-medium text-blue-600 hover:text-blue-500 ml-1">
-                        Registre-se
+        </div>
+        
+        <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+            <div class="space-y-6">
+                <div class="text-center">
+                    <p class="text-gray-600 mb-6">
+                        Para acessar o sistema, você precisa fazer login
+                    </p>
+                </div>
+                
+                <div class="space-y-4">
+                    <a href="{% url 'login' %}" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200">
+                        <i class="fas fa-sign-in-alt mr-2"></i>
+                        Fazer Login
                     </a>
+                    
+                    <div class="text-center text-gray-600">
+                        Não tem uma conta?
+                        <a href="{% url 'register' %}" class="font-medium text-blue-600 hover:text-blue-500 ml-1">
+                            Registre-se aqui
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="mt-8 pt-6 border-t border-gray-200">
+                    <div class="text-center text-sm text-gray-500">
+                        <p>Sistema desenvolvido para contagem e análise de tráfego</p>
+                    </div>
                 </div>
             </div>
         </div>
-        {% endif %}
     </div>
 </div>
 {% endblock %}

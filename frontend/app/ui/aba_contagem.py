@@ -9,6 +9,17 @@ from database.models import Contagem, Categoria, Historico
 logging.getLogger(__name__).setLevel(logging.DEBUG)
 
 class AbaContagem(ft.Column):
+    """
+    Melhorias e boas práticas sugeridas:
+    - Nunca chame setup_ui após incremento/decremento, apenas ao iniciar/trocar de sessão.
+    - Nunca limpe self.contagens em setup_ui, apenas ao resetar ou finalizar sessão.
+    - Use self.labels e self.contador.labels sempre sincronizados.
+    - Considere usar observer/eventos para atualizar UI ao invés de reconstruir tudo.
+    - Considere separar lógica de dados e UI para facilitar manutenção.
+    - Adicione testes unitários para métodos de incremento/decremento.
+    - Use logs de nível adequado (info/debug) e não error para debug.
+    - Considere usar um framework de estado (ex: Redux-like) se o app crescer.
+    """
     def __init__(self, contador):
         super().__init__()
         self.contador = contador
@@ -34,14 +45,12 @@ class AbaContagem(ft.Column):
         try:
             self.controls.clear()
             self.contador.contagem_ativa = False
-            self.contador.labels.clear()
-
-            # Criar um ScrollableColumn para conter todo o conteúdo
+            self.labels = {}  
+            self.contador.labels = self.labels  
             main_content = ft.Column(
                 controls=[],
             )
 
-            # Informações da sessão (fixo no topo)
             self.session_info = ft.Container(
                 content=ft.Row(
                     alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
@@ -63,7 +72,6 @@ class AbaContagem(ft.Column):
                 on_change=self.toggle_contagem
             )
 
-            # Botões de ação com altura fixa
             action_buttons = ft.Container(
                 content=ft.Row(
                     alignment=ft.MainAxisAlignment.CENTER,
@@ -80,12 +88,10 @@ class AbaContagem(ft.Column):
                                     on_click=self.abrir_dialogo_observacao),
                     ]
                 ),
-                height=50  # Altura fixa para os botões
+                height=50  
             )
 
-            # Configurar labels de tempo
             if not hasattr(self.contador, "last_save_time") or self.contador.last_save_time is None:
-                # Usar o horário inicial da sessão como referência para o último salvamento
                 if "HorarioInicio" in self.contador.details:
                     self.contador.last_save_time = datetime.strptime(
                         self.contador.details["HorarioInicio"], 
@@ -241,8 +247,8 @@ class AbaContagem(ft.Column):
             for key in list(self.contador.contagens.keys()):
                 if key[1] == movimento:
                     self.contador.contagens[key] = 0
-                    if key in self.contador.labels:
-                        label_count, _ = self.contador.labels[key]
+                    if key in self.labels:
+                        label_count, _ = self.labels[key]
                         label_count.value = "0"
                         label_count.update()
 
@@ -298,28 +304,22 @@ class AbaContagem(ft.Column):
 
     def create_category_control(self, veiculo, bind, movimento):
         bind = self.contador.binds.get(veiculo, "N/A")
-        
         categoria = next(
             (c for c in self.contador.categorias 
              if c.veiculo == veiculo and c.movimento == movimento),
             None
         )
-        
         if not categoria:
             logging.warning(f"Categoria não encontrada para {veiculo} - {movimento}")
             return None
-
         label_veiculo = ft.Text(f"{veiculo}", size=15, width=100)
-        
         label_bind = ft.Text(
             f"({bind})" if bind != "N/A" else "(Sem bind)", 
             color="cyan" if bind != "N/A" else "red", 
             size=15, 
             width=50
         )
-        
         label_count = ft.Text(f"{self.contador.contagens.get((veiculo, movimento), 0)}", size=15, width=50)
-
         row = ft.Row(
             alignment=ft.MainAxisAlignment.CENTER,
             spacing=5,
@@ -349,9 +349,8 @@ class AbaContagem(ft.Column):
                 )
             ]
         )
-
-        self.contador.labels[(veiculo, movimento)] = [label_count, label_bind]
-
+        self.labels[(veiculo, movimento)] = [label_count, label_bind]
+        self.contador.labels = self.labels  # Sincronize sempre
         return row
 
     def toggle_contagem(self, e):
@@ -431,10 +430,14 @@ class AbaContagem(ft.Column):
 
     def update_labels(self, veiculo, movimento):
         key = (veiculo, movimento)
-        if key in self.contador.labels:
-            label_count, label_bind = self.contador.labels[key]
-            label_count.value = str(self.contador.contagens.get(key, 0))
+        if key in self.labels:
+            label_count, label_bind = self.labels[key]
+            label_count.value = str(self.contagens.get(key, 0))
             label_count.update()
+            if hasattr(self, 'page') and self.page is not None:
+                self.page.update()
+            elif hasattr(self.contador, 'page') and self.contador.page is not None:
+                self.contador.page.update()
         else:
             logging.warning(f"[WARNING] Label não encontrada para {key}. Aguardando criação.")
 

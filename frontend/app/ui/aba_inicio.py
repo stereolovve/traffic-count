@@ -46,16 +46,16 @@ class AbaInicio(ft.Column):
         )
         self.inputs_container.content.controls.append(user_label)
 
-        # Campo de busca para o código
-        self.codigo_search_input = ft.TextField(
+        # --- CAMPO DE PESQUISA PARA CÓDIGOS ---
+        self.codigo_search_field = ft.TextField(
             label="Pesquisar Código",
             hint_text="Digite para filtrar...",
-            on_change=self.filtrar_codigos,
+            on_change=self.on_codigo_search,
             expand=True,
             border_radius=8
         )
-        self.inputs_container.content.controls.append(self.codigo_search_input)
-
+        self.inputs_container.content.controls.append(self.codigo_search_field)
+        
         # Dropdowns para Código e Ponto
         self.codigo_dropdown = ft.Dropdown(
             label="Código",
@@ -109,21 +109,38 @@ class AbaInicio(ft.Column):
         )
         self.inputs_container.content.controls.append(self.data_ponto_input)
 
-        self.selected_time = "00:00"
+        self.selected_time = "00:00"  # Inicializar antes de usar
 
-        # Substituir time picker por campo de texto com máscara/validação
-        self.horario_input = ft.TextField(
-            label="Horário de Início",
-            hint_text="HH:MM",
+        # Campo para horário de início (manual)
+        self.periodo_manual_input = ft.TextField(
+            label="Horário de Início (hh:mm)",
+            hint_text="Ex: 08:00",
             value=self.selected_time,
             icon=ft.icons.ACCESS_ALARM,
             expand=True,
             border_radius=8,
-            keyboard_type=ft.KeyboardType.NUMBER,
-            on_change=self.validar_horario
+            on_change=self.on_periodo_manual_change
         )
-        self.inputs_container.content.controls.append(self.horario_input)
+        self.inputs_container.content.controls.append(self.periodo_manual_input)
+        self.horario_inicio_erro = ft.Text("", color="red", visible=False)
+        self.inputs_container.content.controls.append(self.horario_inicio_erro)
 
+        # Campo para horário de fim (igual ao de início, logo abaixo)
+        self.horario_fim_input = ft.TextField(
+            label="Horário de Fim (hh:mm)",
+            hint_text="Ex: 12:00",
+            value="",
+            icon=ft.icons.ACCESS_ALARM,
+            expand=True,
+            border_radius=8,
+            on_change=self.on_horario_fim_change
+        )
+        self.inputs_container.content.controls.append(self.horario_fim_input)
+        self.horario_fim_erro = ft.Text("", color="red", visible=False)
+        self.inputs_container.content.controls.append(self.horario_fim_erro)
+        self.horario_fim_valido = True
+
+        # --- CAMPO DE INSERÇÃO MANUAL DE PERÍODO ---
         self.padrao_dropdown = ft.Dropdown(
             label="Selecione o Padrão",
             options=[],
@@ -197,7 +214,7 @@ class AbaInicio(ft.Column):
             session = Session()
             
             # Verificar no banco de dados local usando SQLAlchemy
-            active_session = session.query(Sessao).filter(Sessao.ativa == True).first()
+            active_session = session.query(Sessao).filter(Sessao.status == "Em andamento").first()
             
             if active_session:
                 # Sessão ativa encontrada
@@ -246,17 +263,16 @@ class AbaInicio(ft.Column):
                         self.page.update()
                     return
             
-            # Ordenar alfabeticamente
-            response = sorted(response, key=lambda x: x['codigo'])
-            self.todos_codigos = response
-            self.codigo_dropdown.options = [
+            # Ordenar alfabeticamente pelo campo 'codigo'
+            response_sorted = sorted(response, key=lambda c: c['codigo'])
+            options = [
                 ft.dropdown.Option(
                     key=str(codigo['id']),
-                    text=codigo['codigo'],
-                    data=codigo
-                ) for codigo in response
+                    text=codigo['codigo']
+                ) for codigo in response_sorted
             ]
-            
+            self._all_codigo_options = options  # Salva todas para pesquisa
+            self.codigo_dropdown.options = options
             if self.page:
                 self.page.update()
         except Exception as ex:
@@ -482,21 +498,22 @@ class AbaInicio(ft.Column):
     async def iniciar_criacao_sessao(self, e):
         if not self.validar_campos():
             return
-
+        if not self.horario_fim_valido:
+            self.page.show_snack_bar(ft.SnackBar(ft.Text("Horário de fim inválido."), bgcolor="red"))
+            return
         # Desabilitar botão e mostrar loading
         e.control.disabled = True
         e.control.text = "Criando sessão..."
         e.control.update()
-        
         banner = self.contador.show_loading("Criando sessão e carregando padrões...")
-
         try:
             # Criar objeto de sessão com os dados dos dropdowns
             session_data = {
                 "pesquisador": self.contador.username,
                 "codigo": self.codigo_ponto_input.value,
                 "ponto": self.nome_ponto_input.value,
-                "horario_inicio": self.horario_input.value,
+                "horario_inicio": self.periodo_manual_input.value,  # Usar valor do campo manual
+                "horario_fim": self.horario_fim_input.value,  # Novo campo
                 "data_ponto": self.data_ponto_input.value,
                 "padrao": self.padrao_dropdown.value,
                 "movimentos": [
@@ -505,11 +522,9 @@ class AbaInicio(ft.Column):
                     if movimento.controls[0].value
                 ]
             }
-
             await self.contador.create_session(session_data)
             # Após criar a sessão, verificar novamente o estado
             await self.check_active_session()
-
         except Exception as ex:
             logging.error(f"Erro ao criar sessão: {ex}")
             self.contador.page.show_snack_bar(
@@ -523,34 +538,80 @@ class AbaInicio(ft.Column):
             e.control.disabled = False
             e.control.text = "Criar Sessão"
             e.control.update()
-            
             # Remover banner de loading
             if banner:
                 self.contador.hide_loading(banner)
 
-    def validar_horario(self, e):
-        value = e.control.value
-        # Aceita apenas formato HH:MM
-        if not re.match(r"^(?:[01]\d|2[0-3]):[0-5]\d$", value):
-            e.control.error_text = "Formato deve ser HH:MM"
-            e.control.update()
-        else:
-            e.control.error_text = None
-            self.selected_time = value
-            e.control.update()
-
-    def filtrar_codigos(self, e):
-        filtro = e.control.value.lower()
-        if hasattr(self, 'todos_codigos'):
-            codigos = self.todos_codigos
-        else:
-            codigos = [opt.data for opt in self.codigo_dropdown.options if hasattr(opt, 'data') and opt.data]
-        if not codigos:
-            return
-        opcoes_filtradas = []
-        for codigo in codigos:
-            if filtro in codigo['codigo'].lower() or (filtro and codigo['codigo'].lower().startswith(filtro)):
-                opcoes_filtradas.append(ft.dropdown.Option(key=str(codigo['id']), text=codigo['codigo'], data=codigo))
-        self.codigo_dropdown.options = opcoes_filtradas if filtro else [ft.dropdown.Option(key=str(c['id']), text=c['codigo'], data=c) for c in codigos]
+    def on_codigo_search(self, e):
+        search_text = e.control.value.lower()
+        filtered_options = [
+            option for option in getattr(self, '_all_codigo_options', [])
+            if search_text in option.text.lower()
+        ]
+        self.codigo_dropdown.options = filtered_options
         self.codigo_dropdown.value = None
         self.codigo_dropdown.update()
+
+    def on_periodo_manual_change(self, e):
+        value = e.control.value
+        # Validação simples para hh:mm
+        if re.match(r"^([01]?\d|2[0-3]):[0-5]\d$", value):
+            self.selected_time = value
+            self.periodo_manual_input.border_color = None
+            self.horario_inicio_erro.value = ""
+            self.horario_inicio_erro.visible = False
+            self.periodo_manual_input.update()
+            self.horario_inicio_erro.update()
+            # Atualizar validação do fim ao mudar início
+            self.on_horario_fim_change(None)
+        else:
+            self.periodo_manual_input.border_color = "red"
+            self.horario_inicio_erro.value = "Formato inválido. Use hh:mm."
+            self.horario_inicio_erro.visible = True
+            self.periodo_manual_input.update()
+            self.horario_inicio_erro.update()
+
+    def on_horario_fim_change(self, e):
+        import re
+        # Suporta tanto evento quanto chamada direta
+        if e is not None and hasattr(e, 'control'):
+            fim = e.control.value
+        else:
+            fim = self.horario_fim_input.value
+        inicio = self.periodo_manual_input.value
+        # Validação simples para hh:mm
+        if not re.match(r"^([01]?\d|2[0-3]):[0-5]\d$", fim):
+            self.horario_fim_valido = False
+            self.horario_fim_erro.value = "Formato inválido. Use hh:mm."
+            self.horario_fim_erro.visible = True
+            self.horario_fim_input.border_color = "red"
+            self.horario_fim_input.update()
+            self.horario_fim_erro.update()
+            return
+        # Checar se é depois do início
+        try:
+            h_i, m_i = map(int, inicio.split(":"))
+            h_f, m_f = map(int, fim.split(":"))
+            if (h_f, m_f) <= (h_i, m_i):
+                self.horario_fim_valido = False
+                self.horario_fim_erro.value = "Horário de fim deve ser depois do início."
+                self.horario_fim_erro.visible = True
+                self.horario_fim_input.border_color = "red"
+                self.horario_fim_input.update()
+                self.horario_fim_erro.update()
+                return
+        except Exception:
+            self.horario_fim_valido = False
+            self.horario_fim_erro.value = "Erro ao validar horário."
+            self.horario_fim_erro.visible = True
+            self.horario_fim_input.border_color = "red"
+            self.horario_fim_input.update()
+            self.horario_fim_erro.update()
+            return
+        # Se tudo ok
+        self.horario_fim_valido = True
+        self.horario_fim_erro.value = ""
+        self.horario_fim_erro.visible = False
+        self.horario_fim_input.border_color = None
+        self.horario_fim_input.update()
+        self.horario_fim_erro.update()

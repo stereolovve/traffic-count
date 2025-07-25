@@ -32,8 +32,8 @@ from django.conf.urls.static import static
 def home(request):
     if request.user.is_authenticated:
         # Get session statistics
-        sessoes_ativas = Session.objects.filter(ativa=True).count()
-        sessoes_finalizadas = Session.objects.filter(ativa=False).count()
+        sessoes_ativas = Session.objects.filter(status="Em andamento").count()
+        sessoes_finalizadas = Session.objects.filter(status="Concluída").count()
         total_sessoes = Session.objects.count()
         total_usuarios = User.objects.count()
         

@@ -36,12 +36,13 @@ class SessionManager:
             if not session_data.get("movimentos"):
                 raise ValueError("É necessário definir pelo menos um movimento")
 
-            # 2. Configurar detalhes da sessão
+            # 2. Configurar detalhes da sessão (em memória)
             self.contador.details = {
                 "Pesquisador": session_data["pesquisador"],
                 "Código": session_data["codigo"],
                 "Ponto": session_data["ponto"],
                 "HorarioInicio": session_data["horario_inicio"],
+                "HorarioFim": session_data.get("horario_fim", ""),
                 "Data do Ponto": session_data["data_ponto"],
                 "Movimentos": session_data["movimentos"]
             }
@@ -52,7 +53,6 @@ class SessionManager:
             self.contador.current_timeslot = datetime.combine(hoje, horario_inicial)
             self.contador.details["current_timeslot"] = self.contador.current_timeslot.strftime("%H:%M")
             
-
             # 4. Gerar nome da sessão
             horario_inicial_file_safe = session_data["horario_inicio"].replace(":", "h")
             formated_date = datetime.strptime(
@@ -72,30 +72,28 @@ class SessionManager:
                 self.contador.sessao = f"{base_sessao}_{counter}"
                 counter += 1
 
-            # 5. Carregar binds e categorias da API (uma única vez)
+            # 5. Carregar binds e categorias
             binds = await self.contador.api_manager.load_binds(session_data["padrao"])
             if binds:
                 self.contador.binds = binds
 
             categorias = await self.contador.api_manager.load_categories(session_data["padrao"])
             if categorias:
-                # Converter categorias da API para objetos Categoria e salvar no contador
-                self.contador.categorias = []
-                for cat_dict in categorias:
-                    categoria = Categoria(
-                        padrao=cat_dict['pattern_type'],
-                        veiculo=cat_dict['veiculo'],
-                        movimento=cat_dict['movimento'],
-                        bind=cat_dict.get('bind', 'N/A')
-                    )
-                    self.contador.categorias.append(categoria)
+                self.save_categories_in_local(categorias)
 
-            # 6. Criar sessão no banco
+            self.carregar_categorias_locais()
+
+            # 6. Criar sessão no banco local
             nova_sessao = Sessao(
                 sessao=self.contador.sessao,
-                details=json.dumps(self.contador.details),
                 padrao=session_data["padrao"],
-                ativa=True
+                codigo=session_data["codigo"],
+                ponto=session_data["ponto"],
+                data=session_data["data_ponto"],
+                horario_inicio=session_data["horario_inicio"],
+                horario_fim=session_data.get("horario_fim", ""),
+                criada_em=datetime.now(),
+                status="Em andamento"
             )
             with self.contador.session_lock:
                 self.contador.session.add(nova_sessao)
@@ -185,92 +183,97 @@ class SessionManager:
 
     async def load_active_session(self):
         try:
-            sessao_ativa = self.contador.session.query(Sessao).filter_by(ativa=True).first()
+            sessao_ativa = self.contador.session.query(Sessao).filter_by(status="Em andamento").first()
             if not sessao_ativa:
                 self.contador.setup_ui()
                 return False
 
-            self.contador.sessao = sessao_ativa.sessao  
-            self.contador.details = json.loads(sessao_ativa.details) 
+            # Exibir diálogo para o usuário escolher se deseja continuar ou iniciar nova sessão
+            def continuar_sessao(e):
+                dialog.open = False
+                self.contador.page.update()
+                self.contador.page.run_task(self._continuar_sessao_ativa, sessao_ativa)
 
-            # Configurar o timeslot atual
-            hoje = datetime.now().date()
-            
-            # Primeiro tenta carregar o último período das contagens
-            ultima_contagem = self.contador.session.query(Contagem)\
-                .filter_by(sessao=self.contador.sessao)\
-                .order_by(Contagem.periodo.desc())\
-                .first()
-                
-            if ultima_contagem and ultima_contagem.periodo:
-                # Se encontrou uma contagem com período, usa ela como base
-                horario = datetime.strptime(ultima_contagem.periodo, "%H:%M").time()
-                self.contador.current_timeslot = datetime.combine(hoje, horario) + timedelta(minutes=15)
-                self.contador.details["current_timeslot"] = self.contador.current_timeslot.strftime("%H:%M")
-            # Se não encontrou contagem com período, tenta usar o último período salvo nos detalhes
-            elif "current_timeslot" in self.contador.details:
-                horario = datetime.strptime(self.contador.details["current_timeslot"], "%H:%M").time()
-                self.contador.current_timeslot = datetime.combine(hoje, horario)
-            # Se não tem período salvo, usa o horário inicial
-            elif "HorarioInicio" in self.contador.details:
-                horario = datetime.strptime(self.contador.details["HorarioInicio"], "%H:%M").time()
-                self.contador.current_timeslot = datetime.combine(hoje, horario)
-            # Se não tem nada, usa o horário atual
-            else:
-                horario = datetime.now().time()
-                self.contador.current_timeslot = datetime.combine(hoje, horario)
-                self.contador.details["current_timeslot"] = self.contador.current_timeslot.strftime("%H:%M")
-                logging.warning("Nenhum horário encontrado, usando horário atual")
+            async def finalizar_e_nova():
+                dialog.open = False
+                self.contador.page.update()
+                await self.end_session()
+                self.contador.setup_ui()
 
-            # Carregar último horário de salvamento
-            if "last_save_time" in self.contador.details:
-                self.contador.last_save_time = datetime.strptime(self.contador.details["last_save_time"], "%H:%M:%S")
-            else:
-                self.contador.last_save_time = None
-
-            self.contador.setup_ui()  
-            await asyncio.sleep(0.5)
-
-            if sessao_ativa:
-                self.contador.ui_components['inicio'].padrao_dropdown.value = sessao_ativa.padrao
-
-            padrao_atual = self.contador.ui_components['inicio'].padrao_dropdown.value
-            
-            # Carregar binds e categorias da API
-            binds = await self.contador.api_manager.load_binds(padrao_atual)
-            if binds:
-                self.contador.binds = binds
-            
-            categorias = await self.contador.api_manager.load_categories(padrao_atual)
-            if categorias:
-                # Converter categorias da API para objetos Categoria
-                self.contador.categorias = []
-                for cat_dict in categorias:
-                    categoria = Categoria(
-                        padrao=cat_dict['pattern_type'],
-                        veiculo=cat_dict['veiculo'],
-                        movimento=cat_dict['movimento'],
-                        bind=cat_dict.get('bind', 'N/A')
-                    )
-                    self.contador.categorias.append(categoria)
-            
-            self.recover_active_countings()
-            
-            if 'contagem' in self.contador.ui_components:
-                self.contador.ui_components['contagem'].setup_ui()
-
-            self.contador.tabs.selected_index = 1
-            self.contador.tabs.tabs[1].content.visible = True
-            self.contador.page.window.scroll = ft.ScrollMode.AUTO
+            dialog = ft.AlertDialog(
+                title=ft.Text("Sessão ativa detectada"),
+                content=ft.Text("Há uma sessão ativa. Deseja continuar de onde parou ou iniciar uma nova sessão?"),
+                actions=[
+                    ft.TextButton("Continuar sessão", on_click=continuar_sessao),
+                    ft.TextButton("Iniciar nova sessão", on_click=lambda _: self.contador.page.run_task(finalizar_e_nova)),
+                ],
+            )
+            self.contador.page.overlay.append(dialog)
+            dialog.open = True
             self.contador.page.update()
-
-            return True
+            return True  # Aguarda escolha do usuário
 
         except Exception as ex:
             logging.error(f"[ERROR] Erro ao carregar sessão ativa: {ex}")
             self.contador.setup_ui()
             self.contador.page.update()
             return False
+
+    async def _continuar_sessao_ativa(self, sessao_ativa):
+        self.contador.sessao = sessao_ativa.sessao  
+        self.contador.details = {
+            "Pesquisador": self.contador.username,
+            "Código": sessao_ativa.codigo,
+            "Ponto": sessao_ativa.ponto,
+            "HorarioInicio": sessao_ativa.horario_inicio,
+            "HorarioFim": getattr(sessao_ativa, "horario_fim", ""),
+            "Data do Ponto": sessao_ativa.data,
+        }
+        hoje = datetime.now().date()
+        ultima_contagem = self.contador.session.query(Contagem)\
+            .filter_by(sessao=self.contador.sessao)\
+            .order_by(Contagem.periodo.desc())\
+            .first()
+        if ultima_contagem and ultima_contagem.periodo:
+            horario = datetime.strptime(ultima_contagem.periodo, "%H:%M").time()
+            self.contador.current_timeslot = datetime.combine(hoje, horario) + timedelta(minutes=15)
+            self.contador.details["current_timeslot"] = self.contador.current_timeslot.strftime("%H:%M")
+        elif "current_timeslot" in self.contador.details:
+            horario = datetime.strptime(self.contador.details["current_timeslot"], "%H:%M").time()
+            self.contador.current_timeslot = datetime.combine(hoje, horario)
+        elif "HorarioInicio" in self.contador.details:
+            horario = datetime.strptime(self.contador.details["HorarioInicio"], "%H:%M").time()
+            self.contador.current_timeslot = datetime.combine(hoje, horario)
+        else:
+            horario = datetime.now().time()
+            self.contador.current_timeslot = datetime.combine(hoje, horario)
+            self.contador.details["current_timeslot"] = self.contador.current_timeslot.strftime("%H:%M")
+            logging.warning("Nenhum horário encontrado, usando horário atual")
+        if "last_save_time" in self.contador.details:
+            self.contador.last_save_time = datetime.strptime(self.contador.details["last_save_time"], "%H:%M:%S")
+        else:
+            self.contador.last_save_time = None
+        self.contador.setup_ui()  
+        if sessao_ativa:
+            self.contador.ui_components['inicio'].padrao_dropdown.value = sessao_ativa.padrao
+        padrao_atual = self.contador.ui_components['inicio'].padrao_dropdown.value
+        await self._carregar_binds_e_categorias(padrao_atual)
+        self.carregar_categorias_locais()
+        self.recover_active_countings()
+        if 'contagem' in self.contador.ui_components:
+            self.contador.ui_components['contagem'].setup_ui()
+        self.contador.tabs.selected_index = 1
+        self.contador.tabs.tabs[1].content.visible = True
+        self.contador.page.window.scroll = ft.ScrollMode.AUTO
+        self.contador.page.update()
+
+    async def _carregar_binds_e_categorias(self, padrao_atual):
+        binds = await self.contador.api_manager.load_binds(padrao_atual)
+        if binds:
+            self.contador.binds = binds
+        categorias = await self.contador.api_manager.load_categories(padrao_atual)
+        if categorias:
+            self.save_categories_in_local(categorias)
 
     def save_to_db(self, veiculo, movimento):
         try:
@@ -350,6 +353,94 @@ class SessionManager:
         except Exception as ex:
             logging.error(f"[ERROR] Erro ao recuperar contagens: {ex}")
 
+    def save_categories_in_local(self, categorias):
+        try:
+            with self.contador.session_lock:
+                for categoria_dict in categorias:
+
+                    movimento = categoria_dict['movimento']
+
+                    # Verificar se já existe
+                    existe = self.session.query(Categoria).filter_by(
+                        padrao=categoria_dict['pattern_type'],
+                        veiculo=categoria_dict['veiculo'],
+                        movimento=movimento
+                    ).first()
+
+                    if not existe:
+                        nova_categoria = Categoria(
+                            padrao=categoria_dict['pattern_type'],
+                            veiculo=categoria_dict['veiculo'],
+                            movimento=movimento,
+                            bind=categoria_dict.get('bind', 'N/A')
+                        )
+                        self.session.add(nova_categoria)
+                    else:
+                        logging.debug(f"[DEBUG] Categoria já existente no banco: {categoria_dict['veiculo']} - {movimento}")
+
+                self.session.commit()
+                logging.debug("[DEBUG] Commit realizado!")
+
+        except Exception as ex:
+            logging.error(f"[ERROR] Erro ao salvar categorias no banco: {ex}")
+            self.session.rollback()
+
+    def _carregar_binds_locais(self, padrao=None):
+        try:
+            if not padrao:
+                return {}
+            
+            categorias = self.session.query(Categoria).filter_by(padrao=padrao).all()
+            binds_locais = {}
+            
+            for cat in categorias:
+                if cat.veiculo not in binds_locais and cat.bind != "N/A":
+                    binds_locais[cat.veiculo] = cat.bind
+                
+            return binds_locais
+        except Exception as ex:
+            logging.error(f"❌ Erro ao carregar binds locais: {ex}")
+            return {}
+
+    def carregar_categorias_locais(self, padrao=None):
+        # Verificar se ui_components existe e tem o componente 'inicio'
+        if not self.ui_components or 'inicio' not in self.ui_components:
+            logging.warning("[WARNING] UI components não inicializados corretamente")
+            return []
+            
+        padrao_atual = padrao or self.ui_components['inicio'].padrao_dropdown.value
+
+        if not padrao_atual:
+            logging.warning("[WARNING] Nenhum padrão selecionado")
+            return []
+
+        logging.debug(f"[DEBUG] Buscando categorias no banco para o padrão: {padrao_atual}")
+
+        with self.contador.session_lock:
+            try:
+                self.categorias = (
+                    self.session.query(Categoria)
+                    .filter(Categoria.padrao == padrao_atual)
+                    .order_by(Categoria.id)
+                    .all()
+                )
+                self.session.commit()
+
+
+                # Atualizar as categorias no contador também
+                self.contador.categorias = self.categorias
+
+                if 'contagem' in self.ui_components:
+                    self.ui_components['contagem'].setup_ui()
+                self.contador.page.update()
+
+            except Exception as ex:
+                logging.error(f"[ERROR] Erro ao carregar categorias locais: {ex}")
+                self.session.rollback()
+                self.categorias = []
+
+        return self.categorias
+
     async def end_session(self):
         try:
             
@@ -369,7 +460,7 @@ class SessionManager:
             with self.contador.session_lock:
                 sessao_concluida = self.session.query(Sessao).filter_by(sessao=self.contador.sessao).first()
                 if sessao_concluida:
-                    sessao_concluida.ativa = False
+                    sessao_concluida.status = "Concluída"
                     self.session.commit()
                 else:
                     logging.warning("Sessão não encontrada no banco local")
