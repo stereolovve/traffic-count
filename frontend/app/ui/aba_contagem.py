@@ -4,7 +4,7 @@ import logging
 from datetime import datetime, timedelta
 from pynput import keyboard
 import asyncio
-from database.models import Contagem, Categoria, Historico
+from database.models import Categoria, Historico
 
 logging.getLogger(__name__).setLevel(logging.DEBUG)
 
@@ -78,13 +78,13 @@ class AbaContagem(ft.Column):
                     spacing=10,
                     controls=[
                         self.toggle_button,
-                        ft.IconButton(icon=ft.icons.SAVE, icon_color="BLUE", tooltip="Salvar", 
+                        ft.IconButton(icon=ft.Icons.SAVE, icon_color="BLUE", tooltip="Salvar", 
                                     on_click=self.contador.save_contagens),
-                        ft.IconButton(icon=ft.icons.CLOSE, icon_color="RED", tooltip="Finalizar", 
+                        ft.IconButton(icon=ft.Icons.CLOSE, icon_color="RED", tooltip="Finalizar", 
                                     on_click=self.contador.session_manager.show_dialog_end_session),
-                        ft.IconButton(icon=ft.icons.RESTART_ALT, icon_color="ORANGE", tooltip="Resetar", 
+                        ft.IconButton(icon=ft.Icons.RESTART_ALT, icon_color="ORANGE", tooltip="Resetar", 
                                     on_click=lambda _: self.show_reset_dialog()),
-                        ft.IconButton(icon=ft.icons.INFO, icon_color="PURPLE", tooltip="Observação", 
+                        ft.IconButton(icon=ft.Icons.INFO, icon_color="PURPLE", tooltip="Observação", 
                                     on_click=self.abrir_dialogo_observacao),
                     ]
                 ),
@@ -127,25 +127,40 @@ class AbaContagem(ft.Column):
                 value=f"🕒 Período: {periodo_inicio} - {periodo_fim}",
                 size=14, weight=ft.FontWeight.W_500
             )
+            
+            # ✅ NOVO: Indicador de tempo restante da sessão
+            self.session_time_label = ft.Text(
+                value="⏱️ Calculando tempo restante...",
+                size=12, 
+                color=ft.Colors.BLUE_700,
+                weight=ft.FontWeight.W_500
+            )
+            # Não chamar update_session_time_info() aqui - será chamado após adicionar à página
 
-            # Container de status com altura fixa
+            # Container de status com altura fixa (agora com 3 elementos)
             self.status_container = ft.Container(
-                content=ft.Row(
-                    controls=[self.last_save_label, self.period_label],
-                    spacing=15,
-                    alignment=ft.MainAxisAlignment.CENTER
-                ),
+                content=ft.Column([
+                    ft.Row(
+                        controls=[self.last_save_label, self.period_label],
+                        spacing=15,
+                        alignment=ft.MainAxisAlignment.CENTER
+                    ),
+                    ft.Row(
+                        controls=[self.session_time_label],
+                        alignment=ft.MainAxisAlignment.CENTER
+                    )
+                ], spacing=5, tight=True),
                 bgcolor="RED",
-                padding=ft.padding.symmetric(horizontal=12, vertical=6),
+                padding=ft.padding.symmetric(horizontal=12, vertical=8),
                 border_radius=8,
                 margin=ft.margin.only(top=10, bottom=10),
-                height=40,  # Altura fixa para o status
+                height=60,  # Altura aumentada para acomodar nova linha
                 width=float('inf')  # Largura total
             )
 
             # Tabs de movimentos
             movimentos = self.contador.details.get("Movimentos", [])
-            if movimentos and self.contador.categorias:
+            if movimentos and self.contador.categorias and len(self.contador.categorias) > 0:
                 self.movimento_tabs = ft.Tabs(
                     selected_index=0,
                     animation_duration=0,
@@ -168,8 +183,16 @@ class AbaContagem(ft.Column):
                     self.movimento_tabs
                 ])
             else:
+                # Mostrar mensagem mais específica
+                if not movimentos:
+                    message = "⚠ Nenhum movimento configurado para esta sessão"
+                elif not self.contador.categorias:
+                    message = "⚠ Aguardando carregamento das categorias..."
+                else:
+                    message = "⚠ Nenhuma categoria encontrada para os movimentos configurados"
+                
                 main_content.controls.append(
-                    ft.Text("⚠ Aguardando carregamento das categorias...", color="yellow")
+                    ft.Text(message, color="yellow")
                 )
 
             # Criar um container principal que permite scroll
@@ -190,6 +213,10 @@ class AbaContagem(ft.Column):
                 self.page.update()
             elif self.contador.page:
                 self.contador.page.update()
+            
+            # ✅ AGORA SIM: Atualizar informações de tempo após tudo estar na página
+            if hasattr(self, 'session_time_label'):
+                self.update_session_time_info()
 
         except Exception as ex:
             logging.error(f"[ERROR] Erro ao configurar UI da aba contagem: {ex}")
@@ -237,13 +264,7 @@ class AbaContagem(ft.Column):
         try:
             logging.info(f"Resetando contagens para o movimento: {movimento}")
             
-            with self.contador.session_lock:
-                self.contador.session.query(Contagem).filter_by(
-                    sessao=self.contador.sessao,
-                    movimento=movimento
-                ).delete()
-                self.contador.session.commit()
-
+            # Sistema otimizado - apenas reset em memória
             for key in list(self.contador.contagens.keys()):
                 if key[1] == movimento:
                     self.contador.contagens[key] = 0
@@ -332,17 +353,17 @@ class AbaContagem(ft.Column):
                     items=[
                         ft.PopupMenuItem(
                             text="Adicionar", 
-                            icon=ft.icons.ADD, 
+                            icon=ft.Icons.ADD, 
                             on_click=lambda e: self.contador.increment(veiculo, movimento)
                         ),
                         ft.PopupMenuItem(
                             text="Remover", 
-                            icon=ft.icons.REMOVE, 
+                            icon=ft.Icons.REMOVE, 
                             on_click=lambda e: self.contador.decrement(veiculo, movimento)
                         ),
                         ft.PopupMenuItem(
                             text="Editar Contagem", 
-                            icon=ft.icons.EDIT, 
+                            icon=ft.Icons.EDIT, 
                             on_click=lambda e: self.abrir_edicao_contagem(veiculo, movimento)
                         )
                     ]
@@ -432,7 +453,7 @@ class AbaContagem(ft.Column):
         key = (veiculo, movimento)
         if key in self.labels:
             label_count, label_bind = self.labels[key]
-            label_count.value = str(self.contagens.get(key, 0))
+            label_count.value = str(self.contador.contagens.get(key, 0))
             label_count.update()
             if hasattr(self, 'page') and self.page is not None:
                 self.page.update()
@@ -518,6 +539,56 @@ class AbaContagem(ft.Column):
         periodo_fim = (self.contador.current_timeslot + timedelta(minutes=15)).strftime("%H:%M")
         self.period_label.value = f"🕒 Período: {periodo_inicio} - {periodo_fim}"
         self.period_label.update()
+        
+        # ✅ NOVO: Atualizar também as informações de tempo da sessão
+        self.update_session_time_info()
+    
+    def update_session_time_info(self):
+        """Atualiza as informações de tempo restante da sessão"""
+        try:
+            if not hasattr(self, 'session_time_label') or not self.session_time_label:
+                return
+            
+            # Verificar se o controle está na página antes de tentar atualizar
+            if not hasattr(self.session_time_label, 'page') or not self.session_time_label.page:
+                # Se não está na página ainda, agendar atualização para depois
+                logging.debug("session_time_label não está na página ainda - pulando atualização")
+                return
+                
+            # Obter informações de tempo da sessão
+            info = self.contador.session_manager.get_session_time_info()
+            
+            if "erro" in info:
+                self.session_time_label.value = f"⚠️ Erro: {info['erro']}"
+                self.session_time_label.color = ft.Colors.RED_700
+            else:
+                horario_fim = info.get('horario_fim', 'Sem limite')
+                slots_restantes = info.get('slots_restantes', -1)
+                pode_salvar = info.get('pode_salvar', True)
+                
+                if horario_fim == 'Sem limite':
+                    self.session_time_label.value = "⏱️ Sessão sem limite de horário"
+                    self.session_time_label.color = ft.Colors.BLUE_700
+                elif not pode_salvar:
+                    self.session_time_label.value = f"🔒 LIMITE ATINGIDO (fim: {horario_fim}) - Use 'Editar' para continuar"
+                    self.session_time_label.color = ft.Colors.RED_700
+                elif slots_restantes <= 1:
+                    self.session_time_label.value = f"⚠️ ÚLTIMO PERÍODO até {horario_fim}"
+                    self.session_time_label.color = ft.Colors.ORANGE_700
+                elif slots_restantes <= 3:
+                    self.session_time_label.value = f"⚠️ Restam {slots_restantes} períodos até {horario_fim}"
+                    self.session_time_label.color = ft.Colors.ORANGE_600
+                else:
+                    self.session_time_label.value = f"⏱️ Sessão até {horario_fim} ({slots_restantes} períodos restantes)"
+                    self.session_time_label.color = ft.Colors.BLUE_700
+            
+            # Só atualizar se realmente está na página
+            if hasattr(self.session_time_label, 'page') and self.session_time_label.page:
+                self.session_time_label.update()
+            
+        except Exception as ex:
+            logging.error(f"Erro ao atualizar informações de tempo da sessão: {ex}")
+            # Falha silenciosa - não quebrar a interface
 
     def abrir_edicao_contagem(self, veiculo, movimento):
         self.contagem_ativa = False
@@ -565,3 +636,53 @@ class AbaContagem(ft.Column):
         self.page.overlay.append(dialog)
         dialog.open = True
         self.page.update()
+
+    def force_ui_update(self):
+        """Força a atualização da UI após carregamento de dados da sessão"""
+        try:
+            logging.info("Forçando atualização da UI de contagem...")
+            
+            # Verificar se temos categorias para trabalhar
+            if not hasattr(self.contador, 'categorias') or not self.contador.categorias:
+                logging.warning("Nenhuma categoria disponível para atualizar UI")
+                return
+            
+            # Verificar se temos movimentos definidos
+            movimentos = self.contador.details.get("Movimentos", [])
+            if not movimentos:
+                logging.warning("Nenhum movimento definido na sessão")
+                return
+            
+            # Reconstruir a UI com os novos dados
+            self.setup_ui()
+            
+            # Atualizar as contagens existentes se houver
+            if hasattr(self.contador, 'contagens') and self.contador.contagens:
+                for (veiculo, movimento), count in self.contador.contagens.items():
+                    key = (veiculo, movimento)
+                    if key in self.labels:
+                        label_count, _ = self.labels[key]
+                        label_count.value = str(count)
+                        label_count.update()
+            
+            # Atualizar a página
+            if self.page:
+                self.page.update()
+            
+            # ✅ Atualizar informações de tempo após a UI estar pronta
+            if hasattr(self, 'session_time_label'):
+                # Usar um timer pequeno para garantir que a página foi atualizada
+                import threading
+                def delayed_update():
+                    import time
+                    time.sleep(0.5)  # Aguardar 500ms
+                    try:
+                        self.update_session_time_info()
+                    except:
+                        pass  # Falha silenciosa
+                threading.Thread(target=delayed_update, daemon=True).start()
+                
+            logging.info("UI de contagem atualizada com sucesso")
+            
+        except Exception as ex:
+            logging.error(f"Erro ao forçar atualização da UI: {ex}")

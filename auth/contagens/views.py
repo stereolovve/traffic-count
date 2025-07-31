@@ -31,7 +31,6 @@ def listar_sessoes(request):
     data = request.GET.get("data")
     padrao = request.GET.get("padrao")
     id_sessao = request.GET.get("id", '')
-    ativa = request.GET.get("ativa")
     sort_field = request.GET.get("sort", "-id")
     page = request.GET.get('page', 1)
 
@@ -45,13 +44,10 @@ def listar_sessoes(request):
     pontos = Session.objects.values_list('ponto', flat=True).distinct().order_by('ponto')
     datas = Session.objects.values_list('data', flat=True).distinct().order_by('data')
     
-    # Obter os tipos de padrão disponíveis
     padroes = PadraoContagem.objects.values_list('pattern_type', flat=True).distinct().order_by('pattern_type')
 
-    # Start with base queryset
     sessoes = Session.objects.all().select_related('criado_por')
 
-    # Apply filters
     if status == "aguardando":
         sessoes = sessoes.filter(status="Aguardando")
     elif status == "em_andamento":
@@ -78,19 +74,9 @@ def listar_sessoes(request):
         try:
             sessoes = sessoes.filter(id=int(id_sessao))
         except ValueError:
-            # Se não for um número válido, ignorar o filtro
             pass
-        
-    if ativa is not None and ativa != '':
-        ativa_bool = ativa.lower() == 'true'
-        if ativa_bool:
-            sessoes = sessoes.filter(status__in=["Aguardando", "Em andamento"])
-        else:
-            sessoes = sessoes.filter(status="Concluída")
 
-    # Apply sorting
     if sort_field:
-        # Handle special cases for sorting
         if sort_field == 'criado_por':
             sessoes = sessoes.order_by(f'criado_por__username{"" if sort_field[0] != "-" else ""}')
         elif sort_field == 'created_at' or sort_field == '-created_at':
@@ -100,7 +86,6 @@ def listar_sessoes(request):
         else:
             sessoes = sessoes.order_by(sort_field)
 
-    # Prepare the data for the template
     sessoes_com_movimentos = []
     for sessao in sessoes:
         movimentos = sessao.movimentos if sessao.movimentos else []
@@ -110,8 +95,7 @@ def listar_sessoes(request):
             "sessao_id": sessao.id
         })
 
-    # Add pagination
-    paginator = Paginator(sessoes_com_movimentos, 10)  # Show 10 items per page
+    paginator = Paginator(sessoes_com_movimentos, 10)
     try:
         sessoes_paginadas = paginator.page(page)
     except:
@@ -144,18 +128,14 @@ def detalhes_sessao(request, sessao_id):
         return render(request, 'contagens/detalhes_sessao.html', {'erro': 'Sessão não encontrada.'})
     
     try:
-        # Obter os tipos de padrões disponíveis no banco de dados
         padrao_types = list(PadraoContagem.objects.values_list('pattern_type', flat=True).distinct())
         
-        # Obter o tipo de padrão usado na sessão ou usar o primeiro disponível como fallback
         pattern_type = sessao.padrao if sessao.padrao else (padrao_types[0] if padrao_types else None)
         
-        # Obter padrões ordenados com base no tipo de padrão da sessão
         padroes_ordenados = PadraoContagem.objects.filter(
             pattern_type=pattern_type
         ).order_by('order')
         
-        # Se não encontrar padrões para o tipo específico, tenta com o primeiro disponível
         if not padroes_ordenados.exists() and padrao_types:
             pattern_type = padrao_types[0]
             padroes_ordenados = PadraoContagem.objects.filter(
@@ -179,10 +159,7 @@ def detalhes_sessao(request, sessao_id):
             movimentos.extend(sessao.movimentos)
         movimentos.extend([c.movimento for c in contagens])
         movimentos = sorted(set(movimentos))
-        
-        # Usar pelo menos o movimento padrão se não houver movimentos
-        if not movimentos:
-            movimentos = ["A"]
+
         
         # Determinar todos os períodos
         periodos = set()
@@ -246,7 +223,6 @@ def detalhes_sessao(request, sessao_id):
 def get_countings(request):
     if request.method == "POST":
         try:
-            # Remover descompressão
             data = json.loads(request.body)
             sessao_nome = data.get("sessao")
             username = data.get("usuario")
@@ -255,7 +231,6 @@ def get_countings(request):
             if not sessao_nome or not username:
                 return JsonResponse({"erro": "Dados obrigatórios ausentes"}, status=400)
 
-            # Otimização: Buscar sessão e usuário em uma única query
             sessao = Session.objects.select_related('criado_por').filter(sessao=sessao_nome).first()
             if not sessao:
                 return JsonResponse({"erro": "Sessão não encontrada"}, status=404)
@@ -555,10 +530,9 @@ def registrar_sessao(request):
             ponto = data.get("ponto")
             data_sessao = data.get("data")
             horario_inicio = data.get("horario_inicio")
+            horario_fim = data.get("horario_fim")
             username = data.get("usuario")
-            ativa = data.get("ativa", True) 
-            # Converte o status booleano para o formato do modelo
-            status_sessao = "Em andamento" if ativa else "Concluída" 
+            status_sessao = data.get("status", "Em andamento")
             movimentos = data.get("movimentos")
             padrao = data.get("padrao", "")
 
@@ -576,6 +550,7 @@ def registrar_sessao(request):
                     "ponto": ponto,
                     "data": data_sessao,
                     "horario_inicio": horario_inicio,
+                    "horario_fim": horario_fim,
                     "criado_por": usuario,
                     "status": status_sessao,
                     "movimentos": movimentos,
@@ -598,7 +573,7 @@ def registrar_sessao(request):
                 "mensagem": "Sessão registrada com sucesso",
                 "id": sessao.id,
                 "sessao": sessao.sessao,
-                "ativa": sessao.ativa
+                "status": sessao.status
             }, status=201)
 
         except json.JSONDecodeError:
@@ -625,7 +600,7 @@ def buscar_sessao(request):
         return JsonResponse({
             "id": sessao.id,
             "sessao": sessao.sessao,
-            "ativa": sessao.ativa
+            "status": sessao.status
         })
     
     except Exception as e:
@@ -649,13 +624,13 @@ def finalizar_por_nome(request):
         if not sessao:
             return JsonResponse({"erro": f"Sessão '{sessao_nome}' não encontrada"}, status=404)
         
-        if not sessao.ativa:
+        if sessao.status == "Concluída":
             return JsonResponse({
                 "status": "success",
                 "message": "Esta sessão já está finalizada"
             })
         
-        sessao.ativa = False
+        sessao.status = "Concluída"
         sessao.save()
         
         return JsonResponse({
@@ -687,3 +662,163 @@ def get_pontos_por_codigo(request):
     return JsonResponse({
         'pontos': list(pontos)
     })
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def atualizar_contagens(request):
+    """
+    API endpoint para atualizar contagens de uma sessão
+    Usado pela aba de edição de períodos
+    """
+    print("[DJANGO DEBUG] === FUNÇÃO atualizar_contagens CHAMADA ===")
+    try:
+        data = json.loads(request.body)
+        sessao_nome = data.get('sessao')
+        usuario = data.get('usuario')
+        contagens = data.get('contagens', [])
+        
+        print(f"[DJANGO DEBUG] Dados recebidos: sessao={sessao_nome}, usuario={usuario}, contagens={len(contagens)}")
+        logging.info(f"[DEBUG] Recebido request para atualizar contagens: sessao={sessao_nome}, usuario={usuario}, contagens={len(contagens)}")
+        
+        if not sessao_nome:
+            print("[DJANGO ERROR] Nome da sessão é obrigatório")
+            logging.error("[ERROR] Nome da sessão é obrigatório")
+            return JsonResponse({'erro': 'Nome da sessão é obrigatório'}, status=400)
+        
+        # Buscar sessão pelo nome
+        try:
+            sessao = Session.objects.get(sessao=sessao_nome)
+            print(f"[DJANGO DEBUG] Sessão encontrada: ID={sessao.id}, Nome={sessao.sessao}")
+            logging.info(f"[DEBUG] Sessão encontrada: ID={sessao.id}, Nome={sessao.sessao}")
+        except Session.DoesNotExist:
+            print(f"[DJANGO ERROR] Sessão {sessao_nome} não encontrada")
+            logging.error(f"[ERROR] Sessão {sessao_nome} não encontrada")
+            return JsonResponse({'erro': f'Sessão {sessao_nome} não encontrada'}, status=404)
+        
+        # Log da operação
+        print(f"[DJANGO INFO] Atualizando contagens para sessão {sessao_nome} por {usuario}")
+        logging.info(f"[INFO] Atualizando contagens para sessão {sessao_nome} por {usuario}")
+        
+        # Verificar quantos registros existem atualmente para esta sessão
+        existing_count = Counting.objects.filter(sessao=sessao).count()
+        print(f"[DJANGO DEBUG] Registros existentes para sessão {sessao_nome}: {existing_count}")
+        
+        # Se há registros existentes, mostrar alguns exemplos
+        if existing_count > 0:
+            sample_records = Counting.objects.filter(sessao=sessao)[:5]
+            for record in sample_records:
+                print(f"[DJANGO DEBUG] Registro existente: {record.veiculo}-{record.movimento}-{record.periodo}: {record.contagem}")
+        
+        # Atualizar ou criar contagens
+        contagens_atualizadas = 0
+        contagens_criadas = 0
+        duplicatas_removidas = 0
+        
+        print(f"[DJANGO DEBUG] Processando {len(contagens)} contagens...")
+        
+        for contagem_data in contagens:
+            veiculo = contagem_data.get('veiculo')
+            movimento = contagem_data.get('movimento')
+            count = contagem_data.get('count', 0)
+            periodo = contagem_data.get('periodo')
+            
+            print(f"[DJANGO DEBUG] Processando: veiculo={veiculo}, movimento={movimento}, count={count}, periodo={periodo}")
+            logging.debug(f"[DEBUG] Processando: veiculo={veiculo}, movimento={movimento}, count={count}, periodo={periodo}")
+            
+            if not all([veiculo, movimento, periodo is not None]):
+                logging.warning(f"[WARNING] Dados incompletos: veiculo={veiculo}, movimento={movimento}, periodo={periodo}")
+                continue
+            
+            # Buscar ou criar contagem
+            try:
+                # Primeiro, encontrar TODOS os registros existentes (pode haver duplicatas)
+                existing_records = Counting.objects.filter(
+                    sessao=sessao,
+                    veiculo=veiculo,
+                    movimento=movimento,
+                    periodo=periodo
+                )
+                
+                record_count = existing_records.count()
+                print(f"[DJANGO DEBUG] Encontrados {record_count} registros para {veiculo}-{movimento}-{periodo}")
+                
+                if record_count == 0:
+                    # Nenhum registro existe - criar novo
+                    contagem_obj = Counting.objects.create(
+                        sessao=sessao,
+                        veiculo=veiculo,
+                        movimento=movimento,
+                        periodo=periodo,
+                        contagem=count
+                    )
+                    contagens_criadas += 1
+                    print(f"[DJANGO DEBUG] Contagem CRIADA: {veiculo}-{movimento}-{periodo}: {count}")
+                    
+                elif record_count == 1:
+                    # Exatamente um registro - atualizar normalmente
+                    contagem_obj = existing_records.first()
+                    if contagem_obj.contagem != count:
+                        old_count = contagem_obj.contagem
+                        contagem_obj.contagem = count
+                        contagem_obj.save()
+                        contagens_atualizadas += 1
+                        print(f"[DJANGO DEBUG] Contagem ATUALIZADA: {veiculo}-{movimento}-{periodo}: {old_count} -> {count}")
+                    else:
+                        print(f"[DJANGO DEBUG] Contagem INALTERADA: {veiculo}-{movimento}-{periodo}: {count}")
+                        
+                else:
+                    # MÚLTIPLOS registros (duplicatas) - limpar e manter apenas um
+                    print(f"[DJANGO WARNING] Encontradas {record_count} duplicatas para {veiculo}-{movimento}-{periodo}")
+                    
+                    # Manter o mais recente (com maior ID)
+                    latest_record = existing_records.order_by('-id').first()
+                    
+                    # Deletar os outros
+                    duplicates_to_delete = existing_records.exclude(id=latest_record.id)
+                    deleted_count = duplicates_to_delete.count()
+                    duplicates_to_delete.delete()
+                    duplicatas_removidas += deleted_count
+                    
+                    print(f"[DJANGO DEBUG] Removidas {deleted_count} duplicatas, mantido registro ID={latest_record.id}")
+                    
+                    # Agora atualizar o registro mantido
+                    if latest_record.contagem != count:
+                        old_count = latest_record.contagem
+                        latest_record.contagem = count
+                        latest_record.save()
+                        contagens_atualizadas += 1
+                        print(f"[DJANGO DEBUG] Contagem ATUALIZADA (após limpeza): {veiculo}-{movimento}-{periodo}: {old_count} -> {count}")
+                    else:
+                        print(f"[DJANGO DEBUG] Contagem INALTERADA (após limpeza): {veiculo}-{movimento}-{periodo}: {count}")
+                    
+            except Exception as db_ex:
+                print(f"[DJANGO ERROR] Erro ao processar contagem {veiculo}-{movimento}-{periodo}: {str(db_ex)}")
+                logging.error(f"[ERROR] Erro ao processar contagem {veiculo}-{movimento}-{periodo}: {str(db_ex)}")
+                continue
+        
+        resultado = {
+            'message': 'Contagens atualizadas com sucesso',
+            'detalhes': {
+                'contagens_criadas': contagens_criadas,
+                'contagens_atualizadas': contagens_atualizadas,
+                'duplicatas_removidas': duplicatas_removidas,
+                'total_processadas': len(contagens)
+            }
+        }
+        
+        print(f"[DJANGO SUCCESS] Resultado: {resultado}")
+        logging.info(f"[SUCCESS] Resultado: {resultado}")
+        return JsonResponse(resultado)
+        
+    except json.JSONDecodeError as json_ex:
+        print(f"[DJANGO ERROR] JSON inválido: {str(json_ex)}")
+        logging.error(f"[ERROR] JSON inválido: {str(json_ex)}")
+        return JsonResponse({'erro': 'JSON inválido'}, status=400)
+    except Exception as e:
+        print(f"[DJANGO ERROR] Erro ao atualizar contagens: {str(e)}")
+        logging.error(f"[ERROR] Erro ao atualizar contagens: {str(e)}")
+        import traceback
+        traceback_str = traceback.format_exc()
+        print(f"[DJANGO ERROR] Traceback: {traceback_str}")
+        logging.error(f"[ERROR] Traceback: {traceback_str}")
+        return JsonResponse({'erro': f'Erro interno: {str(e)}'}, status=500)

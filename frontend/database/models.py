@@ -41,27 +41,11 @@ class Sessao(Base):
     horario_fim = Column(String)
     criada_em = Column(DateTime, default=datetime.now)
     status = Column(String, default="Aguardando")
-
-    contagens = relationship("Contagem", back_populates="sessao_obj")
+    movimentos = Column(String)  # Campo para salvar movimentos como JSON
+    contagens_atuais = Column(String)  # Campo para salvar contagens atuais como JSON
 
     def __repr__(self):
         return f"<Sessao(sessao='{self.sessao}', status={self.status})>"
-
-
-class Contagem(Base):
-    __tablename__ = 'contagens'
-    id = Column(Integer, primary_key=True)
-    sessao = Column(String, ForeignKey('sessoes.sessao'), nullable=False)
-    veiculo = Column(String, nullable=False)
-    movimento = Column(String, nullable=False)
-    count = Column(Integer, default=0)
-    contagem_total = Column(Integer, default=0)
-    periodo = Column(String)  # Formato HH:MM
-
-    sessao_obj = relationship("Sessao", back_populates="contagens")
-
-    def __repr__(self):
-        return f"<Contagem(sessao='{self.sessao}', veiculo='{self.veiculo}', movimento='{self.movimento}')>"
 
 
 class Historico(Base):

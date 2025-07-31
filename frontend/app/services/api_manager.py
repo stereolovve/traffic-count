@@ -10,8 +10,11 @@ class ApiManager:
         self.contador = contador
         self.tokens = contador.tokens
         self.username = contador.username
-        # HTTP client keep-alive
-        self.client = httpx.AsyncClient(base_url=API_URL, headers=self._get_auth_headers())
+        self.client = httpx.AsyncClient(
+            base_url=API_URL, 
+            headers=self._get_auth_headers(),
+            timeout=30.0
+        )
         
     def _get_auth_headers(self):
         """Retorna os headers de autenticação padrão"""
@@ -46,7 +49,7 @@ class ApiManager:
             ponto = self.contador.details.get("Ponto", "") or f"PONTO_{datetime.now().strftime('%Y%m%d%H%M%S')}"
             data_ponto = self.contador.details.get("Data do Ponto", "") or datetime.now().strftime("%d/%m/%Y")
             horario_inicio = self.contador.details.get("HorarioInicio", "") or datetime.now().strftime("%H:%M")
-            horario_fim = self.contador.details.get("HorarioFim", "") or datetime.now().strftime("%H:%M")
+            # horario_fim removido - Django não suporta este campo
             padrao = self.contador.details.get("padrao_usado", "")
             
             # Tratar movimentos
@@ -62,6 +65,7 @@ class ApiManager:
                 "ponto": ponto,
                 "data": data_ponto,
                 "horario_inicio": horario_inicio,
+                # "horario_fim": horario_fim,  # Campo removido - não suportado pelo Django
                 "usuario": self.username,
                 "status": "Em andamento",
                 "movimentos": movimentos,
@@ -133,8 +137,22 @@ class ApiManager:
         """Envia as contagens para o Django de forma otimizada"""
         try:
             if not self.contador.sessao:
+                logging.warning("[WARNING] Nenhuma sessão ativa - não enviando contagens")
                 return False
             
+            # Verificar se a sessão existe no Django antes de enviar contagens
+            if not await self._verify_session_exists():
+                logging.warning(f"[WARNING] Sessão '{self.contador.sessao}' não encontrada no Django")
+                logging.info("[INFO] Tentando recriar a sessão no Django...")
+                
+                # Tentar recriar a sessão no Django
+                success = await self.send_session_to_django()
+                if success:
+                    logging.info("[OK] Sessão recriada com sucesso no Django")
+                else:
+                    logging.error("[ERRO] Falha ao recriar sessão no Django - contagens não serão enviadas")
+                    return False
+                
             # Preparar dados para envio
             if not hasattr(self.contador, "current_timeslot"):
                 raise ValueError("current_timeslot não está definido")
@@ -150,8 +168,6 @@ class ApiManager:
             
             # Verificar movimentos
             movimentos = self.contador.details.get("Movimentos", [])
-            if not movimentos:
-                movimentos = ["A"]
                 
             # Obter todos os veículos possíveis
             all_veiculos = set()
@@ -192,6 +208,36 @@ class ApiManager:
             logging.error(f"Erro ao enviar contagens para o Django: {ex}")
             return False
 
+    async def _verify_session_exists(self):
+        """Verifica se a sessão existe no Django"""
+        try:
+            # Verificar se temos o ID numérico da sessão salvo
+            if hasattr(self.contador, 'details') and 'session_id' in self.contador.details:
+                session_id = self.contador.details['session_id']
+                response = await self.client.get(f"/contagens/sessao/{session_id}/")
+                if response.status_code == 200:
+                    return True
+            
+            # Se não temos o ID, tentar buscar pelo nome da sessão
+            logging.info(f"[INFO] Tentando buscar sessão pelo nome: {self.contador.sessao}")
+            response = await self.client.get(f"/contagens/buscar-sessao/?nome={self.contador.sessao}")
+            
+            if response.status_code == 200:
+                response_data = response.json()
+                if 'id' in response_data:
+                    # Salvar o ID encontrado para uso futuro
+                    session_id = response_data['id']
+                    self.contador.details['session_id'] = session_id
+                    logging.info(f"[OK] Sessão encontrada e ID salvo: {session_id}")
+                    return True
+            
+            logging.warning(f"[WARNING] Sessão {self.contador.sessao} não encontrada no Django")
+            return False
+            
+        except Exception as ex:
+            logging.warning(f"Erro ao verificar sessão no Django: {ex}")
+            return False
+
     async def load_categories(self, pattern_type):
         """Carrega as categorias do Django"""
         try:
@@ -203,9 +249,6 @@ class ApiManager:
             movimentos = self.contador.details.get("Movimentos", [])
             if isinstance(movimentos, set):
                 movimentos = list(movimentos)
-            if not movimentos:
-                logging.warning("[AVISO] Nenhum movimento definido, usando movimento padrão 'A'")
-                movimentos = ["A"]
 
             logging.info(f"[INFO] Carregando categorias para padrão {pattern_type} com movimentos: {movimentos}")
 

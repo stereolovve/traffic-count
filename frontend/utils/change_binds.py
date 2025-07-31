@@ -131,7 +131,7 @@ def abrir_configuracao_binds(page, contador):
                 )
 
                 salvar_button = ft.IconButton(
-                    icon=ft.icons.SAVE,
+                    icon=ft.Icons.SAVE,
                     tooltip="Salvar Bind",
                     on_click=lambda e, v=veiculo, b=bind_input: executar_async(salvar_bind_e_atualizar(v, b.value, tipo_padrao))
                 )

@@ -47,19 +47,19 @@ class RegisterPage(ft.Container):
             width=300
         )
         self.register_button = ft.ElevatedButton(
-            "Registrar", on_click=self.register, width=150, bgcolor=ft.colors.BLUE_700, color=ft.colors.WHITE
+            "Registrar", on_click=self.register, width=150, bgcolor=ft.Colors.BLUE_700, color=ft.Colors.WHITE
         )
         self.back_to_login_button = ft.TextButton(
             "Já tem uma conta? Entrar", on_click=self.back_to_login
         )
-        self.error_text = ft.Text(value="", color=ft.colors.RED_600, visible=False, size=14)
+        self.error_text = ft.Text(value="", color=ft.Colors.RED_600, visible=False, size=14)
 
         self.loading_indicator = ft.ProgressRing(
             width=50,
             height=50,
             visible=False,
             stroke_width=6,
-            color=ft.colors.BLUE_700
+            color=ft.Colors.BLUE_700
         )
 
         self.content = ft.Column(
@@ -88,7 +88,7 @@ class RegisterPage(ft.Container):
     def show_error(self, message: str, is_success: bool = False):
         if self.page: 
             self.error_text.value = message
-            self.error_text.color = ft.colors.GREEN_600 if is_success else ft.colors.RED_600
+            self.error_text.color = ft.Colors.GREEN_600 if is_success else ft.Colors.RED_600
             self.error_text.visible = True
             self.loading_indicator.visible = False
             self.page.update()

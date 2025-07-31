@@ -1,6 +1,7 @@
 import flet as ft
 import pandas as pd
 import os
+import re
 from utils.config import get_excel_dir
 
 class AbaRelatorio(ft.Column):
@@ -9,54 +10,135 @@ class AbaRelatorio(ft.Column):
         self.contador = contador
         self.scroll = ft.ScrollMode.AUTO
         self.spacing = 10
+        self.setup_ui()
 
-        # Criar os componentes da UI
-        self.titulo = ft.Text(
-            "Relatório da Sessão",
-            size=20,
-            weight=ft.FontWeight.BOLD,
-            text_align=ft.TextAlign.CENTER
-        )
-
-        self.atualizar_button = ft.ElevatedButton(
-            text="Atualizar Relatório",
-            icon=ft.icons.REFRESH,
-            on_click=self.atualizar_relatorio,
-            style=ft.ButtonStyle(
-                shape=ft.RoundedRectangleBorder(radius=8),
-                padding=10
+    def setup_ui(self):
+        """Configura a interface minimalista e organizada"""
+        try:
+            self.controls.clear()
+            
+            # Cabeçalho estilizado
+            header = ft.Container(
+                content=ft.Text(
+                    "📊 Relatório da Sessão",
+                    size=20,
+                    weight=ft.FontWeight.BOLD,
+                    color=ft.Colors.WHITE
+                ),
+                bgcolor=ft.Colors.GREY_900,
+                padding=15,
+                border_radius=8
             )
-        )
 
-        self.barra_superior = ft.Container(
-            content=ft.Row(
-                controls=[self.titulo, self.atualizar_button],
-                alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
-                vertical_alignment=ft.CrossAxisAlignment.CENTER
+            # Barra de controles
+            self.atualizar_btn = ft.ElevatedButton(
+                text="🔄 Atualizar",
+                on_click=self.atualizar_relatorio,
+                bgcolor=ft.Colors.GREY_700,
+                color=ft.Colors.WHITE
+            )
+            
+            self.exportar_btn = ft.ElevatedButton(
+                text="📑 Exportar",
+                on_click=self.exportar_dados,
+                bgcolor=ft.Colors.GREY_700,
+                color=ft.Colors.WHITE
+            )
+
+            controles = ft.Row([
+                self.atualizar_btn,
+                self.exportar_btn
+            ], spacing=10)
+
+            # Status
+            self.status_text = ft.Text(
+                "Carregando dados...",
+                size=12,
+                color=ft.Colors.WHITE
+            )
+
+            # Container principal para dados
+            self.main_container = ft.Container(
+                content=ft.Column([
+                    ft.Text(
+                        "Carregando relatório...", 
+                        text_align=ft.TextAlign.CENTER,
+                        color=ft.Colors.WHITE,
+                        size=14
+                    )
+                ], horizontal_alignment=ft.CrossAxisAlignment.CENTER),
+                height=600,
+                bgcolor=ft.Colors.GREY_900,
+                border_radius=8,
+                padding=20
+            )
+            
+            # Layout principal
+            self.controls.extend([
+                header,
+                controles,
+                self.status_text,
+                self.main_container
+            ])
+            
+            # Carregar dados automaticamente
+            self.carregar_relatorio()
+            
+        except Exception as ex:
+            print(f"Erro ao configurar UI do relatório: {ex}")
+
+    def carregar_relatorio(self):
+        """Carrega e exibe os dados do relatório"""
+        try:
+            dados = self.load_data()
+            if dados:
+                self.main_container.content = dados
+                self.main_container.update()
+                self._show_success("✅ Relatório carregado com sucesso")
+            else:
+                self._show_empty_state()
+                
+        except Exception as ex:
+            print(f"Erro ao carregar relatório: {ex}")
+            self._show_error(f"❌ Erro: {str(ex)}")
+
+    def _show_empty_state(self):
+        """Mostra estado vazio"""
+        empty_content = ft.Column([
+            ft.Text(
+                "📭 Nenhum dado encontrado",
+                size=16,
+                color=ft.Colors.WHITE,
+                text_align=ft.TextAlign.CENTER
             ),
-            padding=10,
-            border_radius=ft.BorderRadius(top_left=10, top_right=10, bottom_left=0, bottom_right=0)
-        )
-
-        # Carregar dados iniciais
-        tabela_relatorio = self.load_data()
+            ft.Text(
+                "Inicie uma sessão para visualizar o relatório",
+                size=12,
+                color=ft.Colors.WHITE70,
+                text_align=ft.TextAlign.CENTER
+            )
+        ], horizontal_alignment=ft.CrossAxisAlignment.CENTER)
         
-        # Montar a estrutura da aba
-        self.conteudo_aba = ft.Column(
-            controls=[
-                self.barra_superior,
-                ft.Column(
-                    controls=[tabela_relatorio],
-                    scroll=ft.ScrollMode.AUTO,
-                    expand=True
-                )
-            ],
-            spacing=0,
-            expand=True
-        )
+        self.main_container.content = empty_content
+        self.main_container.update()
 
-        # Adicionar o conteúdo à aba
-        self.controls = [self.conteudo_aba]
+    def _show_success(self, message):
+        """Mostra mensagem de sucesso"""
+        self.status_text.value = message
+        self.status_text.color = ft.Colors.WHITE
+        self.status_text.update()
+
+    def _show_error(self, message):
+        """Mostra mensagem de erro"""
+        self.status_text.value = message
+        self.status_text.color = ft.Colors.WHITE
+        self.status_text.update()
+
+    def _show_warning(self, message):
+        """Mostra mensagem de aviso"""
+        self.status_text.value = message
+        self.status_text.color = ft.Colors.WHITE
+        self.status_text.update()
 
     def load_data(self):
         try:
@@ -65,12 +147,12 @@ class AbaRelatorio(ft.Column):
                     content=ft.Text(
                         "Nenhuma sessão ativa. Inicie uma sessão para visualizar o relatório.",
                         size=16,
-                        color=ft.colors.RED_700,
+                        color=ft.Colors.RED_700,
                         weight=ft.FontWeight.BOLD,
                         text_align=ft.TextAlign.CENTER
                     ),
                     padding=20,
-                    bgcolor=ft.colors.RED_50,
+                    bgcolor=ft.Colors.RED_50,
                     border_radius=10
                 )
 
@@ -88,7 +170,7 @@ class AbaRelatorio(ft.Column):
                             ft.Text(
                                 f"Planilha da sessão '{self.contador.sessao}' não encontrada.",
                                 size=16,
-                                color=ft.colors.RED_700,
+                                color=ft.Colors.RED_700,
                                 weight=ft.FontWeight.BOLD
                             ),
                             ft.Text(
@@ -104,7 +186,7 @@ class AbaRelatorio(ft.Column):
                         spacing=5
                     ),
                     padding=20,
-                    bgcolor=ft.colors.RED_50,
+                    bgcolor=ft.Colors.RED_50,
                     border_radius=10
                 )
 
@@ -115,12 +197,12 @@ class AbaRelatorio(ft.Column):
                     content=ft.Text(
                         "Nenhum movimento registrado na planilha.",
                         size=16,
-                        color=ft.colors.ORANGE_700,
+                        color=ft.Colors.ORANGE_700,
                         weight=ft.FontWeight.BOLD,
                         text_align=ft.TextAlign.CENTER
                     ),
                     padding=20,
-                    bgcolor=ft.colors.ORANGE_50,
+                    bgcolor=ft.Colors.ORANGE_50,
                     border_radius=10
                 )
 
@@ -138,12 +220,12 @@ class AbaRelatorio(ft.Column):
                     content=ft.Text(
                         "Nenhum dado registrado na planilha.",
                         size=16,
-                        color=ft.colors.ORANGE_700,
+                        color=ft.Colors.ORANGE_700,
                         weight=ft.FontWeight.BOLD,
                         text_align=ft.TextAlign.CENTER
                     ),
                     padding=20,
-                    bgcolor=ft.colors.ORANGE_50,
+                    bgcolor=ft.Colors.ORANGE_50,
                     border_radius=10
                 )
 
@@ -185,12 +267,12 @@ class AbaRelatorio(ft.Column):
                 content=ft.Text(
                     f"Erro ao carregar dados da planilha: {e}",
                     size=16,
-                    color=ft.colors.RED_700,
+                    color=ft.Colors.RED_700,
                     weight=ft.FontWeight.BOLD,
                     text_align=ft.TextAlign.CENTER
                 ),
                 padding=20,
-                bgcolor=ft.colors.RED_50,
+                bgcolor=ft.Colors.RED_50,
                 border_radius=10
             )
 

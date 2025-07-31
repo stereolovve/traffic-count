@@ -1,6 +1,6 @@
 #auth/contagens/urls.py
 from django.urls import path
-from .views import listar_sessoes, detalhes_sessao, get_countings, finalizar_sessao, registrar_sessao, exportar_csv, buscar_sessao, finalizar_por_nome
+from .views import listar_sessoes, detalhes_sessao, get_countings, finalizar_sessao, registrar_sessao, exportar_csv, buscar_sessao, finalizar_por_nome, atualizar_contagens
 from . import views
 
 urlpatterns = [
@@ -12,6 +12,7 @@ urlpatterns = [
     path('exportar-csv/<int:sessao_id>', exportar_csv, name='exportar_csv'),
     path('buscar-sessao/', buscar_sessao, name='buscar_sessao'),
     path('finalizar-por-nome/', finalizar_por_nome, name='finalizar_por_nome'),
+    path('atualizar-contagens/', atualizar_contagens, name='atualizar_contagens'),
     
     # API para filtros dinâmicos
     path('api/pontos-por-codigo/', views.get_pontos_por_codigo, name='pontos_por_codigo'),

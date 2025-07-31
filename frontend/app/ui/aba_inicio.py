@@ -33,7 +33,7 @@ class AbaInicio(ft.Column):
             ),
             padding=ft.padding.all(16),
             border_radius=10,
-            bgcolor=ft.colors.SURFACE_VARIANT
+            bgcolor=ft.Colors.SURFACE
         )
         self.controls.append(self.inputs_container)
         
@@ -81,7 +81,7 @@ class AbaInicio(ft.Column):
         self.codigo_ponto_input = ft.TextField(
             label="Código do Ponto",
             hint_text="Ex: ER2403",
-            icon=ft.icons.CODE,
+            icon=ft.Icons.CODE,
             expand=True,
             border_radius=8,
             visible=False
@@ -91,7 +91,7 @@ class AbaInicio(ft.Column):
         self.nome_ponto_input = ft.TextField(
             label="Nome do Ponto",
             hint_text="Ex: P10; P15",
-            icon=ft.icons.LOCATION_PIN,
+            icon=ft.Icons.LOCATION_PIN,
             expand=True,
             border_radius=8,
             visible=False
@@ -102,7 +102,7 @@ class AbaInicio(ft.Column):
             label="Data",
             hint_text="dd-mm-aaaa",
             value=hoje_str,
-            icon=ft.icons.CALENDAR_MONTH,
+            icon=ft.Icons.CALENDAR_MONTH,
             keyboard_type=ft.KeyboardType.NUMBER,
             expand=True,
             border_radius=8
@@ -116,7 +116,7 @@ class AbaInicio(ft.Column):
             label="Horário de Início (hh:mm)",
             hint_text="Ex: 08:00",
             value=self.selected_time,
-            icon=ft.icons.ACCESS_ALARM,
+            icon=ft.Icons.ACCESS_ALARM,
             expand=True,
             border_radius=8,
             on_change=self.on_periodo_manual_change
@@ -130,7 +130,7 @@ class AbaInicio(ft.Column):
             label="Horário de Fim (hh:mm)",
             hint_text="Ex: 12:00",
             value="",
-            icon=ft.icons.ACCESS_ALARM,
+            icon=ft.Icons.ACCESS_ALARM,
             expand=True,
             border_radius=8,
             on_change=self.on_horario_fim_change
@@ -160,7 +160,7 @@ class AbaInicio(ft.Column):
                 expand=True
             )
             remover_button = ft.IconButton(
-                icon=ft.icons.REMOVE,
+                icon=ft.Icons.REMOVE,
                 on_click=lambda _: remover_campo(movimento_input, remover_button)
             )
             movimento_row = ft.Row(controls=[movimento_input, remover_button], spacing=10)
@@ -178,7 +178,7 @@ class AbaInicio(ft.Column):
 
         adicionar_movimento_button = ft.ElevatedButton(
             text="Adicionar Movimento",
-            icon=ft.icons.ADD,
+            icon=ft.Icons.ADD,
             width=float('inf'),
             height=45,
             on_click=adicionar_campo_movimento
@@ -190,7 +190,7 @@ class AbaInicio(ft.Column):
             on_click=self.iniciar_criacao_sessao,
             width=float('inf'),
             height=50,
-            icon=ft.icons.SEND
+            icon=ft.Icons.SEND
         )
         self.inputs_container.content.controls.append(criar_sessao_button)
 

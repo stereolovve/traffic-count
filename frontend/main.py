@@ -10,7 +10,6 @@ import sys
 from app.contador import ContadorPerplan
 from utils.config import API_URL, EXCEL_BASE_DIR, DESKTOP_DIR, LOG_FILE, AUTH_TOKENS_FILE, APP_VERSION
 from utils.api import async_api_request
-from utils.update_checker import UpdateChecker
 from loginregister.register import RegisterPage
 from loginregister.login import LoginPage
 
@@ -28,13 +27,19 @@ if sys.platform == 'win32':
 
 # Configurar logging com encoding UTF-8
 logging.basicConfig(
-    level=logging.ERROR,
+    level=logging.WARNING,  # Mudado de INFO para WARNING para reduzir logs verbosos
     format="%(asctime)s - %(levelname)s - %(module)s:%(funcName)s - %(message)s",
     handlers=[
         logging.FileHandler(LOG_FILE, encoding='utf-8'),
         logging.StreamHandler(sys.stdout)
     ]
 )
+
+# Configurar loggers específicos para componentes internos
+logging.getLogger('flet').setLevel(logging.ERROR)
+logging.getLogger('flet_desktop').setLevel(logging.ERROR)
+logging.getLogger('app').setLevel(logging.ERROR)
+logging.getLogger('flet_socket_server').setLevel(logging.ERROR)
 
 # Ignorar erros de executor após shutdown (avoid "cannot schedule new futures after shutdown")
 def _ignore_executor_shutdown(loop, context):
@@ -57,7 +62,6 @@ class MyApp:
         self.username = None
         self.user_preferences = {}
         self.contador = None
-        self.update_checker = UpdateChecker(page)
 
     async def load_user_preferences(self):
         try:
@@ -81,6 +85,17 @@ class MyApp:
                 print(f"[ERRO] Token inválido! Erro: {response['error']}")
                 return False
 
+            # Atualizar o username com os dados mais recentes do servidor
+            if "username" in response:
+                old_username = self.username
+                self.username = response["username"]
+                print(f"[OK] Username atualizado do servidor: {self.username}")
+                
+                # Se o username mudou, salvar os tokens atualizados
+                if old_username != self.username:
+                    self.save_tokens()
+                    print(f"[OK] Username atualizado de '{old_username}' para '{self.username}' e salvo nos tokens")
+
             print("[OK] Token válido! Dados do usuário:", response)
             return True
 
@@ -90,9 +105,16 @@ class MyApp:
 
     def save_tokens(self):
         try:
+            # Salvar tokens junto com o username atualizado
+            tokens_data = {
+                "access": self.tokens.get("access"),
+                "username": self.username,
+                "refresh": self.tokens.get("refresh", "")  # Adicionar refresh se disponível
+            }
             with open(AUTH_TOKENS_FILE, "w") as f:
-                json.dump({"access": self.tokens.get("access"), "username": self.username}, f)
-            logging.info(f"[OK] Tokens salvos em: {AUTH_TOKENS_FILE}")
+                json.dump(tokens_data, f)
+            logging.info(f"[OK] Tokens e username salvos em: {AUTH_TOKENS_FILE}")
+            logging.info(f"[OK] Username salvo: {self.username}")
         except Exception as ex:
             logging.error(f"[ERRO] Erro ao salvar tokens: {ex}")
 
@@ -101,9 +123,14 @@ class MyApp:
             try:
                 with open(AUTH_TOKENS_FILE, "r") as f:
                     saved_data = json.load(f)
-                self.tokens = {"access": saved_data.get("access")}
+                # Carregar tokens e username do arquivo
+                self.tokens = {
+                    "access": saved_data.get("access"),
+                    "refresh": saved_data.get("refresh", "")
+                }
                 self.username = saved_data.get("username")
                 logging.info(f"[OK] Tokens carregados de: {AUTH_TOKENS_FILE}")
+                logging.info(f"[OK] Username carregado: {self.username}")
                 return True
             except (json.JSONDecodeError, ValueError, KeyError) as ex:
                 logging.error(f"[ERRO] Erro ao carregar tokens: {ex}")
@@ -126,24 +153,15 @@ class MyApp:
             self.page.scroll = ft.ScrollMode.AUTO
             self.page.expand = True
             
+            # Carregar preferências do usuário
+            await self.load_user_preferences()
+            
+            # Atualizar binds (a verificação de sessão ativa será feita automaticamente pelo contador)
             await self.contador.atualizar_binds()
             self.page.update()
             
-            # Verificar atualizações disponíveis após carregar a interface principal
-            self.page.run_task(self.check_for_updates)
         except Exception as ex:
             logging.error(f"[ERROR] Erro ao mudar para app principal: {ex}")
-            
-    async def check_for_updates(self):
-        """Verifica se há atualizações disponíveis"""
-        try:
-            # Aguarda um pouco para não sobrecarregar a inicialização
-            await asyncio.sleep(3)
-            logging.info(f"Verificando atualizações. Versão atual: {APP_VERSION}")
-            await self.update_checker.check_for_updates()
-        except Exception as e:
-            logging.error(f"Erro ao verificar atualizações: {str(e)}")
-            # Não exibe erro ao usuário para não atrapalhar a experiência
 
     def show_login_page(self):
         """Mostra a página de login usando a abordagem de views"""
@@ -218,11 +236,6 @@ class MyApp:
             
         except Exception as ex:
             logging.error(f"Erro ao mudar para tela de login: {ex}")
-
-    def load_active_session(self):
-        if not self.contador:
-            self.contador = ContadorPerplan(self.page, username=self.username, app=self)
-        return self.contador.load_active_session()
 
     async def switch_to_login_page(self):
         """Muda o aplicativo para a tela de login"""

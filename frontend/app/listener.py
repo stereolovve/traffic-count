@@ -1,6 +1,6 @@
 from pynput import keyboard
 from datetime import datetime
-from database.models import Session, Contagem, init_db, Sessao
+from database.models import Session, init_db, Sessao
 import flet as ft
 import logging
 import time

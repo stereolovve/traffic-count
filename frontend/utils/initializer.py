@@ -1,6 +1,6 @@
 #initializer
 import os
-from database.models import Session, Contagem, init_db
+from database.models import Session, init_db
 import logging
 import json
 

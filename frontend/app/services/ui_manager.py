@@ -35,7 +35,7 @@ class UIManager:
 
     def show_success_message(self, message):
         try:
-            snackbar = ft.SnackBar(ft.Text(message), bgcolor="GREEN")
+            snackbar = ft.SnackBar(ft.Text(message), bgcolor=ft.Colors.GREEN)
             self.page.overlay.append(snackbar)
             snackbar.open = True
             self.page.update()
@@ -44,7 +44,7 @@ class UIManager:
 
     def show_error_message(self, message):
         try:
-            snackbar = ft.SnackBar(ft.Text(message), bgcolor="RED")
+            snackbar = ft.SnackBar(ft.Text(message), bgcolor=ft.Colors.RED)
             self.page.overlay.append(snackbar)
             snackbar.open = True
             self.page.update()

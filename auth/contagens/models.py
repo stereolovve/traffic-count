@@ -10,6 +10,7 @@ class Session(models.Model):
     codigo = models.CharField(max_length=100)
     ponto = models.CharField(max_length=255)
     horario_inicio = models.CharField(max_length=5, null=True, blank=True)
+    horario_fim = models.CharField(max_length=5, null=True, blank=True)
     movimentos = models.JSONField(default=list)
     data = models.CharField(max_length=10, null=True, blank=True)
     criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, default=1)

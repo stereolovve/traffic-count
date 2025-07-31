@@ -429,13 +429,13 @@ body {
                                 </p>
                             </div>
                             <div>
-                                {% if sessao.ativa %}
+                                {% if sessao.status == "Em andamento" or sessao.status == "Aguardando" %}
                                 <span class="status-badge status-active">
-                                    Ativa
+                                    {{ sessao.status }}
                                 </span>
                                 {% else %}
                                 <span class="status-badge status-finished">
-                                    Finalizada
+                                    {{ sessao.status }}
                                 </span>
                                 {% endif %}
                             </div>

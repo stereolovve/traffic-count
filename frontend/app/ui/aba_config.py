@@ -48,7 +48,7 @@ class AbaConfig(ft.Column):
         self.config_button = ft.ElevatedButton(
             text="Configurar Binds", 
             on_click=lambda e: abrir_configuracao_binds(self.contador.page, self.contador),
-            icon=ft.icons.SETTINGS
+            icon=ft.Icons.SETTINGS
         )
 
         self.logout_button = ft.ElevatedButton(
@@ -56,7 +56,7 @@ class AbaConfig(ft.Column):
             bgcolor="RED",
             color="WHITE",
             on_click=self.contador.logout_user,
-            icon=ft.icons.LOGOUT
+            icon=ft.Icons.LOGOUT
         )
 
         # Montar o layout completo
@@ -119,9 +119,9 @@ class AbaConfig(ft.Column):
                 data={"padrao": padrao, "binds": binds},
                 headers=headers
             )
-            logger.info("Preferências salvas com sucesso!")
-            self.page.overlay.append(ft.SnackBar(ft.Text("Preferências salvas!"), bgcolor=ft.colors.GREEN))
+            logging.info("Preferências salvas com sucesso!")
+            self.page.overlay.append(ft.SnackBar(ft.Text("Preferências salvas!"), bgcolor=ft.Colors.GREEN))
         except Exception as ex:
-            logger.error(f"Erro ao salvar preferências: {ex}")
-            self.page.overlay.append(ft.SnackBar(ft.Text(f"Erro ao salvar preferências: {ex}"), bgcolor=ft.colors.RED))
+            logging.error(f"Erro ao salvar preferências: {ex}")
+            self.page.overlay.append(ft.SnackBar(ft.Text(f"Erro ao salvar preferências: {ex}"), bgcolor=ft.Colors.RED))
         self.page.update()

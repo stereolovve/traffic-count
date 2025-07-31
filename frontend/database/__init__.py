@@ -1,4 +1,4 @@
-from .models import Sessao, Categoria, Contagem, Historico  # Importa os modelos
+from .models import Sessao, Categoria, Historico  # Importa os modelos (Contagem removida)
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -12,4 +12,4 @@ def init_db():
     from .models import Base  # Certifique-se de importar Base aqui
     Base.metadata.create_all(bind=engine)
 
-__all__ = ["Sessao", "Categoria", "Contagem", "Historico", "Session", "init_db"]
+__all__ = ["Sessao", "Categoria", "Historico", "Session", "init_db"]

@@ -27,7 +27,7 @@ class LoginPage(ft.Container):
             height=50,
             visible=False,
             stroke_width=6,
-            color=ft.colors.BLUE_700
+            color=ft.Colors.BLUE_700
         )
 
         self.content = ft.Container(
@@ -85,14 +85,8 @@ class LoginPage(ft.Container):
                 self.app.tokens = {"access": response["access"], "refresh": response["refresh"]}
                 self.app.username = username
 
-                tokens_path = DESKTOP_DIR / "auth_tokens.json"
-                with open(tokens_path, "w") as f:
-                    json.dump({
-                        "username": username,
-                        "access": response["access"],
-                        "refresh": response["refresh"]
-                    }, f)
-
+                # Usar o método da classe para salvar tokens (garante consistência)
+                self.app.save_tokens()
 
                 await self.app.load_user_preferences()
 

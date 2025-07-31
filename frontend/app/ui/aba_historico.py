@@ -1,6 +1,6 @@
 import flet as ft
 from sqlalchemy.exc import SQLAlchemyError
-from database.models import Session, Categoria, Sessao, Contagem, Historico, init_db
+from database.models import Session, Categoria, Sessao, Historico, init_db
 import logging
 
 class AbaHistorico(ft.Column):
