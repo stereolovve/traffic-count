@@ -319,7 +319,8 @@ class AbaContagem(ft.Column):
                 veiculo = categoria.veiculo
                 bind = self.contador.binds.get(veiculo, "N/A")
                 control = self.create_category_control(veiculo, bind, movimento)
-                content.controls.append(control)
+                if control is not None:  # Only add valid controls
+                    content.controls.append(control)
 
         return content
 
@@ -332,7 +333,17 @@ class AbaContagem(ft.Column):
         )
         if not categoria:
             logging.warning(f"Categoria não encontrada para {veiculo} - {movimento}")
-            return None
+            # Return a placeholder control instead of None
+            return ft.Container(
+                content=ft.Text(
+                    f"⚠ {veiculo} (categoria não encontrada)", 
+                    color="red", 
+                    size=14
+                ),
+                padding=5,
+                bgcolor=ft.Colors.RED_50,
+                border_radius=3
+            )
         label_veiculo = ft.Text(f"{veiculo}", size=15, width=100)
         label_bind = ft.Text(
             f"({bind})" if bind != "N/A" else "(Sem bind)", 

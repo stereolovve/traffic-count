@@ -27,6 +27,11 @@ class Session(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    @property
+    def ativa(self):
+        """Backward compatibility property for 'ativa' field"""
+        return self.status == "Em andamento"
+    
     def __str__(self):
         return f"{self.codigo} - {self.ponto} ({self.data})"
 

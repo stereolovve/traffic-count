@@ -450,7 +450,9 @@ class AbaInicio(ft.Column):
 
         if campos_vazios:
             mensagem = "Por favor, preencha os seguintes campos obrigatórios:\n" + "\n".join(campos_vazios)
-            self.page.show_snack_bar(ft.SnackBar(ft.Text(mensagem)))
+            self.page.snack_bar = ft.SnackBar(ft.Text(mensagem))
+            self.page.snack_bar.open = True
+            self.page.update()
             return False
         return True
 
@@ -499,7 +501,9 @@ class AbaInicio(ft.Column):
         if not self.validar_campos():
             return
         if not self.horario_fim_valido:
-            self.page.show_snack_bar(ft.SnackBar(ft.Text("Horário de fim inválido."), bgcolor="red"))
+            self.page.snack_bar = ft.SnackBar(ft.Text("Horário de fim inválido."), bgcolor="red")
+            self.page.snack_bar.open = True
+            self.page.update()
             return
         # Desabilitar botão e mostrar loading
         e.control.disabled = True
@@ -527,12 +531,12 @@ class AbaInicio(ft.Column):
             await self.check_active_session()
         except Exception as ex:
             logging.error(f"Erro ao criar sessão: {ex}")
-            self.contador.page.show_snack_bar(
-                ft.SnackBar(
-                    content=ft.Text(f"Erro ao criar sessão: {str(ex)}"),
-                    bgcolor="red"
-                )
+            self.contador.page.snack_bar = ft.SnackBar(
+                content=ft.Text(f"Erro ao criar sessão: {str(ex)}"),
+                bgcolor="red"
             )
+            self.contador.page.snack_bar.open = True
+            self.contador.page.update()
         finally:
             # Restaurar estado do botão
             e.control.disabled = False

@@ -579,6 +579,9 @@ def registrar_sessao(request):
         except json.JSONDecodeError:
             return JsonResponse({"erro": "JSON inválido"}, status=400)
         except Exception as e:
+            import traceback
+            logging.error(f"[ERRO] Exceção em registrar_sessao: {e}")
+            logging.error(f"[ERRO] Traceback: {traceback.format_exc()}")
             return JsonResponse({"erro": str(e)}, status=500)
     else:
         return JsonResponse({"erro": "Método não permitido"}, status=405)
