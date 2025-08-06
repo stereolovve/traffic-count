@@ -7,6 +7,7 @@ from functools import lru_cache
 from typing import Optional, Dict, Any
 import aiohttp
 from datetime import datetime
+from pathlib import Path
 from .config import API_URL
 
 # Configurar logging apenas para erros críticos
