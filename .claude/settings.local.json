@@ -3,7 +3,10 @@
     "allow": [
       "Bash(python manage.py:*)",
       "Bash(timeout:*)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(find:*)",
+      "Bash(curl:*)",
+      "Bash(kill:*)"
     ],
     "deny": []
   }

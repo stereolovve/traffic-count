@@ -17,6 +17,13 @@
         :root {
             --sidebar-width: 280px;
             --sidebar-collapsed-width: 80px;
+            
+            /* Dark Theme Blue Color Palette */
+            --primary-gradient: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);
+            --secondary-gradient: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 100%);
+            --accent-gradient: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+            --dark-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            
             --primary-color: #3b82f6;
             --primary-hover: #2563eb;
             --primary-dark: #1d4ed8;
@@ -24,20 +31,38 @@
             --success-color: #10b981;
             --danger-color: #ef4444;
             --warning-color: #f59e0b;
-            --gray-50: #f9fafb;
-            --gray-100: #f3f4f6;
-            --gray-200: #e5e7eb;
-            --gray-300: #d1d5db;
-            --gray-400: #9ca3af;
-            --gray-500: #6b7280;
-            --gray-600: #4b5563;
-            --gray-700: #374151;
-            --gray-800: #1f2937;
-            --gray-900: #111827;
-            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+            
+            /* Dark Theme Backgrounds */
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --bg-card: rgba(30, 41, 59, 0.8);
+            --bg-card-hover: rgba(30, 41, 59, 0.95);
+            --bg-glass: rgba(30, 41, 59, 0.6);
+            
+            /* Dark Theme Text Colors */
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --text-muted: #64748b;
+            --text-accent: #60a5fa;
+            --text-on-primary: #ffffff;
+            
+            /* Dark Theme Borders */
+            --border-color: rgba(59, 130, 246, 0.2);
+            --border-hover: rgba(59, 130, 246, 0.4);
+            --border-light: rgba(148, 163, 184, 0.1);
+            
+            /* Dark Theme Shadows */
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.6);
+            
+            /* Radius Variables */
+            --radius-sm: 0.375rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
         }
 
         * {
@@ -48,25 +73,37 @@
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            background: var(--bg-primary);
+            color: var(--text-primary);
             line-height: 1.6;
-            color: var(--gray-700);
             font-weight: 400;
+            min-height: 100vh;
         }
 
-        /* Modern Sidebar */
+        /* Modern Dark Sidebar */
         .sidebar {
             width: var(--sidebar-width);
             height: 100vh;
             position: fixed;
             left: 0;
             top: 0;
-            background: linear-gradient(180deg, #ffffff 0%, #fafbfc 100%);
-            border-right: 1px solid var(--gray-200);
+            background: var(--dark-gradient);
+            border-right: 1px solid var(--border-color);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 50;
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(20px);
             box-shadow: var(--shadow-xl);
+        }
+
+        .sidebar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="dots" width="16" height="16" patternUnits="userSpaceOnUse"><circle cx="8" cy="8" r="1" fill="rgba(59,130,246,0.1)"/></pattern></defs><rect width="100%" height="100%" fill="url(%23dots)"/></svg>');
+            opacity: 0.3;
         }
 
         .sidebar.collapsed {
@@ -102,9 +139,11 @@
             display: flex;
             align-items: center;
             padding: 1.5rem 1.25rem;
-            border-bottom: 1px solid var(--gray-100);
-            background: var(--gray-50);
+            border-bottom: 1px solid var(--border-color);
+            background: var(--bg-secondary);
             backdrop-filter: blur(10px);
+            position: relative;
+            z-index: 10;
         }
 
         .sidebar-brand img {
@@ -118,8 +157,8 @@
             margin-left: 0.75rem;
             font-size: 1.25rem;
             font-weight: 700;
-            color: var(--gray-800);
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: var(--text-primary);
+            background: var(--primary-gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -130,6 +169,8 @@
             padding: 1rem 0;
             height: calc(100vh - 80px);
             overflow-y: auto;
+            position: relative;
+            z-index: 10;
         }
 
         .sidebar nav::-webkit-scrollbar {
@@ -141,12 +182,12 @@
         }
 
         .sidebar nav::-webkit-scrollbar-thumb {
-            background: var(--gray-300);
+            background: var(--border-color);
             border-radius: 2px;
         }
 
         .sidebar nav::-webkit-scrollbar-thumb:hover {
-            background: var(--gray-400);
+            background: var(--border-hover);
         }
 
         .sidebar-item {
@@ -154,7 +195,7 @@
             align-items: center;
             padding: 0.875rem 1.25rem;
             margin: 0.25rem 0.75rem;
-            color: var(--gray-600);
+            color: var(--text-secondary);
             text-decoration: none;
             border-radius: 12px;
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -171,14 +212,14 @@
             transform: translateY(-50%);
             width: 3px;
             height: 0;
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            background: var(--primary-gradient);
             border-radius: 0 2px 2px 0;
             transition: height 0.2s ease;
         }
 
         .sidebar-item:hover {
-            background: linear-gradient(135deg, var(--primary-color)10, var(--secondary-color)10);
-            color: var(--primary-color);
+            background: var(--bg-card);
+            color: var(--text-accent);
             transform: translateX(4px);
         }
 
@@ -187,8 +228,8 @@
         }
 
         .sidebar-item.active {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
+            background: var(--accent-gradient);
+            color: var(--text-on-primary);
             box-shadow: var(--shadow-md);
             transform: translateX(0);
         }
@@ -220,7 +261,7 @@
             margin-left: var(--sidebar-width);
             min-height: 100vh;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            background: var(--bg-primary);
         }
 
         .main-content.expanded {
@@ -229,9 +270,9 @@
 
         /* Modern Top Bar */
         .top-bar {
-            background: rgba(255, 255, 255, 0.9);
+            background: var(--bg-card);
             backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--gray-200);
+            border-bottom: 1px solid var(--border-color);
             padding: 1rem 1.5rem;
             display: flex;
             justify-content: space-between;
@@ -251,7 +292,7 @@
         .sidebar-toggle {
             background: none;
             border: none;
-            color: var(--gray-500);
+            color: var(--text-muted);
             cursor: pointer;
             padding: 0.75rem;
             border-radius: 10px;
@@ -262,15 +303,15 @@
         }
 
         .sidebar-toggle:hover {
-            background: var(--gray-100);
-            color: var(--primary-color);
+            background: var(--bg-card-hover);
+            color: var(--text-accent);
             transform: scale(1.05);
         }
 
         .page-title {
             font-size: 1.5rem;
             font-weight: 600;
-            color: var(--gray-800);
+            color: var(--text-primary);
             letter-spacing: -0.025em;
         }
 
@@ -285,17 +326,17 @@
             display: flex;
             align-items: center;
             gap: 0.75rem;
-            color: var(--gray-600);
+            color: var(--text-secondary);
             padding: 0.5rem 1rem;
-            background: var(--gray-50);
+            background: var(--bg-secondary);
             border-radius: 12px;
-            border: 1px solid var(--gray-200);
+            border: 1px solid var(--border-color);
         }
 
         .user-avatar {
             width: 32px;
             height: 32px;
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            background: var(--primary-gradient);
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -305,7 +346,7 @@
             font-size: 0.875rem;
         }
 
-        /* Modern Buttons */
+        /* Modern Dark Buttons */
         .btn {
             display: inline-flex;
             align-items: center;
@@ -327,30 +368,41 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
+            background: var(--primary-gradient);
+            color: var(--text-on-primary);
         }
 
         .btn-primary:hover {
-            background: linear-gradient(135deg, var(--primary-hover), var(--secondary-color));
+            background: var(--secondary-gradient);
         }
 
         .btn-danger {
             background: linear-gradient(135deg, var(--danger-color), #dc2626);
-            color: white;
+            color: var(--text-on-primary);
         }
 
         .btn-danger:hover {
             background: linear-gradient(135deg, #dc2626, #b91c1c);
         }
 
-        /* Modern Cards */
+        .btn-secondary {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--border-hover);
+        }
+
+        /* Modern Dark Cards */
         .card {
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(10px);
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
             border-radius: 16px;
             box-shadow: var(--shadow-sm);
-            border: 1px solid var(--gray-200);
+            border: 1px solid var(--border-color);
             padding: 1.5rem;
             transition: all 0.3s ease;
         }
@@ -358,52 +410,77 @@
         .card:hover {
             box-shadow: var(--shadow-lg);
             transform: translateY(-2px);
+            background: var(--bg-card-hover);
         }
 
-        /* Modern Forms */
+        /* Modern Dark Forms */
         .form-input {
             width: 100%;
             padding: 0.75rem 1rem;
-            border: 1px solid var(--gray-300);
+            border: 1px solid var(--border-color);
             border-radius: 10px;
             font-size: 0.875rem;
             transition: all 0.2s ease;
-            background: rgba(255, 255, 255, 0.8);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
             backdrop-filter: blur(10px);
+        }
+
+        .form-input::placeholder {
+            color: var(--text-muted);
         }
 
         .form-input:focus {
             outline: none;
             border-color: var(--primary-color);
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            background: var(--bg-card);
         }
 
         .form-label {
             display: block;
             font-size: 0.875rem;
             font-weight: 500;
-            color: var(--gray-700);
+            color: var(--text-secondary);
             margin-bottom: 0.5rem;
         }
 
-        /* Modern Tables */
+        .form-select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            cursor: pointer;
+        }
+
+        .form-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        /* Modern Dark Tables */
         .table-modern {
             width: 100%;
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(10px);
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
             border-radius: 16px;
             overflow: hidden;
             box-shadow: var(--shadow-sm);
-            border: 1px solid var(--gray-200);
+            border: 1px solid var(--border-color);
         }
 
         .table-modern th {
-            background: var(--gray-50);
+            background: var(--bg-secondary);
             padding: 1rem 1.5rem;
             text-align: left;
             font-size: 0.75rem;
             font-weight: 600;
-            color: var(--gray-500);
+            color: var(--text-secondary);
             text-transform: uppercase;
             letter-spacing: 0.05em;
         }
@@ -411,46 +488,112 @@
         .table-modern td {
             padding: 1rem 1.5rem;
             font-size: 0.875rem;
-            color: var(--gray-600);
-            border-top: 1px solid var(--gray-100);
+            color: var(--text-primary);
+            border-top: 1px solid var(--border-light);
         }
 
         .table-modern tr:hover {
-            background: var(--gray-50);
+            background: var(--bg-secondary);
         }
 
-        /* Modern Alerts */
+        /* Modern Dark Alerts */
         .alert {
             padding: 1rem 1.25rem;
             border-radius: 12px;
             margin-bottom: 1rem;
             border-left: 4px solid;
             backdrop-filter: blur(10px);
+            position: relative;
         }
 
         .alert-success {
             background: rgba(16, 185, 129, 0.1);
-            color: #047857;
+            color: #10b981;
             border-left-color: var(--success-color);
         }
 
         .alert-error {
             background: rgba(239, 68, 68, 0.1);
-            color: #dc2626;
+            color: #ef4444;
             border-left-color: var(--danger-color);
         }
 
         .alert-info {
             background: rgba(59, 130, 246, 0.1);
-            color: var(--primary-dark);
+            color: var(--text-accent);
             border-left-color: var(--primary-color);
+        }
+
+        .alert-warning {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+            border-left-color: var(--warning-color);
         }
 
         /* Divider */
         .divider {
             height: 1px;
-            background: linear-gradient(90deg, transparent, var(--gray-200), transparent);
+            background: linear-gradient(90deg, transparent, var(--border-color), transparent);
             margin: 1rem 0;
+        }
+
+        /* Status Badges */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .badge-success {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+
+        .badge-error {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        .badge-warning {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+        }
+
+        .badge-info {
+            background: rgba(59, 130, 246, 0.2);
+            color: var(--text-accent);
+        }
+
+        /* Loading States */
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+            position: relative;
+        }
+
+        .loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top: 2px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
         }
 
         /* Responsive Design */
@@ -508,8 +651,8 @@
             left: 100%;
             top: 50%;
             transform: translateY(-50%);
-            background: var(--gray-900);
-            color: white;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
             padding: 0.5rem 0.75rem;
             border-radius: 8px;
             font-size: 0.75rem;
@@ -519,6 +662,8 @@
             transition: all 0.2s ease;
             margin-left: 0.5rem;
             z-index: 100;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-md);
         }
 
         .tooltip:hover::after {
@@ -526,12 +671,42 @@
             visibility: visible;
         }
 
+        /* Scrollbar Styles */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--border-hover);
+        }
+
+        /* Selection Colors */
+        ::selection {
+            background: var(--primary-color);
+            color: var(--text-on-primary);
+        }
+
+        ::-moz-selection {
+            background: var(--primary-color);
+            color: var(--text-on-primary);
+        }
+
         {% block style %}{% endblock %}
     </style>
 </head>
-<body class="h-full bg-gradient-to-br from-gray-50 to-gray-100">
+<body class="h-full bg-slate-900">
     {% if user.is_authenticated %}
-    <!-- Modern Sidebar -->
+    <!-- Modern Dark Sidebar -->
     <div id="sidebar" class="sidebar">
         <!-- Sidebar Header -->
         <div class="sidebar-brand">
@@ -621,7 +796,7 @@
             {% if messages %}
                 {% for message in messages %}
                     <div class="alert alert-{{ message.tags }}">
-                        <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% else %}info-circle{% endif %} mr-2"></i>
+                        <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% elif message.tags == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %} mr-2"></i>
                         {{ message }}
                     </div>
                 {% endfor %}
@@ -635,23 +810,98 @@
     <div id="mobile-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden md:hidden transition-opacity duration-300"></div>
     
     {% else %}
-    <!-- Modern Login Page -->
-    <div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center p-4">
-        <div class="max-w-md w-full">
+    <!-- Modern Dark Login Page -->
+    {% block login_content %}
+    <div class="min-h-screen flex items-center justify-center p-4" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%); position: relative;">
+        <!-- Background Pattern -->
+        <div style="position: absolute; inset: 0; background: url('data:image/svg+xml,<svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(59,130,246,0.1)" stroke-width="1"/></pattern></defs><rect width="100%" height="100%" fill="url(%23grid)" /></svg>'); opacity: 0.4;"></div>
+        
+        <div class="w-full max-w-md relative z-10">
+            <!-- Header -->
             <div class="text-center mb-8">
-                <img src="{% static 'img/icone.png' %}" alt="Logo" class="h-16 w-16 mx-auto mb-4 rounded-2xl shadow-lg">
-                <h2 class="text-3xl font-bold text-gray-900 mb-2">Traffic Count</h2>
-                <p class="text-gray-600">Sistema de Contagem de Tráfego</p>
+                <div class="mx-auto w-16 h-16 bg-gradient-to-r from-blue-600 to-blue-500 rounded-2xl flex items-center justify-center mb-6 shadow-xl">
+                    <img src="{% static 'img/icone.png' %}" alt="Traffic Count" class="h-10 w-auto">
+                </div>
+                
+                <h1 class="text-3xl font-bold text-white mb-2">Traffic Count</h1>
+                
+                <div class="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 rounded-full px-3 py-1 mb-4">
+                    <i class="fas fa-shield-check text-blue-400 text-sm"></i>
+                    <span class="text-blue-200 text-sm font-medium">Sistema Seguro</span>
+                </div>
+                
+                <p class="text-slate-300 leading-relaxed">
+                    Plataforma de análise de tráfego urbano com tecnologia avançada
+                </p>
             </div>
-            {% block login_content %}{% endblock %}
+            
+            <!-- Login Card -->
+            <div class="bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-8 shadow-2xl">
+                <div class="text-center mb-6">
+                    <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-user-lock text-white"></i>
+                    </div>
+                    <h2 class="text-xl font-semibold text-white mb-2">Acesso Restrito</h2>
+                    <p class="text-slate-400 text-sm">Entre com suas credenciais para continuar</p>
+                </div>
+                
+                <div class="space-y-4">
+                    <a href="{% url 'login' %}" 
+                       class="w-full flex items-center justify-center gap-3 py-3 px-4 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-semibold rounded-xl transition-all duration-200 transform hover:scale-[1.02] hover:-translate-y-0.5 shadow-lg hover:shadow-xl group">
+                        <i class="fas fa-sign-in-alt group-hover:rotate-12 transition-transform duration-200"></i>
+                        Fazer Login
+                    </a>
+                    
+                    <div class="relative">
+                        <div class="absolute inset-0 flex items-center">
+                            <div class="w-full border-t border-slate-600"></div>
+                        </div>
+                        <div class="relative flex justify-center">
+                            <span class="bg-slate-800 px-3 text-slate-400 text-sm">ou</span>
+                        </div>
+                    </div>
+                    
+                    <a href="{% url 'register' %}" 
+                       class="w-full flex items-center justify-center gap-3 py-3 px-4 border-2 border-slate-600 hover:border-blue-500 text-slate-300 hover:text-white font-semibold rounded-xl transition-all duration-200 transform hover:scale-[1.02] group">
+                        <i class="fas fa-user-plus group-hover:scale-110 transition-transform duration-200"></i>
+                        Criar Conta
+                    </a>
+                </div>
+                
+                <!-- Features -->
+                <div class="mt-8 pt-6 border-t border-slate-700">
+                    <div class="grid grid-cols-2 gap-4 text-center">
+                        <div>
+                            <div class="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center mx-auto mb-2">
+                                <i class="fas fa-chart-line text-blue-400"></i>
+                            </div>
+                            <p class="text-slate-400 text-xs font-medium">Análise Real-time</p>
+                        </div>
+                        <div>
+                            <div class="w-10 h-10 bg-indigo-500/20 rounded-lg flex items-center justify-center mx-auto mb-2">
+                                <i class="fas fa-mobile-alt text-indigo-400"></i>
+                            </div>
+                            <p class="text-slate-400 text-xs font-medium">Interface Responsiva</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Footer -->
+            <div class="text-center mt-6">
+                <p class="text-slate-500 text-xs">
+                    © 2025 Traffic Count • Sistema de Análise de Tráfego
+                </p>
+            </div>
         </div>
     </div>
+    {% endblock %}
     {% endif %}
     
     {% block extra_js %}{% endblock %}
     
     <script>
-        // Modern Sidebar functionality with enhanced animations
+        // Modern Sidebar functionality with enhanced animations for dark theme
         document.addEventListener('DOMContentLoaded', function() {
             const sidebar = document.getElementById('sidebar');
             const mainContent = document.getElementById('main-content');
@@ -747,7 +997,7 @@
                 });
             });
             
-            // Enhanced form interactions
+            // Enhanced form interactions with dark theme
             const formInputs = document.querySelectorAll('.form-input');
             formInputs.forEach(input => {
                 // Add floating label effect
@@ -779,7 +1029,7 @@
                 // Add close button to alerts
                 const closeBtn = document.createElement('button');
                 closeBtn.innerHTML = '<i class="fas fa-times"></i>';
-                closeBtn.className = 'absolute top-2 right-2 text-gray-400 hover:text-gray-600 transition-colors';
+                closeBtn.className = 'absolute top-2 right-2 text-slate-400 hover:text-slate-300 transition-colors';
                 closeBtn.style.cssText = 'position: absolute; top: 0.5rem; right: 0.5rem; background: none; border: none; cursor: pointer;';
                 closeBtn.onclick = () => {
                     alert.style.opacity = '0';
@@ -790,7 +1040,7 @@
                 alert.appendChild(closeBtn);
             });
             
-            // Add loading states to buttons
+            // Add loading states to buttons with dark theme
             const buttons = document.querySelectorAll('.btn');
             buttons.forEach(btn => {
                 if (btn.type === 'submit') {
@@ -798,11 +1048,13 @@
                         const originalText = this.innerHTML;
                         this.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Carregando...';
                         this.disabled = true;
+                        this.classList.add('loading');
                         
                         // Re-enable after form submission or timeout
                         setTimeout(() => {
                             this.innerHTML = originalText;
                             this.disabled = false;
+                            this.classList.remove('loading');
                         }, 3000);
                     });
                 }

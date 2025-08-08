@@ -335,7 +335,12 @@ def finalizar_sessao(request):
                 'message': 'Esta sessão já está finalizada'
             }, status=200)
         
+        from datetime import datetime
+        
         sessao.status = "Concluída"
+        # Se horario_fim não estiver preenchido, usar o horário atual
+        if not sessao.horario_fim:
+            sessao.horario_fim = datetime.now().strftime("%H:%M")
         sessao.save()
         
         return JsonResponse({
@@ -633,7 +638,12 @@ def finalizar_por_nome(request):
                 "message": "Esta sessão já está finalizada"
             })
         
+        from datetime import datetime
+        
         sessao.status = "Concluída"
+        # Se horario_fim não estiver preenchido, usar o horário atual
+        if not sessao.horario_fim:
+            sessao.horario_fim = datetime.now().strftime("%H:%M")
         sessao.save()
         
         return JsonResponse({

@@ -175,6 +175,8 @@
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     }
     
+    /* Posicionamento fixo resolve problemas de overflow */
+    
     .table-modern th {
         background: linear-gradient(135deg, #1f2937, #111827);
         color: white;
@@ -234,11 +236,28 @@
         background: white;
         border-radius: 8px;
         box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-        z-index: 1000;
+        z-index: 9999;
         min-width: 180px;
         border: 1px solid #e5e7eb;
-        overflow: hidden;
+        overflow: visible;
         display: none;
+        margin-top: 5px;
+    }
+    
+    /* Dropdown que aparece para cima quando não há espaço */
+    .action-dropdown.dropdown-up {
+        margin-bottom: 5px;
+    }
+    
+    /* Ajuste da seta quando dropdown aparece para cima */
+    .action-dropdown.dropdown-up::before {
+        top: auto;
+        bottom: -6px;
+        transform: rotate(225deg);
+        border-right: 1px solid #e5e7eb;
+        border-bottom: 1px solid #e5e7eb;
+        border-left: none;
+        border-top: none;
     }
     
     .action-dropdown::before {
@@ -252,6 +271,12 @@
         transform: rotate(45deg);
         border-left: 1px solid #e5e7eb;
         border-top: 1px solid #e5e7eb;
+    }
+    
+    /* Ajustar posição da seta dinamicamente */
+    .action-dropdown.arrow-left::before {
+        right: auto;
+        left: 16px;
     }
     
     .dropdown-item {
@@ -724,8 +749,29 @@
                                 {% endif %}
                             </div>
                         </th>
-                        <th>
-                            <span><i class="fas fa-clock mr-2"></i>Horário</span>
+                        <th onclick="sortTable('horario_inicio')" class="cursor-pointer hover:bg-gray-700 transition-colors">
+                            <div class="flex items-center justify-between">
+                                <span><i class="fas fa-clock mr-2"></i>Início</span>
+                                {% if request.GET.sort == 'horario_inicio' %}
+                                    <i class="fas fa-sort-up sort-icon"></i>
+                                {% elif request.GET.sort == '-horario_inicio' %}
+                                    <i class="fas fa-sort-down sort-icon"></i>
+                                {% else %}
+                                    <i class="fas fa-sort sort-icon"></i>
+                                {% endif %}
+                            </div>
+                        </th>
+                        <th onclick="sortTable('horario_fim')" class="cursor-pointer hover:bg-gray-700 transition-colors">
+                            <div class="flex items-center justify-between">
+                                <span><i class="fas fa-clock mr-2"></i>Fim</span>
+                                {% if request.GET.sort == 'horario_fim' %}
+                                    <i class="fas fa-sort-up sort-icon"></i>
+                                {% elif request.GET.sort == '-horario_fim' %}
+                                    <i class="fas fa-sort-down sort-icon"></i>
+                                {% else %}
+                                    <i class="fas fa-sort sort-icon"></i>
+                                {% endif %}
+                            </div>
                         </th>
                         <th onclick="sortTable('padrao')" class="cursor-pointer hover:bg-gray-700 transition-colors">
                             <div class="flex items-center justify-between">
@@ -811,7 +857,18 @@
                         </td>
                         <td class="text-gray-700">{{ sessao.sessao.ponto }}</td>
                         <td class="text-gray-700">{{ sessao.sessao.data|default:"-" }}</td>
-                        <td class="text-gray-700">{{ sessao.sessao.horario_inicio }}</td>
+                        <td class="text-gray-700">{{ sessao.sessao.horario_inicio|default:"-" }}</td>
+                        <td class="text-gray-700">
+                            {% if sessao.sessao.horario_fim %}
+                                {{ sessao.sessao.horario_fim }}
+                            {% else %}
+                                {% if sessao.sessao.status == "Concluída" %}
+                                    <span class="text-gray-400 italic">-</span>
+                                {% else %}
+                                    <span class="text-blue-600 italic">Em andamento</span>
+                                {% endif %}
+                            {% endif %}
+                        </td>
                         <td class="text-gray-700">{{ sessao.sessao.padrao }}</td>
                         <td>
                             {% if sessao.sessao.status == "Aguardando" or sessao.sessao.status == "Em andamento" %}
@@ -860,7 +917,7 @@
                                     Ações
                                 </button>
                                 <div class="action-dropdown">
-                                    <a href="{% url 'detalhes_sessao' sessao.sessao_id %}" class="dropdown-item">
+                                    <a href="{% url 'detalhes_sessao' sessao.sessao_id %}" class="dropdown-item" onclick="console.log('Clicking details for session:', {{ sessao.sessao_id }}); return true;">
                                         <i class="fas fa-eye text-blue-500"></i>
                                         Ver Detalhes
                                     </a>
@@ -880,7 +937,7 @@
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="12" class="empty-state">
+                        <td colspan="13" class="empty-state">
                             <i class="fas fa-search"></i>
                             <h3>Nenhuma sessão encontrada</h3>
                             <p>Não foi possível encontrar sessões com os filtros aplicados.</p>
@@ -1011,9 +1068,13 @@
             } else {
                 // Reset to original pontos list when no codigo is selected
                 pontoSelect.find('option:not(:first)').remove();
-                {% for ponto in pontos %}
-                    pontoSelect.append('<option value="{{ ponto }}">{{ ponto }}</option>');
-                {% endfor %}
+                // Add original pontos back
+                const originalPontos = [
+                    {% for ponto in pontos %}"{{ ponto|escapejs }}"{% if not forloop.last %},{% endif %}{% endfor %}
+                ];
+                originalPontos.forEach(function(ponto) {
+                    pontoSelect.append(`<option value="${ponto}">${ponto}</option>`);
+                });
                 
                 // Reset label
                 const label = pontoSelect.closest('.filter-group').find('label');
@@ -1034,16 +1095,30 @@
         // Enhanced menu handling
         $(document).on('click', function(e) {
             if (!$(e.target).closest('.action-menu').length) {
-                $('.action-dropdown').hide();
+                $('.action-dropdown').hide().removeClass('dropdown-up arrow-left');
             }
         });
+        
+        // Hide dropdowns on scroll or resize
+        $(window).on('scroll resize', function() {
+            $('.action-dropdown').hide().removeClass('dropdown-up arrow-left');
+        });
 
-        // Toggle action menu
+        // Toggle action menu with simple positioning
         $('.js-toggle-menu').on('click', function(e) {
             e.stopPropagation();
-            const menu = $(this).siblings('.action-dropdown');
-            $('.action-dropdown').not(menu).hide();
-            menu.toggle();
+            const button = $(this);
+            const menu = button.siblings('.action-dropdown');
+            
+            // Hide other menus
+            $('.action-dropdown').not(menu).hide().removeClass('dropdown-up arrow-left');
+            
+            if (menu.is(':visible')) {
+                menu.hide();
+            } else {
+                // Simple toggle - let CSS handle the positioning
+                menu.show();
+            }
         });
 
         // Action handlers with enhanced UX

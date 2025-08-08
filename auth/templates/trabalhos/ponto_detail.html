@@ -247,12 +247,13 @@
             Croquis
           </h2>
           <div class="flex space-x-3">
-            <!-- Link para ir ao módulo de croquis -->
-            <a href="{% url 'croquis_list' %}?cliente_id={{ ponto.codigo.cliente.id }}&codigo_id={{ ponto.codigo.id }}&ponto_id={{ ponto.id }}" 
-               class="bg-white hover:bg-gray-50 text-purple-600 font-semibold py-2 px-4 rounded-lg shadow-md transition-all duration-200 transform hover:scale-105 flex items-center">
+            <!-- Link para ir ao módulo de croquis - REMOVIDO: croquis module não existe mais -->
+            <!-- 
+            <a href="#" class="bg-white hover:bg-gray-50 text-purple-600 font-semibold py-2 px-4 rounded-lg shadow-md transition-all duration-200 transform hover:scale-105 flex items-center">
               <i class="fas fa-external-link-alt mr-2"></i>
               Gerenciar Croquis
             </a>
+            -->
             <button type="button" id="addCroquisBtn" class="bg-purple-800 hover:bg-purple-900 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-all duration-200 transform hover:scale-105 flex items-center">
               <i class="fas fa-upload mr-2"></i>
               Upload Manual

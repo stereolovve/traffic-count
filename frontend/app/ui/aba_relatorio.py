@@ -13,70 +13,84 @@ class AbaRelatorio(ft.Column):
         self.setup_ui()
 
     def setup_ui(self):
-        """Configura a interface minimalista e organizada"""
+        """Configura a interface simplificada e limpa"""
         try:
             self.controls.clear()
             
-            # Cabeçalho estilizado
-            header = ft.Container(
-                content=ft.Text(
+            # Cabeçalho com controles integrados
+            header_content = ft.Row([
+                ft.Text(
                     "📊 Relatório da Sessão",
-                    size=20,
+                    size=18,
                     weight=ft.FontWeight.BOLD,
                     color=ft.Colors.WHITE
                 ),
-                bgcolor=ft.Colors.GREY_900,
+                ft.Row([
+                    ft.ElevatedButton(
+                        text="🔄",
+                        on_click=self.atualizar_relatorio,
+                        bgcolor=ft.Colors.BLUE_600,
+                        color=ft.Colors.WHITE,
+                        width=40,
+                        height=35,
+                        tooltip="Atualizar relatório"
+                    ),
+                    ft.ElevatedButton(
+                        text="📑",
+                        on_click=self.exportar_dados,
+                        bgcolor=ft.Colors.GREEN_600,
+                        color=ft.Colors.WHITE,
+                        width=40,
+                        height=35,
+                        tooltip="Exportar dados"
+                    )
+                ], spacing=5)
+            ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN)
+
+            header = ft.Container(
+                content=header_content,
+                bgcolor=ft.Colors.GREY_800,
                 padding=15,
-                border_radius=8
+                border_radius=8,
+                margin=ft.margin.only(bottom=10)
             )
 
-            # Barra de controles
-            self.atualizar_btn = ft.ElevatedButton(
-                text="🔄 Atualizar",
-                on_click=self.atualizar_relatorio,
+            # Status integrado
+            self.status_text = ft.Container(
+                content=ft.Text(
+                    "Carregando dados...",
+                    size=12,
+                    color=ft.Colors.WHITE,
+                    text_align=ft.TextAlign.CENTER
+                ),
                 bgcolor=ft.Colors.GREY_700,
-                color=ft.Colors.WHITE
-            )
-            
-            self.exportar_btn = ft.ElevatedButton(
-                text="📑 Exportar",
-                on_click=self.exportar_dados,
-                bgcolor=ft.Colors.GREY_700,
-                color=ft.Colors.WHITE
+                padding=8,
+                border_radius=6,
+                margin=ft.margin.only(bottom=10)
             )
 
-            controles = ft.Row([
-                self.atualizar_btn,
-                self.exportar_btn
-            ], spacing=10)
-
-            # Status
-            self.status_text = ft.Text(
-                "Carregando dados...",
-                size=12,
-                color=ft.Colors.WHITE
-            )
-
-            # Container principal para dados
+            # Container principal simplificado
             self.main_container = ft.Container(
                 content=ft.Column([
                     ft.Text(
                         "Carregando relatório...", 
                         text_align=ft.TextAlign.CENTER,
-                        color=ft.Colors.WHITE,
+                        color=ft.Colors.GREY_400,
                         size=14
                     )
-                ], horizontal_alignment=ft.CrossAxisAlignment.CENTER),
-                height=600,
+                ], 
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                scroll=ft.ScrollMode.AUTO),
+                expand=True,
                 bgcolor=ft.Colors.GREY_900,
                 border_radius=8,
-                padding=20
+                padding=15,
+                border=ft.border.all(1, ft.Colors.GREY_700)
             )
             
-            # Layout principal
+            # Layout principal simplificado
             self.controls.extend([
                 header,
-                controles,
                 self.status_text,
                 self.main_container
             ])
@@ -124,20 +138,20 @@ class AbaRelatorio(ft.Column):
 
     def _show_success(self, message):
         """Mostra mensagem de sucesso"""
-        self.status_text.value = message
-        self.status_text.color = ft.Colors.WHITE
+        self.status_text.content.value = message
+        self.status_text.bgcolor = ft.Colors.GREEN_700
         self.status_text.update()
 
     def _show_error(self, message):
         """Mostra mensagem de erro"""
-        self.status_text.value = message
-        self.status_text.color = ft.Colors.WHITE
+        self.status_text.content.value = message
+        self.status_text.bgcolor = ft.Colors.RED_700
         self.status_text.update()
 
     def _show_warning(self, message):
         """Mostra mensagem de aviso"""
-        self.status_text.value = message
-        self.status_text.color = ft.Colors.WHITE
+        self.status_text.content.value = message
+        self.status_text.bgcolor = ft.Colors.ORANGE_700
         self.status_text.update()
 
     def load_data(self):
@@ -239,28 +253,47 @@ class AbaRelatorio(ft.Column):
             colunas_exibição = ["Período", "Movimento", "observacao"] + veiculos
             df_final = df_consolidado[colunas_exibição]
 
-            colunas = [ft.DataColumn(ft.Text(col, size=14, weight=ft.FontWeight.BOLD)) for col in df_final.columns]
+            # Create simplified table with better styling
+            colunas = []
+            for col in df_final.columns:
+                colunas.append(ft.DataColumn(
+                    label=ft.Text(
+                        col.replace("_", " ").title(),
+                        size=13, 
+                        weight=ft.FontWeight.BOLD,
+                        color=ft.Colors.WHITE
+                    )
+                ))
+            
             linhas = []
-            for _, row in df_final.iterrows():
-                linha = [ft.DataCell(ft.Text(str(row[col]), size=12)) for col in df_final.columns]
-                linhas.append(ft.DataRow(cells=linha))
+            for idx, row in df_final.iterrows():
+                cells = []
+                for col in df_final.columns:
+                    value = str(row[col]) if pd.notna(row[col]) else ""
+                    cells.append(ft.DataCell(
+                        ft.Text(value, size=12, color=ft.Colors.WHITE)
+                    ))
+                
+                # Alternate row colors for better readability
+                row_color = ft.Colors.GREY_800 if idx % 2 == 0 else ft.Colors.GREY_900
+                linhas.append(ft.DataRow(cells=cells, color=row_color))
 
             tabela_relatorio = ft.DataTable(
                 columns=colunas,
                 rows=linhas,
+                bgcolor=ft.Colors.GREY_900,
+                heading_row_color=ft.Colors.BLUE_700,
+                heading_row_height=45,
+                data_row_min_height=40,
+                horizontal_lines=ft.BorderSide(1, ft.Colors.GREY_700),
+                show_checkbox_column=False,
+                border_radius=6
             )
 
-            tabela_container = ft.Container(
-                content=ft.Row(
-                    controls=[tabela_relatorio],
-                    scroll=ft.ScrollMode.ALWAYS 
-                ),
-                padding=10,
-                expand=True,
-                border_radius=10,
-            )
-
-            return tabela_container
+            # Single scroll container - no nested scrolls
+            return ft.Column([
+                ft.Row([tabela_relatorio], scroll=ft.ScrollMode.AUTO)
+            ], scroll=ft.ScrollMode.AUTO, spacing=0)
 
         except Exception as e:
             return ft.Container(
@@ -277,16 +310,14 @@ class AbaRelatorio(ft.Column):
             )
 
     def atualizar_relatorio(self, e):
-        if not self.contador.page:
-            print("[ERROR] Página não disponível para atualizar o relatório.")
-            return
-
-        novo_relatorio = self.load_data()
-        self.conteudo_aba.controls[1].controls[0] = novo_relatorio
-        self.contador.page.update()
-
-        for tab in self.contador.tabs.tabs:
-            if tab.text == "Relatório":
-                tab.content = self.conteudo_aba
-                break
-        self.contador.page.update()
+        """Atualiza o relatório com novos dados"""
+        try:
+            self._show_warning("🔄 Atualizando relatório...")
+            self.carregar_relatorio()
+        except Exception as ex:
+            print(f"Erro ao atualizar relatório: {ex}")
+            self._show_error("❌ Erro ao atualizar")
+    
+    def exportar_dados(self, e):
+        """Placeholder para exportação de dados"""
+        self._show_warning("🚧 Funcionalidade em desenvolvimento")

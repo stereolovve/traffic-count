@@ -620,10 +620,52 @@ class SessionManager:
 
     async def _end_and_start_new(self):
         try:
-            await self.end_session()
+            # Force end any active session regardless of state
+            await self.force_end_current_session()
             self.contador.setup_ui()
         except Exception as ex:
             logging.error(f"Erro ao finalizar e iniciar nova sessão: {ex}")
+
+    async def force_end_current_session(self):
+        """Force end current session without validation"""
+        try:
+            # Find any active session in database and end it
+            with self.contador.session_lock:
+                sessao_ativa = self.session.query(Sessao).filter_by(status="Em andamento").first()
+                if sessao_ativa:
+                    # Update session to completed
+                    sessao_ativa.status = "Concluída"
+                    self.session.commit()
+                    logging.info(f"Sessão forçadamente finalizada: {sessao_ativa.sessao}")
+                    
+                    # Try to sync with Django if possible
+                    try:
+                        if hasattr(self.contador, 'api_manager'):
+                            await self.contador.api_manager.end_session_django(sessao_ativa.sessao)
+                    except Exception as sync_ex:
+                        logging.warning(f"Não foi possível sincronizar com Django: {sync_ex}")
+                
+                # Clear all session data regardless
+                self.contador.sessao = None
+                self.contador.details = {"Movimentos": []}
+                self.contagens.clear()
+                self.contador.binds.clear()
+                self.contador.labels.clear()
+                self.categorias.clear()
+                self.contador.categorias.clear()
+                
+                logging.info("Dados da sessão limpos forçadamente")
+                
+        except Exception as ex:
+            logging.error(f"Erro ao forçar finalização da sessão: {ex}")
+            # Even if database update fails, clear memory state
+            self.contador.sessao = None
+            self.contador.details = {"Movimentos": []}
+            self.contagens.clear()
+            self.contador.binds.clear()
+            self.contador.labels.clear()
+            self.categorias.clear()
+            self.contador.categorias.clear()
 
     def save_to_db(self, veiculo, movimento):
         movimento = movimento.upper()

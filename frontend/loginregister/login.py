@@ -65,10 +65,13 @@ class LoginPage(ft.Container):
             logging.warning("Tentativa de atualizar LoginPage fora do contexto da página.")
 
     async def perform_login(self, username, password):
-        if self.page:
+        # Store page reference to avoid None issues during async operations
+        page_ref = self.page or getattr(self.app, 'page', None)
+        
+        if page_ref:
             self.loading_indicator.visible = True
             self.login_button.disabled = True
-            self.page.update()
+            page_ref.update()
         else:
             logging.error("self.page é None durante o início do login.")
             return
@@ -91,12 +94,12 @@ class LoginPage(ft.Container):
                 await self.app.load_user_preferences()
 
                 snackbar = ft.SnackBar(ft.Text("Login realizado com sucesso!"), bgcolor="GREEN")
-                if self.page:
-                    self.page.overlay.append(snackbar)
+                if page_ref:
+                    page_ref.overlay.append(snackbar)
                     snackbar.open = True
-                    self.page.update()
+                    page_ref.update()
                 else:
-                    logging.warning("self.page é None ao mostrar snackbar de sucesso no login.")
+                    logging.warning("page_ref é None ao mostrar snackbar de sucesso no login.")
 
                 await self.app.switch_to_main_app() 
             else:
@@ -108,12 +111,13 @@ class LoginPage(ft.Container):
             logging.error(f"Erro ao fazer login: {ex}")
             self.show_error(f"Erro ao conectar: {str(ex)}")
         finally:
-            if self.page:
+            # Use the stored page reference
+            if page_ref:
                 self.loading_indicator.visible = False
                 self.login_button.disabled = False
-                self.page.update()
+                page_ref.update()
             else:
-                logging.warning("self.page é None no finally do login.")
+                logging.warning("page_ref é None no finally do login.")
 
     def login(self, e):
         username = self.username_field.value
