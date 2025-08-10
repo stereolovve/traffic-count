@@ -1,145 +1,252 @@
-<!-- Listagem de Padrões de Contagem -->
 {% extends "base.html" %}
 {% load static %}
-{% block title %}Padrões de Contagem{% endblock %}
+
+{% block title %}Padrões de Contagem - Traffic Count{% endblock %}
+
+{% block page_title %}Padrões de Contagem{% endblock %}
+
+{% block extra_css %}
+<style>
+    .pattern-section {
+        transition: all 0.3s ease;
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+    }
+    
+    .pattern-section:hover {
+        background: var(--bg-card-hover);
+        box-shadow: var(--shadow-md);
+    }
+    
+    .drag-handle {
+        cursor: grab;
+        color: var(--text-muted);
+    }
+    
+    .drag-handle:active {
+        cursor: grabbing;
+    }
+    
+    .dragging {
+        opacity: 0.5;
+        background: var(--bg-secondary);
+        transform: scale(1.02);
+    }
+    
+    .drop-indicator {
+        border: 2px dashed var(--primary-color);
+        height: 2px;
+        margin: 8px 0;
+        display: none;
+        border-radius: 2px;
+    }
+    
+    .pattern-type-selector {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 1.5rem;
+    }
+    
+    .pattern-type-btn {
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        font-weight: 500;
+        text-decoration: none;
+        border: 1px solid var(--border-color);
+    }
+    
+    .pattern-type-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .pattern-type-btn.active {
+        background: var(--primary-gradient);
+        color: var(--text-on-primary);
+        border-color: transparent;
+    }
+    
+    .pattern-type-btn:not(.active) {
+        background: var(--bg-secondary);
+        color: var(--text-primary);
+    }
+    
+    .pattern-type-btn:not(.active):hover {
+        background: var(--bg-tertiary);
+        color: var(--text-accent);
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Padrões de Contagem</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="shortcut icon" type="image/png" href="{% static 'img/icone.png' %}">
-    <style>
-        .pattern-section {
-            transition: all 0.3s ease;
-        }
-        .drag-handle {
-            cursor: grab;
-        }
-        .drag-handle:active {
-            cursor: grabbing;
-        }
-        .dragging {
-            opacity: 0.5;
-            background-color: #f0f9ff;
-        }
-        .drop-indicator {
-            border: 2px dashed #3b82f6;
-            height: 2px;
-            margin: 8px 0;
-            display: none;
-        }
-    </style>
-</head>
-<body class="bg-gray-100 p-6">
-    {% csrf_token %}
-    <div class="max-w-5xl mx-auto bg-white p-6 rounded-lg shadow-lg">
-        <div class="flex justify-between items-center">
-            <h1 class="text-2xl font-bold text-gray-800">Padrões de Contagem</h1>
-        </div>
-        <div class="flex justify-between items-center mt-6">
-            <p class="text-gray-600">Gerencie seus padrões de contagem de forma hierárquica e ordenada.</p>
+{% csrf_token %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="card">
+        <div class="flex justify-between items-center mb-4">
             <div>
-                <a href="{% url 'padrao_create' %}" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">
-                    <i class="fas fa-plus"></i> Criar Novo
+                <h1 class="text-2xl font-bold" style="color: var(--text-primary);">
+                    <i class="fas fa-chart-line mr-3" style="color: var(--text-accent);"></i>
+                    Padrões de Contagem
+                </h1>
+                <p class="mt-2" style="color: var(--text-secondary);">
+                    Gerencie seus padrões de contagem de forma hierárquica e ordenada.
+                </p>
+            </div>
+            <div>
+                <a href="{% url 'padrao_create' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Criar Novo
                 </a>
             </div>
         </div>
-
-        <!-- Seletor de Tipo de Padrão -->
-        <div class="mt-6 bg-gray-50 p-4 rounded-lg">
-            <h2 class="text-lg font-semibold text-gray-700 mb-3">Selecione o tipo de padrão para reordenar</h2>
-            <div class="flex flex-wrap gap-2">
-                {% for tipo in tipos_padroes %}
-                <a href="?pattern_type={{ tipo }}" class="px-4 py-2 rounded-md {% if selected_type == tipo %}bg-blue-500 text-white{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %} transition">
-                    {{ tipo }}
-                </a>
-                {% endfor %}
-                <a href="{% url 'padrao_list' %}" class="px-4 py-2 rounded-md {% if not selected_type %}bg-blue-500 text-white{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %} transition">
-                    Todos
-                </a>
-            </div>
-        </div>
-
-        {% if padroes %}
-            {% if selected_type %}
-                <h3 class="mt-6 text-xl font-semibold text-blue-700">Padrões do tipo: {{ selected_type }}</h3>
-                <div class="mt-2 p-3 bg-yellow-50 text-yellow-800 rounded-lg">
-                    <i class="fas fa-info-circle mr-2"></i> Arraste e solte os padrões para reorganizar a ordem. A ordem será salva automaticamente.
-                </div>
-                <div id="pattern-container" class="mt-4 space-y-2">
-                    {% for padrao in padroes %}
-                    <div class="pattern-item pattern-section bg-white border border-gray-200 rounded-lg p-3 shadow-sm flex items-center" data-id="{{ padrao.id }}">
-                        <div class="drag-handle pr-3 text-gray-400">
-                            <i class="fas fa-grip-vertical"></i>
-                        </div>
-                        <div class="flex-grow grid grid-cols-3 gap-4">
-                            <div class="text-gray-700">{{ padrao.veiculo }}</div>
-                            <div class="text-gray-500 text-sm bg-gray-100 p-2 rounded">Bind: <span class="font-mono">{{ padrao.bind }}</span></div>
-                            <div class="flex gap-2 justify-end">
-                                <a href="{% url 'padrao_edit' padrao.pk %}" class="text-blue-500 hover:text-blue-700 transition">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                <a href="{% url 'padrao_delete' padrao.pk %}" class="text-red-500 hover:text-red-700 transition">
-                                    <i class="fas fa-trash"></i>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="drop-indicator"></div>
-                    {% endfor %}
-                </div>
-            {% else %}
-                <div class="overflow-x-auto mt-6">
-                    <table class="w-full border border-gray-300 rounded-lg">
-                        <thead>
-                            <tr class="bg-gray-200 text-gray-700 uppercase text-sm">
-                                <th class="p-4 text-left">Tipo do Padrão</th>
-                                <th class="p-4 text-left">Veículo</th>
-                                <th class="p-4 text-left">Bind</th>
-                                <th class="p-4 text-left">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% regroup padroes|dictsort:"pattern_type" by pattern_type as padrao_grupos %}
-                            {% for grupo in padrao_grupos %}
-                                <tr class="bg-blue-50">
-                                    <td colspan="4" class="p-2 font-bold">
-                                        <a href="?pattern_type={{ grupo.grouper }}" class="hover:underline text-blue-700">
-                                            <i class="fas fa-folder-open mr-1"></i> {{ grupo.grouper }}
-                                        </a>
-                                    </td>
-                                </tr>
-                                {% for padrao in grupo.list %}
-                                <tr class="border-t bg-white hover:bg-gray-50 transition">
-                                    <td class="p-4 border-b"></td>
-                                    <td class="p-4 border-b">{{ padrao.veiculo }}</td>
-                                    <td class="p-4 border-b font-mono">{{ padrao.bind }}</td>
-                                    <td class="p-4 border-b flex space-x-4">
-                                        <a href="{% url 'padrao_edit' padrao.pk %}" class="text-blue-500 hover:text-blue-700">
-                                            <i class="fas fa-edit"></i> Editar
-                                        </a>
-                                        <a href="{% url 'padrao_delete' padrao.pk %}" class="text-red-500 hover:text-red-700">
-                                            <i class="fas fa-trash"></i> Deletar
-                                        </a>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            {% endif %}
-        {% else %}
-            <p class="text-gray-600 mt-6 text-center">Nenhum padrão de contagem cadastrado ainda.</p>
-        {% endif %}
     </div>
 
-    <script>
+    <!-- Seletor de Tipo de Padrão -->
+    <div class="pattern-type-selector">
+        <h2 class="text-lg font-semibold mb-3" style="color: var(--text-primary);">
+            <i class="fas fa-filter mr-2" style="color: var(--text-accent);"></i>
+            Selecione o tipo de padrão para reordenar
+        </h2>
+        <div class="flex flex-wrap gap-2">
+            {% for tipo in tipos_padroes %}
+            <a href="?pattern_type={{ tipo }}" class="pattern-type-btn {% if selected_type == tipo %}active{% endif %}">
+                {{ tipo }}
+            </a>
+            {% endfor %}
+            <a href="{% url 'padrao_list' %}" class="pattern-type-btn {% if not selected_type %}active{% endif %}">
+                <i class="fas fa-list mr-1"></i>
+                Todos
+            </a>
+        </div>
+    </div>
+
+    {% if padroes %}
+        {% if selected_type %}
+        <!-- Drag and Drop Interface -->
+        <div class="card">
+            <h3 class="text-xl font-semibold mb-4" style="color: var(--text-primary);">
+                <i class="fas fa-sort mr-2" style="color: var(--text-accent);"></i>
+                Padrões do tipo: {{ selected_type }}
+            </h3>
+            
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle mr-2"></i>
+                Arraste e solte os padrões para reorganizar a ordem. A ordem será salva automaticamente.
+            </div>
+            
+            <div id="pattern-container" class="mt-4 space-y-3">
+                {% for padrao in padroes %}
+                <div class="pattern-item pattern-section p-4 flex items-center" data-id="{{ padrao.id }}">
+                    <div class="drag-handle pr-4">
+                        <i class="fas fa-grip-vertical"></i>
+                    </div>
+                    <div class="flex-grow grid grid-cols-3 gap-4 items-center">
+                        <div style="color: var(--text-primary); font-weight: 500;">
+                            <i class="fas fa-car mr-2" style="color: var(--text-accent);"></i>
+                            {{ padrao.veiculo }}
+                        </div>
+                        <div class="text-sm p-2 rounded-lg" style="background: var(--bg-secondary); color: var(--text-secondary);">
+                            Bind: <span class="font-mono" style="color: var(--text-accent);">{{ padrao.bind }}</span>
+                        </div>
+                        <div class="flex gap-3 justify-end">
+                            <a href="{% url 'padrao_edit' padrao.pk %}" class="text-lg transition-colors" style="color: var(--text-accent);" onmouseover="this.style.color='var(--primary-color)'" onmouseout="this.style.color='var(--text-accent)'">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url 'padrao_delete' padrao.pk %}" class="text-lg transition-colors" style="color: var(--danger-color);" onmouseover="this.style.color='#dc2626'" onmouseout="this.style.color='var(--danger-color)'">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="drop-indicator"></div>
+                {% endfor %}
+            </div>
+        </div>
+        {% else %}
+        <!-- Table View for All Patterns -->
+        <div class="table-modern overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="table-modern min-w-full">
+                    <thead>
+                        <tr>
+                            <th class="text-left">
+                                <i class="fas fa-tags mr-2"></i>Tipo do Padrão
+                            </th>
+                            <th class="text-left">
+                                <i class="fas fa-car mr-2"></i>Veículo
+                            </th>
+                            <th class="text-left">
+                                <i class="fas fa-keyboard mr-2"></i>Bind
+                            </th>
+                            <th class="text-left">
+                                <i class="fas fa-cog mr-2"></i>Ações
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% regroup padroes|dictsort:"pattern_type" by pattern_type as padrao_grupos %}
+                        {% for grupo in padrao_grupos %}
+                            <tr style="background: var(--bg-secondary);">
+                                <td colspan="4" class="p-3 font-bold">
+                                    <a href="?pattern_type={{ grupo.grouper }}" class="hover:underline transition-colors" style="color: var(--text-accent);">
+                                        <i class="fas fa-folder-open mr-2"></i> {{ grupo.grouper }}
+                                    </a>
+                                </td>
+                            </tr>
+                            {% for padrao in grupo.list %}
+                            <tr class="transition-colors">
+                                <td></td>
+                                <td class="font-medium">{{ padrao.veiculo }}</td>
+                                <td>
+                                    <span class="font-mono px-2 py-1 rounded text-sm" style="background: var(--bg-secondary); color: var(--text-accent);">
+                                        {{ padrao.bind }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="flex space-x-3">
+                                        <a href="{% url 'padrao_edit' padrao.pk %}" class="btn-sm transition-colors" style="color: var(--text-accent);" title="Editar">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{% url 'padrao_delete' padrao.pk %}" class="btn-sm transition-colors" style="color: var(--danger-color);" title="Deletar">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+    {% else %}
+    <!-- Empty State -->
+    <div class="card text-center py-12">
+        <div class="empty-state">
+            <i class="fas fa-chart-line text-6xl mb-4" style="color: var(--text-accent); opacity: 0.6;"></i>
+            <h3 class="text-xl font-semibold mb-2" style="color: var(--text-primary);">
+                Nenhum padrão cadastrado
+            </h3>
+            <p class="mb-6" style="color: var(--text-secondary);">
+                Comece criando seu primeiro padrão de contagem.
+            </p>
+            <a href="{% url 'padrao_create' %}" class="btn btn-primary">
+                <i class="fas fa-plus mr-2"></i>
+                Criar Primeiro Padrão
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
         document.addEventListener('DOMContentLoaded', function() {
             // Configuração para arrastar e ordenar
             let draggableItems = document.querySelectorAll('.pattern-item');
@@ -303,17 +410,21 @@
 
                 // Create new feedback element
                 let feedback = document.createElement('div');
-                feedback.className = `fixed bottom-4 right-4 px-4 py-2 rounded-lg shadow-lg feedback-message ${
-                    type === 'success' ? 'bg-green-500' : 'bg-red-500'
-                } text-white`;
-                feedback.textContent = message;
+                feedback.className = `fixed bottom-4 right-4 px-6 py-3 rounded-xl shadow-xl feedback-message transition-all duration-300 ${
+                    type === 'success' ? 'alert alert-success' : 'alert alert-error'
+                }`;
+                feedback.innerHTML = `
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} mr-2"></i>
+                    ${message}
+                `;
                 document.body.appendChild(feedback);
                 
                 // Remove after delay
-                setTimeout(() => feedback.remove(), type === 'success' ? 2000 : 3000);
+                setTimeout(() => {
+                    feedback.style.transform = 'translateX(100%)';
+                    setTimeout(() => feedback.remove(), 300);
+                }, type === 'success' ? 2000 : 3000);
             }
         });
-    </script>
-</body>
-</html>
+</script>
 {% endblock %}

@@ -14,11 +14,11 @@
         text-transform: uppercase;
         display: inline-block;
     }
-    .status-aguardando { background-color: #fef3c7; color: #92400e; }
-    .status-iniciado { background-color: #dbeafe; color: #1e40af; }
-    .status-contando { background-color: #dcfce7; color: #166534; }
-    .status-pausado { background-color: #fef3c7; color: #92400e; }
-    .status-finalizado { background-color: #d1fae5; color: #065f46; }
+    .status-aguardando { background-color: var(--warning-bg); color: var(--warning-text); }
+    .status-iniciado { background-color: var(--info-bg); color: var(--info-text); }
+    .status-contando { background-color: var(--success-bg); color: var(--success-text); }
+    .status-pausado { background-color: var(--warning-bg); color: var(--warning-text); }
+    .status-finalizado { background-color: var(--success-bg); color: var(--success-text); }
     
     .prioridade-badge {
         padding: 0.5rem 1rem;
@@ -27,17 +27,18 @@
         font-weight: 600;
         display: inline-block;
     }
-    .prioridade-baixa { background-color: #dcfce7; color: #166534; }
-    .prioridade-media { background-color: #fef3c7; color: #92400e; }
-    .prioridade-alta { background-color: #fecaca; color: #991b1b; }
-    .prioridade-urgente { background-color: #fef2f2; color: #dc2626; }
+    .prioridade-baixa { background-color: var(--success-bg); color: var(--success-text); }
+    .prioridade-media { background-color: var(--warning-bg); color: var(--warning-text); }
+    .prioridade-alta { background-color: var(--danger-bg); color: var(--danger-text); }
+    .prioridade-urgente { background-color: var(--danger-bg-light); color: var(--danger-color); }
     
     .info-card {
-        background: white;
+        background: var(--bg-card);
         border-radius: 0.75rem;
-        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        box-shadow: var(--shadow-sm);
         padding: 1.5rem;
         margin-bottom: 1.5rem;
+        border: 1px solid var(--border-color);
     }
     
     .info-grid {
@@ -54,7 +55,7 @@
     .info-label {
         font-size: 0.875rem;
         font-weight: 500;
-        color: #6b7280;
+        color: var(--text-secondary);
         margin-bottom: 0.25rem;
         text-transform: uppercase;
         letter-spacing: 0.05em;
@@ -63,7 +64,7 @@
     .info-value {
         font-size: 1rem;
         font-weight: 600;
-        color: #111827;
+        color: var(--text-primary);
     }
     
     .action-buttons {
@@ -83,20 +84,20 @@
         transition: all 0.2s;
     }
     
-    .btn-primary { background-color: #3b82f6; color: white; }
-    .btn-primary:hover { background-color: #2563eb; }
+    .btn-primary { background-color: var(--primary-color); color: var(--text-on-primary); }
+    .btn-primary:hover { background-color: var(--primary-hover); }
     
-    .btn-secondary { background-color: #6b7280; color: white; }
-    .btn-secondary:hover { background-color: #4b5563; }
+    .btn-secondary { background-color: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border-color); }
+    .btn-secondary:hover { background-color: var(--bg-tertiary); }
     
-    .btn-success { background-color: #10b981; color: white; }
-    .btn-success:hover { background-color: #059669; }
+    .btn-success { background-color: var(--success-color); color: var(--text-on-primary); }
+    .btn-success:hover { background-color: var(--success-hover); }
     
-    .btn-warning { background-color: #f59e0b; color: white; }
-    .btn-warning:hover { background-color: #d97706; }
+    .btn-warning { background-color: var(--warning-color); color: var(--text-on-primary); }
+    .btn-warning:hover { background-color: var(--warning-hover); }
     
-    .btn-danger { background-color: #ef4444; color: white; }
-    .btn-danger:hover { background-color: #dc2626; }
+    .btn-danger { background-color: var(--danger-color); color: var(--text-on-primary); }
+    .btn-danger:hover { background-color: var(--danger-hover); }
 </style>
 {% endblock %}
 
@@ -106,8 +107,8 @@
         <!-- Header -->
         <div class="flex justify-between items-center mb-8">
             <div>
-                <h1 class="text-3xl font-bold text-gray-900">Ticket #{{ ticket.id }}</h1>
-                <p class="text-gray-600 mt-2">{{ ticket.codigo.codigo }} - {{ ticket.data|date:"d/m/Y" }}</p>
+                <h1 class="text-3xl font-bold" style="color: var(--text-primary);">Ticket #{{ ticket.id }}</h1>
+                <p class="mt-2" style="color: var(--text-secondary);">{{ ticket.codigo.codigo }} - {{ ticket.data|date:"d/m/Y" }}</p>
             </div>
             <div class="action-buttons">
                 <a href="{% url 'ticket_edit' ticket.pk %}" class="btn btn-primary">
@@ -136,7 +137,7 @@
                         {{ ticket.get_prioridade_display }}
                     </span>
                 </div>
-                <div class="text-sm text-gray-500">
+                <div class="text-sm" style="color: var(--text-muted);">
                     Criado em {{ ticket.criado_em|date:"d/m/Y H:i" }}
                 </div>
             </div>
@@ -144,7 +145,7 @@
 
         <!-- Informações Principais -->
         <div class="info-card">
-            <h2 class="text-xl font-semibold mb-4 text-gray-900">Informações Principais</h2>
+            <h2 class="text-xl font-semibold mb-4" style="color: var(--text-primary);">Informações Principais</h2>
             <div class="info-grid">
                 <div class="info-item">
                     <span class="info-label">Código</span>
@@ -183,7 +184,7 @@
 
         <!-- Identificação -->
         <div class="info-card">
-            <h2 class="text-xl font-semibold mb-4 text-gray-900">Identificação</h2>
+            <h2 class="text-xl font-semibold mb-4" style="color: var(--text-primary);">Identificação</h2>
             <div class="info-grid">
                 <div class="info-item">
                     <span class="info-label">CAM</span>
@@ -202,7 +203,7 @@
 
         <!-- Responsáveis -->
         <div class="info-card">
-            <h2 class="text-xl font-semibold mb-4 text-gray-900">Responsáveis</h2>
+            <h2 class="text-xl font-semibold mb-4" style="color: var(--text-primary);">Responsáveis</h2>
             <div class="info-grid">
                 <div class="info-item">
                     <span class="info-label">Coordenador</span>
@@ -214,7 +215,7 @@
                         {% if ticket.pesquisador %}
                             {{ ticket.pesquisador.username }} ({{ ticket.pesquisador.name }} {{ ticket.pesquisador.last_name }})
                         {% else %}
-                            <span class="text-gray-400">Não atribuído</span>
+                            <span style="color: var(--text-muted);">Não atribuído</span>
                         {% endif %}
                     </span>
                 </div>
@@ -223,7 +224,7 @@
 
         <!-- Datas Importantes -->
         <div class="info-card">
-            <h2 class="text-xl font-semibold mb-4 text-gray-900">Datas Importantes</h2>
+            <h2 class="text-xl font-semibold mb-4" style="color: var(--text-primary);">Datas Importantes</h2>
             <div class="info-grid">
                 <div class="info-item">
                     <span class="info-label">Criado em</span>
@@ -251,16 +252,16 @@
         <!-- Observações -->
         {% if ticket.observacao %}
         <div class="info-card">
-            <h2 class="text-xl font-semibold mb-4 text-gray-900">Observações</h2>
-            <div class="bg-gray-50 rounded-lg p-4">
-                <p class="text-gray-700 whitespace-pre-wrap">{{ ticket.observacao }}</p>
+            <h2 class="text-xl font-semibold mb-4" style="color: var(--text-primary);">Observações</h2>
+            <div class="rounded-lg p-4" style="background: var(--bg-secondary);">
+                <p class="whitespace-pre-wrap" style="color: var(--text-primary);">{{ ticket.observacao }}</p>
             </div>
         </div>
         {% endif %}
 
         <!-- Ações -->
         <div class="info-card">
-            <h2 class="text-xl font-semibold mb-4 text-gray-900">Ações</h2>
+            <h2 class="text-xl font-semibold mb-4" style="color: var(--text-primary);">Ações</h2>
             <div class="action-buttons">
                 {% if ticket.pode_ser_atribuido %}
                 <button class="btn btn-primary" onclick="atribuirPesquisador()">

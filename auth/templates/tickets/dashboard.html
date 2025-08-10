@@ -18,7 +18,7 @@
         align-items: center;
         margin-bottom: 2rem;
         padding-bottom: 1rem;
-        border-bottom: 2px solid #e5e7eb;
+        border-bottom: 2px solid var(--border-color);
     }
     
     .period-selector {
@@ -29,25 +29,25 @@
     
     .period-btn {
         padding: 0.5rem 1rem;
-        border: 1px solid #d1d5db;
-        background: white;
+        border: 1px solid var(--border-color);
+        background: var(--bg-secondary);
         border-radius: 0.375rem;
         cursor: pointer;
         transition: all 0.2s;
     }
     
     .period-btn.active {
-        background: #3b82f6;
-        color: white;
-        border-color: #3b82f6;
+        background: var(--primary-gradient);
+        color: var(--text-on-primary);
+        border-color: transparent;
     }
     
     .period-btn:hover {
-        background: #f3f4f6;
+        background: var(--bg-tertiary);
     }
     
     .period-btn.active:hover {
-        background: #2563eb;
+        background: var(--primary-color);
     }
     
     .stats-grid {
@@ -58,17 +58,17 @@
     }
     
     .stat-card {
-        background: white;
+        background: var(--bg-card);
         border-radius: 0.75rem;
         padding: 1.5rem;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        border: 1px solid #e5e7eb;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border-color);
         transition: transform 0.2s, box-shadow 0.2s;
     }
     
     .stat-card:hover {
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        box-shadow: var(--shadow-md);
     }
     
     .stat-number {
@@ -78,7 +78,7 @@
     }
     
     .stat-label {
-        color: #6b7280;
+        color: var(--text-secondary);
         font-size: 0.875rem;
         font-weight: 500;
     }
@@ -89,11 +89,11 @@
     }
     
     .stat-trend.positive {
-        color: #10b981;
+        color: var(--success-color);
     }
     
     .stat-trend.negative {
-        color: #ef4444;
+        color: var(--danger-color);
     }
     
     .charts-grid {
@@ -104,18 +104,18 @@
     }
     
     .chart-card {
-        background: white;
+        background: var(--bg-card);
         border-radius: 0.75rem;
         padding: 1.5rem;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        border: 1px solid #e5e7eb;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border-color);
     }
     
     .chart-title {
         font-size: 1.125rem;
         font-weight: 600;
         margin-bottom: 1rem;
-        color: #1f2937;
+        color: var(--text-primary);
     }
     
     .chart-container {
@@ -124,18 +124,18 @@
     }
     
     .ranking-card {
-        background: white;
+        background: var(--bg-card);
         border-radius: 0.75rem;
         padding: 1.5rem;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        border: 1px solid #e5e7eb;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border-color);
     }
     
     .ranking-title {
         font-size: 1.125rem;
         font-weight: 600;
         margin-bottom: 1rem;
-        color: #1f2937;
+        color: var(--text-primary);
     }
     
     .ranking-item {
@@ -143,7 +143,7 @@
         justify-content: space-between;
         align-items: center;
         padding: 0.75rem 0;
-        border-bottom: 1px solid #f3f4f6;
+        border-bottom: 1px solid var(--border-color);
     }
     
     .ranking-item:last-child {
@@ -177,8 +177,8 @@
     }
     
     .ranking-position.other {
-        background: #e5e7eb;
-        color: #6b7280;
+        background: var(--bg-secondary);
+        color: var(--text-secondary);
     }
     
     .ranking-info {
@@ -188,22 +188,22 @@
     
     .ranking-name {
         font-weight: 500;
-        color: #1f2937;
+        color: var(--text-primary);
     }
     
     .ranking-count {
         font-size: 0.875rem;
-        color: #6b7280;
+        color: var(--text-secondary);
     }
     
     .ranking-value {
         font-weight: 600;
-        color: #3b82f6;
+        color: var(--primary-color);
     }
     
     .alert-card {
-        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-        border: 1px solid #f59e0b;
+        background: linear-gradient(135deg, var(--warning-bg) 0%, var(--warning-bg-light) 100%);
+        border: 1px solid var(--warning-color);
         border-radius: 0.75rem;
         padding: 1.5rem;
         margin-bottom: 2rem;
@@ -212,7 +212,7 @@
     .alert-title {
         font-size: 1.125rem;
         font-weight: 600;
-        color: #92400e;
+        color: var(--warning-text);
         margin-bottom: 0.5rem;
         display: flex;
         align-items: center;
@@ -220,13 +220,13 @@
     }
     
     .alert-message {
-        color: #92400e;
+        color: var(--warning-text);
         font-size: 0.875rem;
     }
     
     .metric-highlight {
-        background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-        border: 1px solid #3b82f6;
+        background: linear-gradient(135deg, var(--info-bg) 0%, var(--info-bg-light) 100%);
+        border: 1px solid var(--primary-color);
         border-radius: 0.75rem;
         padding: 1.5rem;
         margin-bottom: 2rem;
@@ -235,7 +235,7 @@
     .metric-title {
         font-size: 1.125rem;
         font-weight: 600;
-        color: #1e40af;
+        color: var(--info-text);
         margin-bottom: 1rem;
     }
     
@@ -252,12 +252,12 @@
     .metric-value {
         font-size: 2rem;
         font-weight: bold;
-        color: #1e40af;
+        color: var(--info-text);
     }
     
     .metric-label {
         font-size: 0.875rem;
-        color: #374151;
+        color: var(--text-secondary);
         margin-top: 0.25rem;
     }
     
@@ -284,8 +284,8 @@
     <!-- Header -->
     <div class="dashboard-header">
         <div>
-            <h1 class="text-3xl font-bold text-gray-900">Dashboard de Tickets</h1>
-            <p class="text-gray-600 mt-1">Visão geral dos últimos {{ days }} dias</p>
+            <h1 class="text-3xl font-bold" style="color: var(--text-primary);">Dashboard de Tickets</h1>
+            <p class="mt-1" style="color: var(--text-secondary);">Visão geral dos últimos {{ days }} dias</p>
         </div>
         
         <div class="period-selector">
@@ -422,7 +422,7 @@
                 </div>
                 {% endfor %}
             {% else %}
-                <p class="text-gray-500 text-center py-4">Nenhum pesquisador com tickets finalizados no período</p>
+                <p class="text-center py-4" style="color: var(--text-muted);">Nenhum pesquisador com tickets finalizados no período</p>
             {% endif %}
         </div>
         
@@ -443,7 +443,7 @@
                 </div>
                 {% endfor %}
             {% else %}
-                <p class="text-gray-500 text-center py-4">Nenhum coordenador com tickets no período</p>
+                <p class="text-center py-4" style="color: var(--text-muted);">Nenhum coordenador com tickets no período</p>
             {% endif %}
         </div>
     </div>

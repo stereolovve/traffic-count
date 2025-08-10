@@ -25,11 +25,11 @@
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
     
-    .status-aguardando { background-color: #fef3c7; color: #92400e; }
-    .status-iniciado { background-color: #dbeafe; color: #1e40af; }
-    .status-contando { background-color: #dcfce7; color: #166534; }
-    .status-pausado { background-color: #fef3c7; color: #92400e; }
-    .status-finalizado { background-color: #d1fae5; color: #065f46; }
+    .status-aguardando { background-color: var(--warning-bg); color: var(--warning-text); }
+    .status-iniciado { background-color: var(--info-bg); color: var(--info-text); }
+    .status-contando { background-color: var(--success-bg); color: var(--success-text); }
+    .status-pausado { background-color: var(--warning-bg); color: var(--warning-text); }
+    .status-finalizado { background-color: var(--success-bg); color: var(--success-text); }
     
     .prioridade-badge {
         padding: 0.25rem 0.5rem;
@@ -37,21 +37,22 @@
         font-size: 0.75rem;
         font-weight: 600;
     }
-    .prioridade-baixa { background-color: #dcfce7; color: #166534; }
-    .prioridade-media { background-color: #fef3c7; color: #92400e; }
-    .prioridade-alta { background-color: #fecaca; color: #991b1b; }
-    .prioridade-urgente { background-color: #fef2f2; color: #dc2626; }
+    .prioridade-baixa { background-color: var(--success-bg); color: var(--success-text); }
+    .prioridade-media { background-color: var(--warning-bg); color: var(--warning-text); }
+    .prioridade-alta { background-color: var(--danger-bg); color: var(--danger-text); }
+    .prioridade-urgente { background-color: var(--danger-bg-light); color: var(--danger-color); }
     
     .table-container {
-        background: white;
+        background: var(--bg-card);
         border-radius: 0.75rem;
-        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        box-shadow: var(--shadow-sm);
         overflow: hidden;
+        border: 1px solid var(--border-color);
     }
     
     .table-header {
-        background: #f8fafc;
-        border-bottom: 1px solid #e2e8f0;
+        background: var(--bg-secondary);
+        border-bottom: 1px solid var(--border-color);
         padding: 1rem 1.5rem;
     }
     
@@ -61,22 +62,22 @@
     }
     
     .table th {
-        background: #f8fafc;
+        background: var(--bg-secondary);
         padding: 0.75rem 1rem;
         text-align: left;
         font-size: 0.75rem;
         font-weight: 600;
-        color: #64748b;
+        color: var(--text-secondary);
         text-transform: uppercase;
         letter-spacing: 0.05em;
-        border-bottom: 1px solid #e2e8f0;
+        border-bottom: 1px solid var(--border-color);
     }
     
     .table td {
         padding: 0.75rem 1rem;
-        border-bottom: 1px solid #f1f5f9;
+        border-bottom: 1px solid var(--border-color);
         font-size: 0.875rem;
-        color: #374151;
+        color: var(--text-primary);
     }
     
     .table tbody tr {
@@ -85,35 +86,35 @@
     }
     
     .table tbody tr:hover {
-        background-color: #f8fafc;
-        border-left-color: #3b82f6;
+        background-color: var(--bg-secondary);
+        border-left-color: var(--primary-color);
         transform: translateX(2px);
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        box-shadow: var(--shadow-sm);
     }
     
     .table tbody tr.status-aguardando {
-        border-left-color: #f59e0b;
-        background-color: #fffbeb;
+        border-left-color: var(--warning-color);
+        background-color: var(--warning-bg-subtle);
     }
     
     .table tbody tr.status-iniciado {
-        border-left-color: #3b82f6;
-        background-color: #eff6ff;
+        border-left-color: var(--primary-color);
+        background-color: var(--info-bg-subtle);
     }
     
     .table tbody tr.status-contando {
-        border-left-color: #10b981;
-        background-color: #ecfdf5;
+        border-left-color: var(--success-color);
+        background-color: var(--success-bg-subtle);
     }
     
     .table tbody tr.status-pausado {
-        border-left-color: #f59e0b;
-        background-color: #fffbeb;
+        border-left-color: var(--warning-color);
+        background-color: var(--warning-bg-subtle);
     }
     
     .table tbody tr.status-finalizado {
-        border-left-color: #10b981;
-        background-color: #ecfdf5;
+        border-left-color: var(--success-color);
+        background-color: var(--success-bg-subtle);
     }
     
     .action-buttons {
@@ -142,17 +143,17 @@
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
     
-    .btn-start { background-color: #10b981; color: white; }
-    .btn-start:hover { background-color: #059669; }
+    .btn-start { background-color: var(--success-color); color: var(--text-on-primary); }
+    .btn-start:hover { background-color: var(--success-hover); }
     
-    .btn-pause { background-color: #f59e0b; color: white; }
-    .btn-pause:hover { background-color: #d97706; }
+    .btn-pause { background-color: var(--warning-color); color: var(--text-on-primary); }
+    .btn-pause:hover { background-color: var(--warning-hover); }
     
-    .btn-finish { background-color: #10b981; color: white; }
-    .btn-finish:hover { background-color: #059669; }
+    .btn-finish { background-color: var(--success-color); color: var(--text-on-primary); }
+    .btn-finish:hover { background-color: var(--success-hover); }
     
-    .btn-assign { background-color: #3b82f6; color: white; }
-    .btn-assign:hover { background-color: #2563eb; }
+    .btn-assign { background-color: var(--primary-color); color: var(--text-on-primary); }
+    .btn-assign:hover { background-color: var(--primary-hover); }
     
     .status-indicator {
         width: 8px;
@@ -162,11 +163,11 @@
         margin-right: 0.5rem;
     }
     
-    .status-indicator.aguardando { background-color: #f59e0b; }
-    .status-indicator.iniciado { background-color: #3b82f6; }
-    .status-indicator.contando { background-color: #10b981; }
-    .status-indicator.pausado { background-color: #f59e0b; }
-    .status-indicator.finalizado { background-color: #10b981; }
+    .status-indicator.aguardando { background-color: var(--warning-color); }
+    .status-indicator.iniciado { background-color: var(--primary-color); }
+    .status-indicator.contando { background-color: var(--success-color); }
+    .status-indicator.pausado { background-color: var(--warning-color); }
+    .status-indicator.finalizado { background-color: var(--success-color); }
     
     .btn {
         padding: 0.5rem 1rem;
@@ -180,11 +181,11 @@
         font-size: 0.875rem;
     }
     
-    .btn-primary { background-color: #3b82f6; color: white; }
-    .btn-primary:hover { background-color: #2563eb; }
+    .btn-primary { background-color: var(--primary-color); color: var(--text-on-primary); }
+    .btn-primary:hover { background-color: var(--primary-hover); }
     
-    .btn-secondary { background-color: #6b7280; color: white; }
-    .btn-secondary:hover { background-color: #4b5563; }
+    .btn-secondary { background-color: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border-color); }
+    .btn-secondary:hover { background-color: var(--bg-tertiary); }
     
     .btn-sm {
         padding: 0.25rem 0.5rem;
@@ -192,11 +193,12 @@
     }
     
     .filter-card {
-        background: white;
+        background: var(--bg-card);
         border-radius: 0.75rem;
-        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        box-shadow: var(--shadow-sm);
         padding: 1.5rem;
         margin-bottom: 1.5rem;
+        border: 1px solid var(--border-color);
     }
     
     .filter-grid {
@@ -209,7 +211,7 @@
         display: block;
         font-size: 0.875rem;
         font-weight: 500;
-        color: #374151;
+        color: var(--text-secondary);
         margin-bottom: 0.5rem;
     }
     
@@ -217,17 +219,19 @@
     .filter-item input {
         width: 100%;
         padding: 0.5rem 0.75rem;
-        border: 1px solid #d1d5db;
+        border: 1px solid var(--border-color);
         border-radius: 0.375rem;
         font-size: 0.875rem;
         transition: border-color 0.2s;
+        background: var(--bg-input);
+        color: var(--text-primary);
     }
     
     .filter-item select:focus,
     .filter-item input:focus {
         outline: none;
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px var(--primary-focus-ring);
     }
     
     .search-box {
@@ -242,23 +246,24 @@
     }
     
     .stat-card {
-        background: white;
+        background: var(--bg-card);
         border-radius: 0.75rem;
-        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        box-shadow: var(--shadow-sm);
         padding: 1.5rem;
         text-align: center;
+        border: 1px solid var(--border-color);
     }
     
     .stat-number {
         font-size: 2rem;
         font-weight: 700;
-        color: #1f2937;
+        color: var(--text-primary);
         margin-bottom: 0.5rem;
     }
     
     .stat-label {
         font-size: 0.875rem;
-        color: #6b7280;
+        color: var(--text-secondary);
         text-transform: uppercase;
         letter-spacing: 0.05em;
     }
@@ -277,14 +282,15 @@
     }
     
     .modal-content {
-        background-color: white;
+        background-color: var(--bg-card);
         margin: 10% auto;
         padding: 2rem;
         border-radius: 0.75rem;
         width: 90%;
         max-width: 500px;
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        box-shadow: var(--shadow-xl);
         animation: modalSlideIn 0.3s ease-out;
+        border: 1px solid var(--border-color);
     }
     
     @keyframes modalSlideIn {
@@ -304,13 +310,13 @@
         align-items: center;
         margin-bottom: 1.5rem;
         padding-bottom: 1rem;
-        border-bottom: 1px solid #e5e7eb;
+        border-bottom: 1px solid var(--border-color);
     }
     
     .modal-title {
         font-size: 1.25rem;
         font-weight: 600;
-        color: #1f2937;
+        color: var(--text-primary);
     }
     
     .modal-close {
@@ -318,15 +324,15 @@
         border: none;
         font-size: 1.5rem;
         cursor: pointer;
-        color: #6b7280;
+        color: var(--text-secondary);
         padding: 0.25rem;
         border-radius: 0.25rem;
         transition: all 0.2s;
     }
     
     .modal-close:hover {
-        background-color: #f3f4f6;
-        color: #374151;
+        background-color: var(--bg-secondary);
+        color: var(--text-primary);
     }
     
     .status-options {
@@ -339,21 +345,21 @@
         display: flex;
         align-items: center;
         padding: 1rem;
-        border: 2px solid #e5e7eb;
+        border: 2px solid var(--border-color);
         border-radius: 0.5rem;
         cursor: pointer;
         transition: all 0.2s;
-        background-color: white;
+        background-color: var(--bg-card);
     }
     
     .status-option:hover {
-        border-color: #3b82f6;
-        background-color: #f8fafc;
+        border-color: var(--primary-color);
+        background-color: var(--bg-secondary);
     }
     
     .status-option.selected {
-        border-color: #3b82f6;
-        background-color: #eff6ff;
+        border-color: var(--primary-color);
+        background-color: var(--info-bg-subtle);
     }
     
     .status-option-icon {
@@ -374,13 +380,13 @@
     
     .status-option-title {
         font-weight: 600;
-        color: #1f2937;
+        color: var(--text-primary);
         margin-bottom: 0.25rem;
     }
     
     .status-option-description {
         font-size: 0.875rem;
-        color: #6b7280;
+        color: var(--text-secondary);
     }
     
     .modal-actions {
@@ -400,30 +406,30 @@
     }
     
     .btn-modal-secondary {
-        background-color: #f3f4f6;
-        color: #374151;
+        background-color: var(--bg-secondary);
+        color: var(--text-primary);
     }
     
     .btn-modal-secondary:hover {
-        background-color: #e5e7eb;
+        background-color: var(--bg-tertiary);
     }
     
     .btn-modal-primary {
-        background-color: #3b82f6;
-        color: white;
+        background-color: var(--primary-color);
+        color: var(--text-on-primary);
     }
     
     .btn-modal-primary:hover {
-        background-color: #2563eb;
+        background-color: var(--primary-hover);
     }
     
     .btn-modal-success {
-        background-color: #10b981;
-        color: white;
+        background-color: var(--success-color);
+        color: var(--text-on-primary);
     }
     
     .btn-modal-success:hover {
-        background-color: #059669;
+        background-color: var(--success-hover);
     }
 </style>
 {% endblock %}
@@ -431,7 +437,7 @@
 {% block content %}
 <div class="container mx-auto px-4 py-8">
     <div class="flex justify-between items-center mb-6">
-        <h1 class="text-3xl font-bold text-gray-900">Tickets</h1>
+        <h1 class="text-3xl font-bold" style="color: var(--text-primary);">Tickets</h1>
         <div class="flex gap-2">
             <a href="{% url 'ticket_dashboard' %}" class="btn btn-secondary">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -484,7 +490,7 @@
 
     <!-- Filtros -->
     <div class="filter-card">
-        <h2 class="text-lg font-semibold mb-4 text-gray-900">Filtros</h2>
+        <h2 class="text-lg font-semibold mb-4" style="color: var(--text-primary);">Filtros</h2>
         <form method="get" class="filter-grid">
             <div class="filter-item">
                 <label>Status</label>
@@ -568,7 +574,7 @@
     <!-- Lista de Tickets -->
     <div class="table-container">
         <div class="table-header">
-            <h2 class="text-lg font-semibold text-gray-900">Lista de Tickets</h2>
+            <h2 class="text-lg font-semibold" style="color: var(--text-primary);">Lista de Tickets</h2>
         </div>
         
         {% if tickets %}
@@ -596,7 +602,7 @@
                     <tr class="status-{{ ticket.status|lower }}">
                         <td class="font-medium">{{ ticket.id }}</td>
                         <td>
-                            <a href="{% url 'ticket_detail' ticket.pk %}" class="text-blue-600 hover:text-blue-900 font-medium">
+                            <a href="{% url 'ticket_detail' ticket.pk %}" class="font-medium" style="color: var(--primary-color);" onmouseover="this.style.color='var(--primary-hover)'" onmouseout="this.style.color='var(--primary-color)'">
                                 {{ ticket.codigo.codigo }}
                             </a>
                         </td>
@@ -609,7 +615,7 @@
                             {% if ticket.pesquisador %}
                                 {{ ticket.pesquisador.username }}
                             {% else %}
-                                <span class="text-gray-400">Não atribuído</span>
+                                <span style="color: var(--text-muted);">Não atribuído</span>
                             {% endif %}
                         </td>
                         <td>
@@ -630,7 +636,7 @@
                             {% if ticket.data_finalizacao %}
                                 {{ ticket.data_finalizacao|date:"d/m/Y H:i" }}
                             {% else %}
-                                <span class="text-gray-400">-</span>
+                                <span style="color: var(--text-muted);">-</span>
                             {% endif %}
                         </td>
                         <td>
@@ -696,9 +702,9 @@
         
         <!-- Paginação -->
         {% if page_obj.has_other_pages %}
-        <div class="px-6 py-4 border-t border-gray-200">
+        <div class="px-6 py-4" style="border-top: 1px solid var(--border-color);">
             <div class="flex items-center justify-between">
-                <div class="text-sm text-gray-700">
+                <div class="text-sm" style="color: var(--text-secondary);">
                     Mostrando <span class="font-medium">{{ page_obj.start_index }}</span> a <span class="font-medium">{{ page_obj.end_index }}</span> de <span class="font-medium">{{ page_obj.paginator.count }}</span> resultados
                 </div>
                 <div class="flex gap-2">
@@ -710,7 +716,7 @@
                     
                     {% for num in page_obj.paginator.page_range %}
                         {% if page_obj.number == num %}
-                            <span class="px-3 py-2 bg-blue-100 text-blue-700 rounded-md font-medium">{{ num }}</span>
+                            <span class="px-3 py-2 rounded-md font-medium" style="background: var(--primary-color); color: var(--text-on-primary);">{{ num }}</span>
                         {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
                             <a href="?page={{ num }}{% for key, value in filters.items %}{% if value %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="btn btn-sm btn-secondary">
                                 {{ num }}
@@ -730,11 +736,11 @@
         
         {% else %}
         <div class="text-center py-12">
-            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg class="mx-auto h-12 w-12" style="color: var(--text-muted);" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
-            <h3 class="mt-2 text-sm font-medium text-gray-900">Nenhum ticket encontrado</h3>
-            <p class="mt-1 text-sm text-gray-500">Comece criando um novo ticket.</p>
+            <h3 class="mt-2 text-sm font-medium" style="color: var(--text-primary);">Nenhum ticket encontrado</h3>
+            <p class="mt-1 text-sm" style="color: var(--text-secondary);">Comece criando um novo ticket.</p>
             <div class="mt-6">
                 <a href="{% url 'ticket_create' %}" class="btn btn-primary">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -986,8 +992,8 @@ document.addEventListener('DOMContentLoaded', function() {
             tooltip.textContent = this.getAttribute('title');
             tooltip.style.cssText = `
                 position: absolute;
-                background: #1f2937;
-                color: white;
+                background: var(--bg-tooltip);
+                color: var(--text-on-primary);
                 padding: 0.5rem;
                 border-radius: 0.25rem;
                 font-size: 0.75rem;

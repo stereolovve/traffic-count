@@ -14,37 +14,37 @@
   
   <div class="space-y-6">
     <!-- Enhanced Breadcrumb -->
-    <nav class="bg-white rounded-lg shadow-sm border border-gray-200 px-6 py-4">
+    <nav class="bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 rounded-lg shadow-lg px-6 py-4">
       <ol class="flex items-center space-x-2 text-sm">
         <li>
-          <a href="{% url 'home' %}" class="flex items-center text-blue-600 hover:text-blue-800 transition-colors duration-200">
+          <a href="{% url 'home' %}" class="flex items-center text-blue-400 hover:text-blue-300 transition-colors duration-200">
             <i class="fas fa-home mr-2"></i>
             Home
           </a>
         </li>
-        <i class="fas fa-chevron-right text-gray-400 text-xs"></i>
+        <i class="fas fa-chevron-right text-slate-500 text-xs"></i>
         <li>
-          <a href="{% url 'trabalho_list' %}" class="text-blue-600 hover:text-blue-800 transition-colors duration-200">
+          <a href="{% url 'trabalho_list' %}" class="text-blue-400 hover:text-blue-300 transition-colors duration-200">
             <i class="fas fa-building mr-2"></i>
             Clientes
           </a>
         </li>
-        <i class="fas fa-chevron-right text-gray-400 text-xs"></i>
+        <i class="fas fa-chevron-right text-slate-500 text-xs"></i>
         <li>
-          <a href="{% url 'trabalho_list' %}?cliente_id={{ ponto.codigo.cliente.id }}" class="text-blue-600 hover:text-blue-800 transition-colors duration-200">
+          <a href="{% url 'trabalho_list' %}?cliente_id={{ ponto.codigo.cliente.id }}" class="text-blue-400 hover:text-blue-300 transition-colors duration-200">
             <i class="fas fa-code mr-2"></i>
             {{ ponto.codigo.cliente.nome }}
           </a>
         </li>
-        <i class="fas fa-chevron-right text-gray-400 text-xs"></i>
+        <i class="fas fa-chevron-right text-slate-500 text-xs"></i>
         <li>
-          <a href="{% url 'trabalho_list' %}?cliente_id={{ ponto.codigo.cliente.id }}&codigo_id={{ ponto.codigo.id }}" class="text-blue-600 hover:text-blue-800 transition-colors duration-200">
+          <a href="{% url 'trabalho_list' %}?cliente_id={{ ponto.codigo.cliente.id }}&codigo_id={{ ponto.codigo.id }}" class="text-blue-400 hover:text-blue-300 transition-colors duration-200">
             <i class="fas fa-map-marker-alt mr-2"></i>
             {{ ponto.codigo.codigo }}
           </a>
         </li>
-        <i class="fas fa-chevron-right text-gray-400 text-xs"></i>
-        <li class="flex items-center font-semibold text-gray-800">
+        <i class="fas fa-chevron-right text-slate-500 text-xs"></i>
+        <li class="flex items-center font-semibold text-slate-200">
           <i class="fas fa-map-pin mr-2"></i>
           {{ ponto.nome }}
         </li>
@@ -52,7 +52,7 @@
     </nav>
 
     <!-- Ponto Info Card -->
-    <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+    <div class="bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 rounded-xl shadow-lg overflow-hidden">
       <div class="bg-gradient-to-r from-indigo-600 to-indigo-700 px-8 py-6">
         <div class="flex justify-between items-center">
           <div>
@@ -60,25 +60,25 @@
               <i class="fas fa-map-pin mr-3"></i>
               {{ ponto.nome }}
             </h1>
-            <p class="text-indigo-100 mt-1">{{ ponto.codigo.codigo }} - {{ ponto.codigo.cliente.nome }}</p>
+            <p class="text-indigo-200 mt-1">{{ ponto.codigo.codigo }} - {{ ponto.codigo.cliente.nome }}</p>
           </div>
           <div class="text-right text-indigo-100">
-            <p class="text-sm">Localização:</p>
-            <p class="font-medium">{{ ponto.localizacao|default:"Não informada" }}</p>
+            <p class="text-sm text-indigo-200">Localização:</p>
+            <p class="font-medium text-indigo-200">{{ ponto.localizacao|default:"Não informada" }}</p>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Card de Movimentos -->
-    <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+    <div class="bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 rounded-xl shadow-lg overflow-hidden">
       <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
         <div class="flex justify-between items-center">
           <h2 class="text-xl font-bold text-white flex items-center">
             <i class="fas fa-route mr-3"></i>
             Movimentos
           </h2>
-          <button type="button" id="addMovimentoBtn" class="bg-white hover:bg-gray-50 text-blue-600 font-semibold py-2 px-4 rounded-lg shadow-md transition-all duration-200 transform hover:scale-105 flex items-center">
+          <button type="button" id="addMovimentoBtn" class="bg-slate-700 hover:bg-slate-600 text-blue-300 font-semibold py-2 px-4 rounded-lg shadow-md transition-all duration-200 transform hover:scale-105 flex items-center">
             <i class="fas fa-plus mr-2"></i>
             Adicionar Movimento
           </button>
@@ -89,18 +89,18 @@
           {% if details %}
             {% for detail in details %}
               {% if detail.movimento %}
-                <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 hover:bg-gray-100 transition-colors duration-200">
+                <div class="bg-slate-700/50 border border-slate-600 rounded-lg p-4 hover:bg-slate-700/70 transition-colors duration-200">
                   <div class="flex justify-between items-start">
                     <div class="flex-grow">
                       <div class="flex items-start">
                         <div class="flex-shrink-0">
-                          <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-route text-blue-600 text-sm"></i>
+                          <div class="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-route text-blue-400 text-sm"></i>
                           </div>
                         </div>
                         <div class="ml-3">
-                          <p class="font-medium text-gray-900">{{ detail.movimento }}</p>
-                          <p class="text-sm text-gray-500 mt-1">
+                          <p class="font-medium text-slate-200">{{ detail.movimento }}</p>
+                          <p class="text-sm text-slate-400 mt-1">
                             <i class="fas fa-clock mr-1"></i>
                             {{ detail.created_at|date:"d/m/Y H:i" }}
                           </p>
@@ -110,7 +110,7 @@
                     <form method="post" action="{% url 'ponto_detail_delete' ponto.id detail.id %}" onsubmit="return confirm('Tem certeza que deseja excluir este movimento?');" class="ml-4">
                       {% csrf_token %}
                       <input type="hidden" name="delete_type" value="movimento">
-                      <button type="submit" class="text-red-600 hover:text-red-800 hover:bg-red-50 p-2 rounded-lg transition-all duration-200">
+                      <button type="submit" class="text-red-400 hover:text-red-300 hover:bg-red-500/10 p-2 rounded-lg transition-all duration-200">
                         <i class="fas fa-trash text-sm"></i>
                       </button>
                     </form>
@@ -120,32 +120,32 @@
             {% endfor %}
           {% else %}
             <div class="text-center py-8">
-              <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i class="fas fa-route text-gray-400 text-2xl"></i>
+              <div class="w-16 h-16 bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-route text-slate-500 text-2xl"></i>
               </div>
-              <p class="text-gray-500 font-medium">Nenhum movimento cadastrado</p>
-              <p class="text-gray-400 text-sm">Adicione movimentos para este ponto</p>
+              <p class="text-slate-400 font-medium">Nenhum movimento cadastrado</p>
+              <p class="text-slate-500 text-sm">Adicione movimentos para este ponto</p>
             </div>
           {% endif %}
         </div>
         
         <!-- Form para adicionar movimento -->
-        <div id="movimento-form" class="hidden mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        <div id="movimento-form" class="hidden mt-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
           <form method="post" class="space-y-4">
             {% csrf_token %}
             <input type="hidden" name="form_type" value="movimento">
             <div>
-              <label for="movimento" class="block text-sm font-semibold text-gray-700 mb-2">
+              <label for="movimento" class="block text-sm font-semibold text-slate-300 mb-2">
                 <i class="fas fa-route mr-2 text-blue-600"></i>Descrição do Movimento
               </label>
-              <input type="text" name="movimento" id="movimento" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200" placeholder="Ex: Entrada de veículos pela Rua A">
+              <input type="text" name="movimento" id="movimento" class="w-full px-4 py-3 border-2 border-slate-600 rounded-lg focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 transition-all duration-200 bg-slate-700 text-slate-200 placeholder-slate-400" placeholder="Ex: Entrada de veículos pela Rua A">
             </div>
             <div class="flex gap-3">
               <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 flex items-center justify-center">
                 <i class="fas fa-save mr-2"></i>
                 Salvar Movimento
               </button>
-              <button type="button" onclick="document.getElementById('movimento-form').classList.add('hidden')" class="px-4 py-3 bg-gray-300 hover:bg-gray-400 text-gray-700 font-semibold rounded-lg transition-all duration-200">
+              <button type="button" onclick="document.getElementById('movimento-form').classList.add('hidden')" class="px-4 py-3 bg-slate-600 hover:bg-slate-500 text-slate-200 font-semibold rounded-lg transition-all duration-200">
                 Cancelar
               </button>
             </div>
@@ -155,14 +155,14 @@
     </div>
 
     <!-- Card de Observações -->
-    <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+    <div class="bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 rounded-xl shadow-lg overflow-hidden">
       <div class="bg-gradient-to-r from-green-600 to-green-700 px-6 py-4">
         <div class="flex justify-between items-center">
           <h2 class="text-xl font-bold text-white flex items-center">
             <i class="fas fa-sticky-note mr-3"></i>
             Observações
           </h2>
-          <button type="button" id="addObservacaoBtn" class="bg-white hover:bg-gray-50 text-green-600 font-semibold py-2 px-4 rounded-lg shadow-md transition-all duration-200 transform hover:scale-105 flex items-center">
+          <button type="button" id="addObservacaoBtn" class="bg-slate-700 hover:bg-slate-600 text-green-300 font-semibold py-2 px-4 rounded-lg shadow-md transition-all duration-200 transform hover:scale-105 flex items-center">
             <i class="fas fa-plus mr-2"></i>
             Adicionar Observação
           </button>
@@ -173,17 +173,17 @@
           {% if details %}
             {% for detail in details %}
               {% if detail.observacao %}
-                <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 hover:bg-gray-100 transition-colors duration-200">
+                <div class="bg-slate-700/50 border border-slate-600 rounded-lg p-4 hover:bg-slate-700/70 transition-colors duration-200">
                   <div class="flex justify-between items-start">
                     <div class="flex-grow">
                       <div class="flex items-start">
                         <div class="flex-shrink-0">
-                          <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-sticky-note text-green-600 text-sm"></i>
+                          <div class="w-8 h-8 bg-green-500/20 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-sticky-note text-green-400 text-sm"></i>
                           </div>
                         </div>
                         <div class="ml-3 flex-grow">
-                          <p class="text-gray-900 leading-relaxed">{{ detail.observacao }}</p>
+                          <p class="text-slate-200 leading-relaxed">{{ detail.observacao }}</p>
                           <p class="text-sm text-gray-500 mt-2">
                             <i class="fas fa-clock mr-1"></i>
                             {{ detail.created_at|date:"d/m/Y H:i" }}
@@ -194,7 +194,7 @@
                     <form method="post" action="{% url 'ponto_detail_delete' ponto.id detail.id %}" onsubmit="return confirm('Tem certeza que deseja excluir esta observação?');" class="ml-4">
                       {% csrf_token %}
                       <input type="hidden" name="delete_type" value="observacao">
-                      <button type="submit" class="text-red-600 hover:text-red-800 hover:bg-red-50 p-2 rounded-lg transition-all duration-200">
+                      <button type="submit" class="text-red-400 hover:text-red-300 hover:bg-red-500/10 p-2 rounded-lg transition-all duration-200">
                         <i class="fas fa-trash text-sm"></i>
                       </button>
                     </form>
@@ -204,32 +204,32 @@
             {% endfor %}
           {% else %}
             <div class="text-center py-8">
-              <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i class="fas fa-sticky-note text-gray-400 text-2xl"></i>
+              <div class="w-16 h-16 bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-sticky-note text-slate-500 text-2xl"></i>
               </div>
-              <p class="text-gray-500 font-medium">Nenhuma observação cadastrada</p>
-              <p class="text-gray-400 text-sm">Adicione observações importantes sobre este ponto</p>
+              <p class="text-slate-400 font-medium">Nenhuma observação cadastrada</p>
+              <p class="text-slate-500 text-sm">Adicione observações importantes sobre este ponto</p>
             </div>
           {% endif %}
         </div>
         
         <!-- Form para adicionar observação -->
-        <div id="observacao-form" class="hidden mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+        <div id="observacao-form" class="hidden mt-6 p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
           <form method="post" class="space-y-4">
             {% csrf_token %}
             <input type="hidden" name="form_type" value="observacao">
             <div>
-              <label for="observacao" class="block text-sm font-semibold text-gray-700 mb-2">
+              <label for="observacao" class="block text-sm font-semibold text-slate-300 mb-2">
                 <i class="fas fa-sticky-note mr-2 text-green-600"></i>Observação
               </label>
-              <textarea name="observacao" id="observacao" rows="4" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 resize-none" placeholder="Digite suas observações sobre este ponto..."></textarea>
+              <textarea name="observacao" id="observacao" rows="4" class="w-full px-4 py-3 border-2 border-slate-600 rounded-lg focus:border-green-400 focus:ring-2 focus:ring-green-400/20 transition-all duration-200 resize-none bg-slate-700 text-slate-200 placeholder-slate-400" placeholder="Digite suas observações sobre este ponto..."></textarea>
             </div>
             <div class="flex gap-3">
               <button type="submit" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 flex items-center justify-center">
                 <i class="fas fa-save mr-2"></i>
                 Salvar Observação
               </button>
-              <button type="button" onclick="document.getElementById('observacao-form').classList.add('hidden')" class="px-4 py-3 bg-gray-300 hover:bg-gray-400 text-gray-700 font-semibold rounded-lg transition-all duration-200">
+              <button type="button" onclick="document.getElementById('observacao-form').classList.add('hidden')" class="px-4 py-3 bg-slate-600 hover:bg-slate-500 text-slate-200 font-semibold rounded-lg transition-all duration-200">
                 Cancelar
               </button>
             </div>
@@ -239,7 +239,7 @@
     </div>
 
     <!-- Card de Croquis -->
-    <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+    <div class="bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 rounded-xl shadow-lg overflow-hidden">
       <div class="bg-gradient-to-r from-purple-600 to-purple-700 px-6 py-4">
         <div class="flex justify-between items-center">
           <h2 class="text-xl font-bold text-white flex items-center">
@@ -254,7 +254,7 @@
               Gerenciar Croquis
             </a>
             -->
-            <button type="button" id="addCroquisBtn" class="bg-purple-800 hover:bg-purple-900 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-all duration-200 transform hover:scale-105 flex items-center">
+            <button type="button" id="addCroquisBtn" class="bg-purple-700 hover:bg-purple-600 text-purple-100 font-semibold py-2 px-4 rounded-lg shadow-md transition-all duration-200 transform hover:scale-105 flex items-center">
               <i class="fas fa-upload mr-2"></i>
               Upload Manual
             </button>
@@ -395,7 +395,7 @@
       {% endif %}
 
         <!-- Form para adicionar croqui manual -->
-        <div id="croqui-form" class="hidden mt-6 p-4 bg-purple-50 border border-purple-200 rounded-lg">
+        <div id="croqui-form" class="hidden mt-6 p-4 bg-purple-500/10 border border-purple-500/30 rounded-lg">
           <form method="post" enctype="multipart/form-data" class="space-y-4">
             {% csrf_token %}
             <input type="hidden" name="form_type" value="croqui">
@@ -415,7 +415,7 @@
                 <i class="fas fa-save mr-2"></i>
                 Salvar Croquis
               </button>
-              <button type="button" onclick="document.getElementById('croqui-form').classList.add('hidden')" class="px-4 py-3 bg-gray-300 hover:bg-gray-400 text-gray-700 font-semibold rounded-lg transition-all duration-200">
+              <button type="button" onclick="document.getElementById('croqui-form').classList.add('hidden')" class="px-4 py-3 bg-slate-600 hover:bg-slate-500 text-slate-200 font-semibold rounded-lg transition-all duration-200">
                 Cancelar
               </button>
             </div>

@@ -11,7 +11,7 @@ urlpatterns = [
     # Autenticação
     path('login/', LoginView.as_view(), name='login'),
     path('register/', RegisterView.as_view(), name='register'),
-    path('logout/', auth_views.LogoutView.as_view(template_name='registration/login.html'), name='logout'),
+    path('logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
     path('refresh/', RefreshTokenView.as_view(), name='refresh'),
 
     # JWT Token

@@ -8,17 +8,18 @@
 {% block extra_css %}
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <style>
-    /* Select2 Custom Styling */
+    /* Select2 Dark Mode Styling */
     .select2-container--default .select2-selection--single {
         height: 42px !important;
-        border: 2px solid #e5e7eb !important;
+        border: 2px solid #374151 !important;
         border-radius: 8px !important;
         padding-left: 12px !important;
+        background-color: #1f2937 !important;
     }
     
     .select2-container--default .select2-selection--single .select2-selection__rendered {
         line-height: 38px !important;
-        color: #374151 !important;
+        color: #f9fafb !important;
     }
     
     .select2-container--default .select2-selection--single .select2-selection__arrow {
@@ -26,8 +27,26 @@
     }
     
     .select2-container--default.select2-container--focus .select2-selection--single {
-        border-color: #3b82f6 !important;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+        border-color: #60a5fa !important;
+        box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2) !important;
+    }
+    
+    .select2-dropdown {
+        background-color: #1f2937 !important;
+        border: 1px solid #374151 !important;
+    }
+    
+    .select2-results__option {
+        color: #f9fafb !important;
+        background-color: #1f2937 !important;
+    }
+    
+    .select2-results__option:hover {
+        background-color: #374151 !important;
+    }
+    
+    .select2-results__option[aria-selected="true"] {
+        background-color: #1e40af !important;
     }
     
     /* Filter Expandable */
@@ -66,8 +85,8 @@
     }
     
     .filter-summary-tag {
-        background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
-        color: #3730a3;
+        background: linear-gradient(135deg, #374151, #4b5563);
+        color: #e5e7eb;
         padding: 2px 8px;
         border-radius: 12px;
         font-size: 11px;
@@ -90,24 +109,25 @@
     .quick-filter-label {
         font-size: 13px;
         font-weight: 600;
-        color: #4b5563;
+        color: #d1d5db;
         white-space: nowrap;
     }
     
     .quick-filter-select {
         min-width: 120px;
         padding: 6px 12px;
-        border: 1px solid #d1d5db;
+        border: 1px solid #4b5563;
         border-radius: 6px;
         font-size: 13px;
-        background: white;
+        background: #1f2937;
+        color: #f9fafb;
         cursor: pointer;
     }
     
     .quick-filter-select:focus {
         outline: none;
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        border-color: #60a5fa;
+        box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2);
     }
     /* Filter Tags */
     .filter-tag {
@@ -144,15 +164,15 @@
     }
     
     .status-active {
-        background: linear-gradient(135deg, #10b981, #059669);
+        background: linear-gradient(135deg, #f59e0b, #d97706);
         color: white;
-        box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+        box-shadow: 0 2px 4px rgba(245, 158, 11, 0.3);
     }
     
     .status-finished {
-        background: linear-gradient(135deg, #ef4444, #dc2626);
+        background: linear-gradient(135deg, #10b981, #059669);
         color: white;
-        box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+        box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
     }
     
     /* Movement Badges */
@@ -167,12 +187,12 @@
         display: inline-block;
     }
     
-    /* Table Enhancements */
+    /* Table Enhancements - Dark Mode */
     .table-modern {
-        background: white;
+        background: #111827;
         border-radius: 12px;
         overflow: hidden;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
     }
     
     /* Posicionamento fixo resolve problemas de overflow */
@@ -195,12 +215,13 @@
     
     .table-modern td {
         padding: 16px 12px;
-        border-bottom: 1px solid #f3f4f6;
+        border-bottom: 1px solid #374151;
         vertical-align: middle;
+        color: #f9fafb;
     }
     
     .table-modern tr:hover {
-        background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+        background: linear-gradient(135deg, #1f2937, #374151);
     }
     
     /* Action Menu */
@@ -233,12 +254,12 @@
         position: absolute;
         top: 100%;
         right: 0;
-        background: white;
+        background: #1f2937;
         border-radius: 8px;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
         z-index: 9999;
         min-width: 180px;
-        border: 1px solid #e5e7eb;
+        border: 1px solid #4b5563;
         overflow: visible;
         display: none;
         margin-top: 5px;
@@ -254,8 +275,8 @@
         top: auto;
         bottom: -6px;
         transform: rotate(225deg);
-        border-right: 1px solid #e5e7eb;
-        border-bottom: 1px solid #e5e7eb;
+        border-right: 1px solid #4b5563;
+        border-bottom: 1px solid #4b5563;
         border-left: none;
         border-top: none;
     }
@@ -267,10 +288,10 @@
         right: 16px;
         width: 12px;
         height: 12px;
-        background: white;
+        background: #1f2937;
         transform: rotate(45deg);
-        border-left: 1px solid #e5e7eb;
-        border-top: 1px solid #e5e7eb;
+        border-left: 1px solid #4b5563;
+        border-top: 1px solid #4b5563;
     }
     
     /* Ajustar posição da seta dinamicamente */
@@ -287,13 +308,13 @@
         cursor: pointer;
         transition: all 0.2s;
         font-size: 13px;
-        color: #374151;
+        color: #f9fafb;
         text-decoration: none;
     }
     
     .dropdown-item:hover {
-        background: #f3f4f6;
-        color: #1f2937;
+        background: #374151;
+        color: #f9fafb;
     }
     
     .dropdown-item.danger {
@@ -301,11 +322,11 @@
     }
     
     .dropdown-item.danger:hover {
-        background: #fef2f2;
-        color: #dc2626;
+        background: #7f1d1d;
+        color: #fca5a5;
     }
     
-    /* Pagination */
+    /* Pagination - Dark Mode */
     .pagination-modern {
         display: flex;
         justify-content: center;
@@ -313,16 +334,16 @@
         gap: 8px;
         margin-top: 24px;
         padding: 20px;
-        background: white;
+        background: #111827;
         border-radius: 12px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     }
     
     .pagination-btn {
         padding: 8px 12px;
         border-radius: 8px;
-        background: #f3f4f6;
-        color: #6b7280;
+        background: #374151;
+        color: #d1d5db;
         text-decoration: none;
         transition: all 0.2s;
         display: flex;
@@ -341,7 +362,7 @@
     }
     
     .pagination-info {
-        color: #6b7280;
+        color: #d1d5db;
         font-weight: 500;
         margin: 0 16px;
     }
@@ -362,7 +383,7 @@
     .empty-state {
         text-align: center;
         padding: 60px 20px;
-        color: #6b7280;
+        color: #9ca3af;
     }
     
     .empty-state i {
@@ -375,7 +396,7 @@
         font-size: 18px;
         font-weight: 600;
         margin-bottom: 8px;
-        color: #374151;
+        color: #d1d5db;
     }
     
     .empty-state p {
@@ -395,8 +416,8 @@
         right: 30px;
         width: 16px;
         height: 16px;
-        border: 2px solid #f3f3f3;
-        border-top: 2px solid #3b82f6;
+        border: 2px solid #4b5563;
+        border-top: 2px solid #60a5fa;
         border-radius: 50%;
         animation: spin 1s linear infinite;
         z-index: 10;
@@ -412,15 +433,68 @@
         pointer-events: none;
     }
     
+    /* Filter Select Dark Mode */
+    .filter-select {
+        background-color: #374151 !important;
+        color: #f9fafb !important;
+        border: 2px solid #4b5563 !important;
+        border-radius: 8px !important;
+    }
+    
+    .filter-select:focus {
+        border-color: #60a5fa !important;
+        box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2) !important;
+    }
+    
+    /* Input Dark Mode Placeholder */
+    .bg-gray-700::placeholder {
+        color: #9ca3af !important;
+    }
+    
+    .bg-gray-700::-webkit-input-placeholder {
+        color: #9ca3af !important;
+    }
+    
+    .bg-gray-700::-moz-placeholder {
+        color: #9ca3af !important;
+        opacity: 1;
+    }
+    
+    .bg-gray-700:-ms-input-placeholder {
+        color: #9ca3af !important;
+    }
+    
+    /* Select Options Dark Mode */
+    select.bg-gray-700 {
+        background-color: #374151 !important;
+        color: #f9fafb !important;
+    }
+    
+    select.bg-gray-700 option {
+        background-color: #374151 !important;
+        color: #f9fafb !important;
+    }
+    
+    select.bg-gray-700 option:hover {
+        background-color: #4b5563 !important;
+        color: #f9fafb !important;
+    }
+    
+    select.bg-gray-700 option:checked {
+        background-color: #1e40af !important;
+        color: #f9fafb !important;
+    }
+    
     /* Responsive adjustments */
     @media (max-width: 768px) {
         .table-modern {
-            font-size: 12px;
+            font-size: 11px;
         }
         
         .table-modern th,
         .table-modern td {
-            padding: 8px 6px;
+            padding: 8px 4px;
+            white-space: nowrap;
         }
         
         .filter-group {
@@ -428,8 +502,12 @@
         }
         
         .action-btn {
-            padding: 6px 12px;
-            font-size: 11px;
+            padding: 6px 10px;
+            font-size: 10px;
+        }
+        
+        .action-btn span {
+            display: none; /* Hide "Ações" text on mobile */
         }
         
         .quick-filter-bar {
@@ -438,6 +516,22 @@
         
         .filter-header .flex {
             justify-content: space-between;
+        }
+        
+        /* Add horizontal scroll hint for mobile tables */
+        .table-modern {
+            min-width: 1000px; /* Force horizontal scroll */
+        }
+        
+        /* Status badges smaller on mobile */
+        .status-badge {
+            padding: 2px 6px;
+            font-size: 9px;
+        }
+        
+        .movement-badge {
+            padding: 1px 4px;
+            font-size: 8px;
         }
     }
     
@@ -461,9 +555,9 @@
 {% endblock %}
 
 {% block content %}
-<div class="space-y-6">
+<div class="space-y-6 min-h-screen bg-gray-900">
     <!-- Compact Expandable Filters Section -->
-    <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden filter-container">
+    <div class="bg-gray-800 rounded-xl shadow-lg border border-gray-700 overflow-hidden filter-container">
         <!-- Compact Filter Header -->
         <div class="filter-header bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4" onclick="toggleFilters()">
             <div class="flex items-center justify-between text-white">
@@ -471,7 +565,7 @@
                     <i class="fas fa-filter mr-3 text-lg"></i>
                     <h2 class="text-lg font-bold">Filtros</h2>
                     <!-- Show active filter count -->
-                    {% if filtros_ativos.status or filtros_ativos.pesquisador or filtros_ativos.codigo or filtros_ativos.ponto or filtros_ativos.data or filtros_ativos.padrao or filtros_ativos.id %}
+                    {% if filtros_ativos.status or filtros_ativos.pesquisador or filtros_ativos.codigo or filtros_ativos.ponto or filtros_ativos.data or filtros_ativos.padrao %}
                         <span class="ml-3 bg-white text-blue-600 px-2 py-1 rounded-full text-xs font-semibold">
                             {{ filtros_ativos|length }} ativo{{ filtros_ativos|length|pluralize:"s" }}
                         </span>
@@ -491,9 +585,6 @@
                 {% if filtros_ativos.pesquisador %}
                     <span class="filter-summary-tag">Pesquisador: {{ filtros_ativos.pesquisador }}</span>
                 {% endif %}
-                {% if filtros_ativos.id %}
-                    <span class="filter-summary-tag">ID: {{ filtros_ativos.id }}</span>
-                {% endif %}
                 {% if filtros_ativos.codigo %}
                     <span class="filter-summary-tag">Código: {{ filtros_ativos.codigo }}</span>
                 {% endif %}
@@ -512,15 +603,15 @@
         
         <!-- Expandable Filter Content -->
         <div class="filter-content" id="filter-content">
-            <div class="p-6">
+            <div class="p-6 bg-gray-800">
                 <form method="get" id="filter-form" class="space-y-6">
                     <!-- First Row -->
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="filter-group">
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-toggle-on mr-2 text-blue-600"></i>Status
+                            <label class="block text-sm font-semibold text-gray-200 mb-2">
+                                <i class="fas fa-toggle-on mr-2 text-blue-400"></i>Status
                             </label>
-                            <select name="status" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200">
+                            <select name="status" class="w-full px-4 py-3 border-2 border-gray-600 rounded-lg focus:border-blue-400 focus:ring-2 focus:ring-blue-900 transition-all duration-200 bg-gray-700 text-gray-100">
                                 <option value="">Todos os Status</option>
                                 <option value="aguardando" {% if filtros_ativos.status == 'aguardando' %}selected{% endif %}>Aguardando</option>
                                 <option value="em_andamento" {% if filtros_ativos.status == 'em_andamento' %}selected{% endif %}>Em Andamento</option>
@@ -529,10 +620,10 @@
                         </div>
                         
                         <div class="filter-group">
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-user mr-2 text-green-600"></i>Pesquisador
+                            <label class="block text-sm font-semibold text-gray-200 mb-2">
+                                <i class="fas fa-user mr-2 text-green-400"></i>Pesquisador
                             </label>
-                            <select name="usuario" class="filter-select select2 w-full">
+                            <select name="usuario" class="filter-select select2 w-full px-4 py-3 border-2 border-gray-600 rounded-lg focus:border-blue-400 focus:ring-2 focus:ring-blue-900 transition-all duration-200 bg-gray-700 text-gray-100">
                                 <option value="">Todos os Pesquisadores</option>
                                 {% for pesquisador in pesquisadores %}
                                     <option value="{{ pesquisador.username }}" {% if filtros_ativos.pesquisador == pesquisador.username %}selected{% endif %}>
@@ -542,21 +633,15 @@
                             </select>
                         </div>
                         
-                        <div class="filter-group">
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-hashtag mr-2 text-purple-600"></i>ID da Sessão
-                            </label>
-                            <input type="text" name="id" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200" placeholder="Digite o ID" value="{{ filtros_ativos.id }}">
-                        </div>
                     </div>
                     
                     <!-- Second Row -->
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="filter-group">
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-code mr-2 text-orange-600"></i>Código
+                            <label class="block text-sm font-semibold text-gray-200 mb-2">
+                                <i class="fas fa-code mr-2 text-orange-400"></i>Código
                             </label>
-                            <select name="codigo" id="codigo-select" class="filter-select select2 w-full">
+                            <select name="codigo" id="codigo-select" class="filter-select select2 w-full px-4 py-3 border-2 border-gray-600 rounded-lg focus:border-blue-400 focus:ring-2 focus:ring-blue-900 transition-all duration-200 bg-gray-700 text-gray-100">
                                 <option value="">Todos os Códigos</option>
                                 {% for codigo in codigos %}
                                     <option value="{{ codigo }}" {% if filtros_ativos.codigo == codigo %}selected{% endif %}>
@@ -567,12 +652,12 @@
                         </div>
                         
                         <div class="filter-group">
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-map-marker-alt mr-2 text-red-600"></i>Ponto
-                                <span class="text-xs text-gray-500 ml-1">(Filtre por código primeiro)</span>
+                            <label class="block text-sm font-semibold text-gray-200 mb-2">
+                                <i class="fas fa-map-marker-alt mr-2 text-red-400"></i>Ponto
+                                <span class="text-xs text-gray-400 ml-1">(Filtre por código primeiro)</span>
                             </label>
                             <div class="relative">
-                                <select name="ponto" id="ponto-select" class="filter-select select2 w-full">
+                                <select name="ponto" id="ponto-select" class="filter-select select2 w-full px-4 py-3 border-2 border-gray-600 rounded-lg focus:border-blue-400 focus:ring-2 focus:ring-blue-900 transition-all duration-200 bg-gray-700 text-gray-100">
                                     <option value="">Todos os Pontos</option>
                                     {% for ponto in pontos %}
                                         <option value="{{ ponto }}" {% if filtros_ativos.ponto == ponto %}selected{% endif %}>
@@ -582,12 +667,15 @@
                                 </select>
                             </div>
                         </div>
-                        
+                    </div>
+                    
+                    <!-- Third Row -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="filter-group">
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-calendar mr-2 text-indigo-600"></i>Data
+                            <label class="block text-sm font-semibold text-gray-200 mb-2">
+                                <i class="fas fa-calendar mr-2 text-indigo-400"></i>Data
                             </label>
-                            <select name="data" class="filter-select select2 w-full">
+                            <select name="data" class="filter-select select2 w-full px-4 py-3 border-2 border-gray-600 rounded-lg focus:border-blue-400 focus:ring-2 focus:ring-blue-900 transition-all duration-200 bg-gray-700 text-gray-100">
                                 <option value="">Todas as Datas</option>
                                 {% for data in datas %}
                                     <option value="{{ data }}" {% if filtros_ativos.data == data %}selected{% endif %}>
@@ -596,15 +684,12 @@
                                 {% endfor %}
                             </select>
                         </div>
-                    </div>
-                    
-                    <!-- Third Row -->
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        
                         <div class="filter-group">
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-chart-line mr-2 text-teal-600"></i>Padrão
+                            <label class="block text-sm font-semibold text-gray-200 mb-2">
+                                <i class="fas fa-chart-line mr-2 text-teal-400"></i>Padrão
                             </label>
-                            <select name="padrao" class="filter-select select2 w-full">
+                            <select name="padrao" class="filter-select select2 w-full px-4 py-3 border-2 border-gray-600 rounded-lg focus:border-blue-400 focus:ring-2 focus:ring-blue-900 transition-all duration-200 bg-gray-700 text-gray-100">
                                 <option value="">Todos os Padrões</option>
                                 {% for pattern_type in padroes %}
                                     <option value="{{ pattern_type }}" {% if filtros_ativos.padrao == pattern_type %}selected{% endif %}>
@@ -618,9 +703,9 @@
                     <input type="hidden" name="sort" id="sort-field" value="{{ current_sort|default:'-id' }}">
                     
                     <!-- Active Filters Display -->
-                    {% if filtros_ativos.status or filtros_ativos.pesquisador or filtros_ativos.codigo or filtros_ativos.ponto or filtros_ativos.data or filtros_ativos.padrao or filtros_ativos.id %}
-                    <div class="border-t border-gray-200 pt-6">
-                        <h3 class="text-sm font-semibold text-gray-700 mb-3">Filtros Ativos:</h3>
+                    {% if filtros_ativos.status or filtros_ativos.pesquisador or filtros_ativos.codigo or filtros_ativos.ponto or filtros_ativos.data or filtros_ativos.padrao %}
+                    <div class="border-t border-gray-600 pt-6">
+                        <h3 class="text-sm font-semibold text-gray-200 mb-3">Filtros Ativos:</h3>
                         <div class="flex flex-wrap gap-2">
                             {% if filtros_ativos.status %}
                                 <div class="filter-tag">
@@ -632,12 +717,6 @@
                                 <div class="filter-tag">
                                     <span>Pesquisador: {{ filtros_ativos.pesquisador }}</span>
                                     <i class="fas fa-times" onclick="removeFilter('usuario')"></i>
-                                </div>
-                            {% endif %}
-                            {% if filtros_ativos.id %}
-                                <div class="filter-tag">
-                                    <span>ID: {{ filtros_ativos.id }}</span>
-                                    <i class="fas fa-times" onclick="removeFilter('id')"></i>
                                 </div>
                             {% endif %}
                             {% if filtros_ativos.codigo %}
@@ -669,7 +748,7 @@
                     {% endif %}
 
                     <!-- Action Buttons -->
-                    <div class="flex justify-end gap-4 pt-6 border-t border-gray-200">
+                    <div class="flex justify-end gap-4 pt-6 border-t border-gray-600">
                         <button type="button" onclick="resetFilters()" class="px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105 flex items-center gap-2">
                             <i class="fas fa-undo"></i>
                             Limpar Filtros
@@ -684,7 +763,7 @@
         </div>
     </div>
     <!-- Enhanced Data Table -->
-    <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+    <div class="bg-gray-800 rounded-xl shadow-lg border border-gray-700 overflow-hidden">
         <div class="overflow-x-auto">
             <table class="table-modern min-w-full">
                 <thead>
@@ -695,18 +774,6 @@
                                 {% if request.GET.sort == 'id' %}
                                     <i class="fas fa-sort-up sort-icon"></i>
                                 {% elif request.GET.sort == '-id' or not request.GET.sort %}
-                                    <i class="fas fa-sort-down sort-icon"></i>
-                                {% else %}
-                                    <i class="fas fa-sort sort-icon"></i>
-                                {% endif %}
-                            </div>
-                        </th>
-                        <th onclick="sortTable('sessao')" class="cursor-pointer hover:bg-gray-700 transition-colors">
-                            <div class="flex items-center justify-between">
-                                <span><i class="fas fa-list-alt mr-2"></i>Nome da Sessão</span>
-                                {% if request.GET.sort == 'sessao' %}
-                                    <i class="fas fa-sort-up sort-icon"></i>
-                                {% elif request.GET.sort == '-sessao' %}
                                     <i class="fas fa-sort-down sort-icon"></i>
                                 {% else %}
                                     <i class="fas fa-sort sort-icon"></i>
@@ -845,11 +912,10 @@
                     {% for sessao in sessoes %}
                     <tr class="hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200">
                         <td class="font-mono text-sm">
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-800 text-blue-100">
                                 #{{ sessao.sessao_id }}
                             </span>
                         </td>
-                        <td class="font-medium text-gray-900">{{ sessao.sessao.sessao }}</td>
                         <td>
                             <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-800">
                                 {{ sessao.sessao.codigo }}
@@ -873,11 +939,11 @@
                         <td>
                             {% if sessao.sessao.status == "Aguardando" or sessao.sessao.status == "Em andamento" %}
                                 <span class="status-badge status-active">
-                                    <i class="fas fa-play mr-1"></i>{{ sessao.sessao.status }}
+                                    {{ sessao.sessao.status }}
                                 </span>
                             {% else %}
                                 <span class="status-badge status-finished">
-                                    <i class="fas fa-stop mr-1"></i>{{ sessao.sessao.status }}
+                                    {{ sessao.sessao.status }}
                                 </span>
                             {% endif %}
                         </td>
@@ -894,12 +960,12 @@
                         </td>
                         <td>
                             <div class="flex items-center">
-                                <div class="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center mr-2">
-                                    <span class="text-xs font-medium text-gray-600">
+                                <div class="h-8 w-8 rounded-full bg-gray-600 flex items-center justify-center mr-2">
+                                    <span class="text-xs font-medium text-gray-100">
                                         {{ sessao.sessao.criado_por.username|make_list|first|upper }}
                                     </span>
                                 </div>
-                                <span class="text-sm text-gray-700">{{ sessao.sessao.criado_por.username }}</span>
+                                <span class="text-sm text-gray-100 font-medium">{{ sessao.sessao.criado_por.username }}</span>
                             </div>
                         </td>
                         <td class="text-sm text-gray-600">{{ sessao.sessao.created_at|date:"d/m/Y H:i"|default:"-" }}</td>
@@ -914,7 +980,7 @@
                             <div class="action-menu">
                                 <button class="action-btn js-toggle-menu">
                                     <i class="fas fa-ellipsis-v"></i>
-                                    Ações
+                                    <span>Ações</span>
                                 </button>
                                 <div class="action-dropdown">
                                     <a href="{% url 'detalhes_sessao' sessao.sessao_id %}" class="dropdown-item" onclick="console.log('Clicking details for session:', {{ sessao.sessao_id }}); return true;">
@@ -937,7 +1003,7 @@
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="13" class="empty-state">
+                        <td colspan="12" class="empty-state">
                             <i class="fas fa-search"></i>
                             <h3>Nenhuma sessão encontrada</h3>
                             <p>Não foi possível encontrar sessões com os filtros aplicados.</p>
@@ -1104,7 +1170,7 @@
             $('.action-dropdown').hide().removeClass('dropdown-up arrow-left');
         });
 
-        // Toggle action menu with simple positioning
+        // Toggle action menu with smart positioning for viewport
         $('.js-toggle-menu').on('click', function(e) {
             e.stopPropagation();
             const button = $(this);
@@ -1116,7 +1182,30 @@
             if (menu.is(':visible')) {
                 menu.hide();
             } else {
-                // Simple toggle - let CSS handle the positioning
+                // Check if dropdown would go out of viewport
+                const buttonRect = this.getBoundingClientRect();
+                const viewportHeight = window.innerHeight;
+                const menuHeight = 150; // Approximate dropdown height
+                
+                // If dropdown would go below viewport, show it upward
+                if (buttonRect.bottom + menuHeight > viewportHeight) {
+                    menu.addClass('dropdown-up');
+                    menu.css({
+                        'top': 'auto',
+                        'bottom': '100%',
+                        'margin-bottom': '5px',
+                        'margin-top': '0'
+                    });
+                } else {
+                    menu.removeClass('dropdown-up');
+                    menu.css({
+                        'top': '100%',
+                        'bottom': 'auto',
+                        'margin-top': '5px',
+                        'margin-bottom': '0'
+                    });
+                }
+                
                 menu.show();
             }
         });
@@ -1155,7 +1244,7 @@
 
     function hasActiveFilters() {
         const urlParams = new URLSearchParams(window.location.search);
-        const filterParams = ['status', 'usuario', 'id', 'codigo', 'ponto', 'data', 'padrao'];
+        const filterParams = ['status', 'usuario', 'codigo', 'ponto', 'data', 'padrao'];
         return filterParams.some(param => urlParams.get(param));
     }
 

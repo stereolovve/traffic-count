@@ -6,7 +6,11 @@
       "Bash(python:*)",
       "Bash(find:*)",
       "Bash(curl:*)",
-      "Bash(kill:*)"
+      "Bash(kill:*)",
+      "Bash(.venvScriptsActivate.ps1)",
+      "Bash(npm run build:css:*)",
+      "Bash(npm install)",
+      "WebFetch(domain:prnt.sc)"
     ],
     "deny": []
   }

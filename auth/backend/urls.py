@@ -39,7 +39,7 @@ def home(request):
         
         # Top users with most sessions
         top_usuarios = User.objects.annotate(
-            count=Count('session')  # Make sure 'sessao' is the correct related_name
+            count=Count('session')  # Using the correct reverse relation name
         ).order_by('-count')[:5]
         
         # Most recent sessions
@@ -61,7 +61,11 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('auth/', include('autenticacao.urls')),
     path('', home, name='home'),
-    path('login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),
+    path('login/', auth_views.LoginView.as_view(
+        template_name='registration/login.html',
+        redirect_authenticated_user=True,
+        extra_context={'next': '/'}
+    ), name='login'),
     path('logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
     path('register/', auth_views_custom.register, name='register'),
     path('contagens/', include('contagens.urls')),

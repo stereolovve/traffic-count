@@ -24,33 +24,33 @@
 {% block content %}
 <div class="space-y-6">
     <!-- Enhanced Breadcrumb -->
-    <nav class="bg-white rounded-lg shadow-sm border border-gray-200 px-6 py-4">
+    <nav class="bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 rounded-lg shadow-lg px-6 py-4">
         <ol class="flex items-center space-x-2 text-sm">
             <li>
-                <a href="{% url 'home' %}" class="flex items-center text-blue-600 hover:text-blue-800 transition-colors duration-200">
+                <a href="{% url 'home' %}" class="flex items-center text-blue-400 hover:text-blue-300 transition-colors duration-200">
                     <i class="fas fa-home mr-2"></i>
                     Home
                 </a>
             </li>
-            <i class="fas fa-chevron-right text-gray-400 text-xs"></i>
+            <i class="fas fa-chevron-right text-slate-500 text-xs"></i>
             <li>
-                <a href="{% url 'trabalho_list' %}" class="text-blue-600 hover:text-blue-800 transition-colors duration-200 {% if not cliente %}font-semibold text-gray-800{% endif %}">
+                <a href="{% url 'trabalho_list' %}" class="text-blue-400 hover:text-blue-300 transition-colors duration-200 {% if not cliente %}font-semibold text-slate-200{% endif %}">
                     <i class="fas fa-building mr-2"></i>
                     Clientes
                 </a>
             </li>
             {% if cliente %}
-            <i class="fas fa-chevron-right text-gray-400 text-xs"></i>
+            <i class="fas fa-chevron-right text-slate-500 text-xs"></i>
             <li>
-                <a href="{% url 'trabalho_list' %}?cliente_id={{ cliente.id }}" class="text-blue-600 hover:text-blue-800 transition-colors duration-200 {% if not codigo %}font-semibold text-gray-800{% endif %}">
+                <a href="{% url 'trabalho_list' %}?cliente_id={{ cliente.id }}" class="text-blue-400 hover:text-blue-300 transition-colors duration-200 {% if not codigo %}font-semibold text-slate-200{% endif %}">
                     <i class="fas fa-code mr-2"></i>
                     {{ cliente.nome }}
                 </a>
             </li>
             {% endif %}
             {% if codigo %}
-            <i class="fas fa-chevron-right text-gray-400 text-xs"></i>
-            <li class="flex items-center font-semibold text-gray-800">
+            <i class="fas fa-chevron-right text-slate-500 text-xs"></i>
+            <li class="flex items-center font-semibold text-slate-200">
                 <i class="fas fa-map-marker-alt mr-2"></i>
                 {{ codigo.codigo }}
             </li>
@@ -60,7 +60,7 @@
 
     <!-- Clientes Section -->
     {% if not cliente %}
-    <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+    <div class="bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 rounded-xl shadow-lg overflow-hidden">
         <!-- Header Section -->
         <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6">
             <div class="flex justify-between items-center">
@@ -69,9 +69,9 @@
                         <i class="fas fa-building mr-3"></i>
                         Clientes
                     </h1>
-                    <p class="text-blue-100 mt-1">Gerencie seus clientes e projetos</p>
+                    <p class="text-blue-200 mt-1">Gerencie seus clientes e projetos</p>
                 </div>
-                <button id="newClienteBtn" class="bg-white hover:bg-gray-50 text-blue-600 font-semibold py-3 px-6 rounded-lg shadow-md transition-all duration-200 transform hover:scale-105 flex items-center">
+                <button id="newClienteBtn" class="bg-slate-700 hover:bg-slate-600 text-blue-300 font-semibold py-3 px-6 rounded-lg shadow-md transition-all duration-200 transform hover:scale-105 flex items-center">
                     <i class="fas fa-plus mr-2"></i>
                     Novo Cliente
                 </button>
@@ -83,48 +83,48 @@
             {% if clientes %}
             <div class="overflow-x-auto">
                 <table class="min-w-full">
-                    <thead class="bg-gray-50 border-b border-gray-200">
+                    <thead class="bg-slate-700/50 border-b border-slate-600">
                         <tr>
-                            <th class="px-8 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            <th class="px-8 py-4 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">
                                 <i class="fas fa-user mr-2"></i>Cliente
                             </th>
-                            <th class="px-8 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            <th class="px-8 py-4 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">
                                 <i class="fas fa-code mr-2"></i>Códigos
                             </th>
-                            <th class="px-8 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            <th class="px-8 py-4 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">
                                 <i class="fas fa-cog mr-2"></i>Ações
                             </th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-100">
+                    <tbody class="bg-slate-800/50 divide-y divide-slate-700">
                         {% for cliente in clientes %}
-                        <tr class="cliente-row hover:bg-gray-50 transition-colors duration-150" data-cliente-id="{{ cliente.id }}">
+                        <tr class="cliente-row hover:bg-slate-700/50 transition-colors duration-150" data-cliente-id="{{ cliente.id }}">
                             <td class="px-8 py-6">
                                 <div class="flex items-center">
                                     <div class="h-10 w-10 flex-shrink-0">
-                                        <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                                            <span class="text-blue-600 font-bold text-lg">{{ cliente.nome|make_list|first|upper }}</span>
+                                        <div class="h-10 w-10 rounded-full bg-blue-500/20 flex items-center justify-center">
+                                            <span class="text-blue-400 font-bold text-lg">{{ cliente.nome|make_list|first|upper }}</span>
                                         </div>
                                     </div>
                                     <div class="ml-4">
-                                        <a href="{% url 'trabalho_list' %}?cliente_id={{ cliente.id }}" class="text-gray-900 font-semibold hover:text-blue-600 transition-colors duration-200">
+                                        <a href="{% url 'trabalho_list' %}?cliente_id={{ cliente.id }}" class="text-slate-200 font-semibold hover:text-blue-400 transition-colors duration-200">
                                             {{ cliente.nome }}
                                         </a>
                                     </div>
                                 </div>
                             </td>
                             <td class="px-8 py-6">
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-500/20 text-blue-300">
                                     {{ cliente.num_codigos }} código{{ cliente.num_codigos|pluralize }}
                                 </span>
                             </td>
                             <td class="px-8 py-6">
                                 <div class="flex space-x-3">
-                                    <button class="edit-cliente-btn inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-all duration-200" data-id="{{ cliente.id }}" data-nome="{{ cliente.nome }}">
+                                    <button class="edit-cliente-btn inline-flex items-center px-3 py-2 border border-slate-600 shadow-sm text-sm leading-4 font-medium rounded-lg text-slate-300 bg-slate-700 hover:bg-slate-600 transition-all duration-200" data-id="{{ cliente.id }}" data-nome="{{ cliente.nome }}">
                                         <i class="fas fa-edit mr-2"></i>
                                         Editar
                                     </button>
-                                    <button class="delete-cliente-btn inline-flex items-center px-3 py-2 border border-red-300 shadow-sm text-sm leading-4 font-medium rounded-lg text-red-700 bg-white hover:bg-red-50 transition-all duration-200" data-id="{{ cliente.id }}" data-nome="{{ cliente.nome }}">
+                                    <button class="delete-cliente-btn inline-flex items-center px-3 py-2 border border-red-500/50 shadow-sm text-sm leading-4 font-medium rounded-lg text-red-400 bg-slate-700 hover:bg-red-500/10 transition-all duration-200" data-id="{{ cliente.id }}" data-nome="{{ cliente.nome }}">
                                         <i class="fas fa-trash mr-2"></i>
                                         Excluir
                                     </button>
@@ -137,11 +137,11 @@
             </div>
             {% else %}
             <div class="p-12 text-center">
-                <div class="mx-auto h-24 w-24 text-gray-400 mb-4">
+                <div class="mx-auto h-24 w-24 text-slate-500 mb-4">
                     <i class="fas fa-building text-6xl"></i>
                 </div>
-                <h3 class="text-lg font-medium text-gray-900 mb-2">Nenhum cliente encontrado</h3>
-                <p class="text-gray-500 mb-6">Comece criando seu primeiro cliente para organizar seus projetos.</p>
+                <h3 class="text-lg font-medium text-slate-200 mb-2">Nenhum cliente encontrado</h3>
+                <p class="text-slate-400 mb-6">Comece criando seu primeiro cliente para organizar seus projetos.</p>
                 <button id="newClienteBtn2" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition-all duration-200 transform hover:scale-105">
                     <i class="fas fa-plus mr-2"></i>
                     Criar Primeiro Cliente
@@ -154,7 +154,7 @@
 
     <!-- Códigos Section -->
     {% if cliente and not codigo %}
-    <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+    <div class="bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 rounded-xl shadow-lg overflow-hidden">
         <!-- Header Section -->
         <div class="bg-gradient-to-r from-green-600 to-green-700 px-8 py-6">
             <div class="flex justify-between items-center">
@@ -163,9 +163,9 @@
                         <i class="fas fa-code mr-3"></i>
                         Códigos de {{ cliente.nome }}
                     </h1>
-                    <p class="text-green-100 mt-1">Gerencie os códigos de projeto deste cliente</p>
+                    <p class="text-green-200 mt-1">Gerencie os códigos de projeto deste cliente</p>
                 </div>
-                <button id="newCodigoBtn" class="bg-white hover:bg-gray-50 text-green-600 font-semibold py-3 px-6 rounded-lg shadow-md transition-all duration-200 transform hover:scale-105 flex items-center">
+                <button id="newCodigoBtn" class="bg-slate-700 hover:bg-slate-600 text-green-300 font-semibold py-3 px-6 rounded-lg shadow-md transition-all duration-200 transform hover:scale-105 flex items-center">
                     <i class="fas fa-plus mr-2"></i>
                     Novo Código
                 </button>
@@ -177,54 +177,54 @@
             {% if codigos %}
             <div class="overflow-x-auto">
                 <table class="min-w-full">
-                    <thead class="bg-gray-50 border-b border-gray-200">
+                    <thead class="bg-slate-700/50 border-b border-slate-600">
                         <tr>
-                            <th class="px-8 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            <th class="px-8 py-4 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">
                                 <i class="fas fa-hashtag mr-2"></i>Código
                             </th>
-                            <th class="px-8 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            <th class="px-8 py-4 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">
                                 <i class="fas fa-file-alt mr-2"></i>Descrição
                             </th>
-                            <th class="px-8 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            <th class="px-8 py-4 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">
                                 <i class="fas fa-map-marker-alt mr-2"></i>Pontos
                             </th>
-                            <th class="px-8 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            <th class="px-8 py-4 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">
                                 <i class="fas fa-cog mr-2"></i>Ações
                             </th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-100">
+                    <tbody class="bg-slate-800/50 divide-y divide-slate-700">
                         {% for codigo in codigos %}
-                        <tr class="hover:bg-gray-50 transition-colors duration-150">
+                        <tr class="hover:bg-slate-700/50 transition-colors duration-150">
                             <td class="px-8 py-6">
                                 <div class="flex items-center">
                                     <div class="h-10 w-10 flex-shrink-0">
-                                        <div class="h-10 w-10 rounded-lg bg-green-100 flex items-center justify-center">
-                                            <i class="fas fa-code text-green-600"></i>
+                                        <div class="h-10 w-10 rounded-lg bg-green-500/20 flex items-center justify-center">
+                                            <i class="fas fa-code text-green-400"></i>
                                         </div>
                                     </div>
                                     <div class="ml-4">
-                                        <a href="{% url 'trabalho_list' %}?cliente_id={{ cliente.id }}&codigo_id={{ codigo.id }}" class="text-gray-900 font-semibold hover:text-green-600 transition-colors duration-200">
+                                        <a href="{% url 'trabalho_list' %}?cliente_id={{ cliente.id }}&codigo_id={{ codigo.id }}" class="text-slate-200 font-semibold hover:text-green-400 transition-colors duration-200">
                                             {{ codigo.codigo }}
                                         </a>
                                     </div>
                                 </div>
                             </td>
                             <td class="px-8 py-6">
-                                <p class="text-gray-900 font-medium">{{ codigo.descricao|default:"Sem descrição" }}</p>
+                                <p class="text-slate-200 font-medium">{{ codigo.descricao|default:"Sem descrição" }}</p>
                             </td>
                             <td class="px-8 py-6">
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-500/20 text-green-300">
                                     {{ codigo.num_pontos }} ponto{{ codigo.num_pontos|pluralize }}
                                 </span>
                             </td>
                             <td class="px-8 py-6">
                                 <div class="flex space-x-3">
-                                    <button class="edit-codigo-btn inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-all duration-200" data-id="{{ codigo.id }}" data-codigo="{{ codigo.codigo }}" data-descricao="{{ codigo.descricao }}">
+                                    <button class="edit-codigo-btn inline-flex items-center px-3 py-2 border border-slate-600 shadow-sm text-sm leading-4 font-medium rounded-lg text-slate-300 bg-slate-700 hover:bg-slate-600 transition-all duration-200" data-id="{{ codigo.id }}" data-codigo="{{ codigo.codigo }}" data-descricao="{{ codigo.descricao }}">
                                         <i class="fas fa-edit mr-2"></i>
                                         Editar
                                     </button>
-                                    <button class="delete-codigo-btn inline-flex items-center px-3 py-2 border border-red-300 shadow-sm text-sm leading-4 font-medium rounded-lg text-red-700 bg-white hover:bg-red-50 transition-all duration-200" data-id="{{ codigo.id }}" data-codigo="{{ codigo.codigo }}">
+                                    <button class="delete-codigo-btn inline-flex items-center px-3 py-2 border border-red-500/50 shadow-sm text-sm leading-4 font-medium rounded-lg text-red-400 bg-slate-700 hover:bg-red-500/10 transition-all duration-200" data-id="{{ codigo.id }}" data-codigo="{{ codigo.codigo }}">
                                         <i class="fas fa-trash mr-2"></i>
                                         Excluir
                                     </button>
@@ -237,11 +237,11 @@
             </div>
             {% else %}
             <div class="p-12 text-center">
-                <div class="mx-auto h-24 w-24 text-gray-400 mb-4">
+                <div class="mx-auto h-24 w-24 text-slate-500 mb-4">
                     <i class="fas fa-code text-6xl"></i>
                 </div>
-                <h3 class="text-lg font-medium text-gray-900 mb-2">Nenhum código encontrado</h3>
-                <p class="text-gray-500 mb-6">Crie códigos para organizar os pontos de contagem deste cliente.</p>
+                <h3 class="text-lg font-medium text-slate-200 mb-2">Nenhum código encontrado</h3>
+                <p class="text-slate-400 mb-6">Crie códigos para organizar os pontos de contagem deste cliente.</p>
                 <button id="newCodigoBtn2" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition-all duration-200 transform hover:scale-105">
                     <i class="fas fa-plus mr-2"></i>
                     Criar Primeiro Código
@@ -254,7 +254,7 @@
 
     <!-- Pontos Section -->
     {% if codigo %}
-    <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+    <div class="bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 rounded-xl shadow-lg overflow-hidden">
         <!-- Header Section -->
         <div class="bg-gradient-to-r from-purple-600 to-purple-700 px-8 py-6">
             <div class="flex justify-between items-center">
@@ -263,18 +263,18 @@
                         <i class="fas fa-map-marker-alt mr-3"></i>
                         Pontos de {{ codigo.codigo }}
                     </h1>
-                    <p class="text-purple-100 mt-1">Gerencie os pontos de contagem deste projeto</p>
+                    <p class="text-purple-200 mt-1">Gerencie os pontos de contagem deste projeto</p>
                 </div>
                 <div class="flex space-x-3">
                     <button type="submit" form="bulk-delete-form" id="bulk-delete-btn" disabled class="bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg shadow-md transition-all duration-200 flex items-center" title="Selecione pontos para excluir">
                         <i class="fas fa-trash-alt mr-2"></i>
                         Excluir Selecionados
                     </button>
-                    <button type="button" id="bulkCreatePontosBtn" class="bg-white hover:bg-gray-50 text-purple-600 font-semibold py-3 px-6 rounded-lg shadow-md transition-all duration-200 transform hover:scale-105 flex items-center">
+                    <button type="button" id="bulkCreatePontosBtn" class="bg-slate-700 hover:bg-slate-600 text-purple-300 font-semibold py-3 px-6 rounded-lg shadow-md transition-all duration-200 transform hover:scale-105 flex items-center">
                         <i class="fas fa-layer-group mr-2"></i>
                         Criar em Massa
                     </button>
-                    <button type="button" id="newPontoBtn" class="bg-white hover:bg-gray-50 text-purple-600 font-semibold py-3 px-6 rounded-lg shadow-md transition-all duration-200 transform hover:scale-105 flex items-center">
+                    <button type="button" id="newPontoBtn" class="bg-slate-700 hover:bg-slate-600 text-purple-300 font-semibold py-3 px-6 rounded-lg shadow-md transition-all duration-200 transform hover:scale-105 flex items-center">
                         <i class="fas fa-plus mr-2"></i>
                         Novo Ponto
                     </button>
@@ -291,34 +291,34 @@
             {% if pontos %}
             <div class="overflow-x-auto">
                 <table class="min-w-full">
-                    <thead class="bg-gray-50 border-b border-gray-200">
+                    <thead class="bg-slate-700/50 border-b border-slate-600">
                         <tr>
                             <th class="px-6 py-4 text-left">
-                                <input id="select-all" type="checkbox" class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500">
+                                <input id="select-all" type="checkbox" class="w-4 h-4 text-purple-400 border-slate-600 rounded focus:ring-purple-500 bg-slate-700">
                             </th>
-                            <th class="px-8 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            <th class="px-8 py-4 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">
                                 <i class="fas fa-map-pin mr-2"></i>Nome do Ponto
                             </th>
-                            <th class="px-8 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            <th class="px-8 py-4 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">
                                 <i class="fas fa-cog mr-2"></i>Ações
                             </th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-100">
+                    <tbody class="bg-slate-800/50 divide-y divide-slate-700">
                         {% for ponto in pontos %}
-                        <tr class="hover:bg-gray-50 transition-colors duration-150">
+                        <tr class="hover:bg-slate-700/50 transition-colors duration-150">
                             <td class="px-6 py-6">
-                                <input type="checkbox" name="selected_pontos" value="{{ ponto.id }}" class="select-checkbox w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500">
+                                <input type="checkbox" name="selected_pontos" value="{{ ponto.id }}" class="select-checkbox w-4 h-4 text-purple-400 border-slate-600 rounded focus:ring-purple-500 bg-slate-700">
                             </td>
                             <td class="px-8 py-6">
                                 <div class="flex items-center">
                                     <div class="h-10 w-10 flex-shrink-0">
-                                        <div class="h-10 w-10 rounded-lg bg-purple-100 flex items-center justify-center">
-                                            <i class="fas fa-map-pin text-purple-600"></i>
+                                        <div class="h-10 w-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                                            <i class="fas fa-map-pin text-purple-400"></i>
                                         </div>
                                     </div>
                                     <div class="ml-4">
-                                        <a href="{% url 'ponto_detail' ponto.id %}" class="text-gray-900 font-semibold hover:text-purple-600 transition-colors duration-200">
+                                        <a href="{% url 'ponto_detail' ponto.id %}" class="text-slate-200 font-semibold hover:text-purple-400 transition-colors duration-200">
                                             {{ ponto.nome }}
                                         </a>
                                     </div>
@@ -326,11 +326,11 @@
                             </td>
                             <td class="px-8 py-6">
                                 <div class="flex space-x-3">
-                                    <button type="button" class="edit-ponto-btn inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-all duration-200" data-id="{{ ponto.id }}" data-nome="{{ ponto.nome }}">
+                                    <button type="button" class="edit-ponto-btn inline-flex items-center px-3 py-2 border border-slate-600 shadow-sm text-sm leading-4 font-medium rounded-lg text-slate-300 bg-slate-700 hover:bg-slate-600 transition-all duration-200" data-id="{{ ponto.id }}" data-nome="{{ ponto.nome }}">
                                         <i class="fas fa-edit mr-2"></i>
                                         Editar
                                     </button>
-                                    <button type="button" class="delete-ponto-btn inline-flex items-center px-3 py-2 border border-red-300 shadow-sm text-sm leading-4 font-medium rounded-lg text-red-700 bg-white hover:bg-red-50 transition-all duration-200" data-id="{{ ponto.id }}">
+                                    <button type="button" class="delete-ponto-btn inline-flex items-center px-3 py-2 border border-red-500/50 shadow-sm text-sm leading-4 font-medium rounded-lg text-red-400 bg-slate-700 hover:bg-red-500/10 transition-all duration-200" data-id="{{ ponto.id }}">
                                         <i class="fas fa-trash mr-2"></i>
                                         Excluir
                                     </button>
@@ -343,11 +343,11 @@
             </div>
             {% else %}
             <div class="p-12 text-center">
-                <div class="mx-auto h-24 w-24 text-gray-400 mb-4">
+                <div class="mx-auto h-24 w-24 text-slate-500 mb-4">
                     <i class="fas fa-map-marker-alt text-6xl"></i>
                 </div>
-                <h3 class="text-lg font-medium text-gray-900 mb-2">Nenhum ponto encontrado</h3>
-                <p class="text-gray-500 mb-6">Adicione pontos de contagem para este código de projeto.</p>
+                <h3 class="text-lg font-medium text-slate-200 mb-2">Nenhum ponto encontrado</h3>
+                <p class="text-slate-400 mb-6">Adicione pontos de contagem para este código de projeto.</p>
                 <button type="button" id="newPontoBtn2" class="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition-all duration-200 transform hover:scale-105">
                     <i class="fas fa-plus mr-2"></i>
                     Criar Primeiro Ponto

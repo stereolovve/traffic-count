@@ -7,11 +7,12 @@
 {% block extra_css %}
 <style>
     .form-container {
-        background: white;
+        background: var(--bg-card);
         border-radius: 0.75rem;
-        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        box-shadow: var(--shadow-sm);
         padding: 2rem;
         margin-bottom: 1.5rem;
+        border: 1px solid var(--border-color);
     }
     
     .form-grid {
@@ -21,16 +22,16 @@
     }
     
     .form-section {
-        background: #f8fafc;
+        background: var(--bg-secondary);
         border-radius: 0.5rem;
         padding: 1.5rem;
-        border: 1px solid #e2e8f0;
+        border: 1px solid var(--border-color);
     }
     
     .form-section h3 {
         font-size: 1.125rem;
         font-weight: 600;
-        color: #1f2937;
+        color: var(--text-primary);
         margin-bottom: 1rem;
         display: flex;
         align-items: center;
@@ -45,35 +46,37 @@
         display: block;
         font-size: 0.875rem;
         font-weight: 500;
-        color: #374151;
+        color: var(--text-secondary);
         margin-bottom: 0.5rem;
     }
     
     .form-input {
         width: 100%;
         padding: 0.75rem;
-        border: 1px solid #d1d5db;
+        border: 1px solid var(--border-color);
         border-radius: 0.375rem;
         font-size: 0.875rem;
         transition: all 0.2s;
-        background-color: white;
+        background-color: var(--bg-input);
+        color: var(--text-primary);
     }
     
     .form-input:focus {
         outline: none;
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px var(--primary-focus-ring);
     }
     
     .form-select {
         width: 100%;
         padding: 0.75rem;
-        border: 1px solid #d1d5db;
+        border: 1px solid var(--border-color);
         border-radius: 0.375rem;
         font-size: 0.875rem;
         transition: all 0.2s;
-        background-color: white;
-        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+        background-color: var(--bg-input);
+        color: var(--text-primary);
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23f8fafc' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
         background-position: right 0.5rem center;
         background-repeat: no-repeat;
         background-size: 1.5em 1.5em;
@@ -86,29 +89,30 @@
     .form-textarea {
         width: 100%;
         padding: 0.75rem;
-        border: 1px solid #d1d5db;
+        border: 1px solid var(--border-color);
         border-radius: 0.375rem;
         font-size: 0.875rem;
         transition: all 0.2s;
-        background-color: white;
+        background-color: var(--bg-input);
+        color: var(--text-primary);
         resize: vertical;
         min-height: 100px;
     }
     
     .form-textarea:focus {
         outline: none;
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px var(--primary-focus-ring);
     }
     
     .error-message {
-        color: #dc2626;
+        color: var(--danger-color);
         font-size: 0.75rem;
         margin-top: 0.25rem;
     }
     
     .help-text {
-        color: #6b7280;
+        color: var(--text-muted);
         font-size: 0.75rem;
         margin-top: 0.25rem;
     }
@@ -127,14 +131,14 @@
         font-size: 0.875rem;
     }
     
-    .btn-primary { background-color: #3b82f6; color: white; }
-    .btn-primary:hover { background-color: #2563eb; }
+    .btn-primary { background-color: var(--primary-color); color: var(--text-on-primary); }
+    .btn-primary:hover { background-color: var(--primary-hover); }
     
-    .btn-secondary { background-color: #6b7280; color: white; }
-    .btn-secondary:hover { background-color: #4b5563; }
+    .btn-secondary { background-color: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border-color); }
+    .btn-secondary:hover { background-color: var(--bg-tertiary); }
     
-    .btn-success { background-color: #10b981; color: white; }
-    .btn-success:hover { background-color: #059669; }
+    .btn-success { background-color: var(--success-color); color: var(--text-on-primary); }
+    .btn-success:hover { background-color: var(--success-hover); }
     
     .time-inputs {
         display: grid;
@@ -151,10 +155,10 @@
         top: 100%;
         left: 0;
         right: 0;
-        background: white;
-        border: 1px solid #d1d5db;
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
         border-radius: 0.375rem;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        box-shadow: var(--shadow-md);
         z-index: 10;
         max-height: 200px;
         overflow-y: auto;
@@ -164,11 +168,12 @@
     .autocomplete-item {
         padding: 0.5rem 0.75rem;
         cursor: pointer;
-        border-bottom: 1px solid #f3f4f6;
+        border-bottom: 1px solid var(--border-color);
+        color: var(--text-primary);
     }
     
     .autocomplete-item:hover {
-        background-color: #f3f4f6;
+        background-color: var(--bg-secondary);
     }
     
     .autocomplete-item:last-child {
@@ -179,16 +184,16 @@
         display: none;
         text-align: center;
         padding: 1rem;
-        color: #6b7280;
+        color: var(--text-secondary);
     }
     
     .spinner {
         display: inline-block;
         width: 1rem;
         height: 1rem;
-        border: 2px solid #e5e7eb;
+        border: 2px solid var(--border-color);
         border-radius: 50%;
-        border-top-color: #3b82f6;
+        border-top-color: var(--primary-color);
         animation: spin 1s ease-in-out infinite;
     }
     
@@ -204,10 +209,10 @@
         <!-- Header -->
         <div class="flex justify-between items-center mb-8">
             <div>
-                <h1 class="text-3xl font-bold text-gray-900">
+                <h1 class="text-3xl font-bold" style="color: var(--text-primary);">
                     {% if form.instance.pk %}Editar Ticket{% else %}Novo Ticket{% endif %}
                 </h1>
-                <p class="text-gray-600 mt-2">
+                <p class="mt-2" style="color: var(--text-secondary);">
                     {% if form.instance.pk %}Modifique as informações do ticket{% else %}Preencha as informações para criar um novo ticket{% endif %}
                 </p>
             </div>
@@ -310,7 +315,7 @@
                     
                     <div class="form-group">
                         <label class="form-label">Duração do Vídeo (horas)</label>
-                        <input type="text" id="duracao_calculada" class="form-input" readonly style="background-color: #f9fafb;">
+                        <input type="text" id="duracao_calculada" class="form-input" readonly style="background-color: var(--bg-tertiary); color: var(--text-muted);">
                         <input type="hidden" name="duracao" id="duracao_hidden" value="{{ form.duracao.value|default:'' }}" required>
                         <div class="help-text">Calculado automaticamente baseado no período</div>
                         {% if form.duracao.errors %}
