@@ -571,7 +571,7 @@ html {
             </h1>
             
             <p class="welcome-subtitle animate-fade-in">
-                Centro de controle inteligente para análise e gerenciamento de tráfego urbano
+                Centro de controle de contagens manuais
             </p>
         </div>
         
@@ -601,7 +601,7 @@ html {
         <a href="{% url 'listar_sessoes' %}" class="nav-card animate-fade-in">
             <div class="nav-card-header">
                 <div class="nav-card-icon">
-                    <i class="fas fa-list-alt"></i>
+                    <i class="fas fa-play-circle"></i>
                 </div>
                 <h3 class="nav-card-title">Gerenciar Sessões</h3>
             </div>
@@ -628,7 +628,7 @@ html {
         <a href="{% url 'admin:autenticacao_user_changelist' %}" class="nav-card animate-fade-in">
             <div class="nav-card-header">
                 <div class="nav-card-icon">
-                    <i class="fas fa-users"></i>
+                    <i class="fas fa-user-shield"></i>
                 </div>
                 <h3 class="nav-card-title">Equipe & Usuários</h3>
             </div>
@@ -655,7 +655,7 @@ html {
         <a href="{% url 'listar_sessoes' %}?status=concluidas" class="nav-card animate-fade-in">
             <div class="nav-card-header">
                 <div class="nav-card-icon">
-                    <i class="fas fa-chart-bar"></i>
+                    <i class="fas fa-chart-line"></i>
                 </div>
                 <h3 class="nav-card-title">Análises & Relatórios</h3>
             </div>
@@ -678,6 +678,84 @@ html {
             </div>
         </a>
 
+    </div>
+
+    <!-- Analytics Cards Section -->
+    <div class="insights-section">
+        <div class="section-header">
+            <div class="section-icon">
+                <i class="fas fa-chart-pie"></i>
+            </div>
+            <h2 class="section-title">Analytics & Insights</h2>
+        </div>
+        
+        <div class="nav-grid">
+            <!-- Top Codes Card -->
+            <div class="nav-card animate-fade-in">
+                <div class="nav-card-header">
+                    <div class="nav-card-icon">
+                        <i class="fas fa-tags"></i>
+                    </div>
+                    <h3 class="nav-card-title">Códigos Mais Utilizados</h3>
+                </div>
+                <p class="nav-card-desc">
+                    Ranking dos códigos de projeto com maior volume de sessões de contagem realizadas.
+                </p>
+                
+                {% if codigos_com_mais_sessoes %}
+                    <div style="margin-top: 1rem;">
+                        {% for codigo_data in codigos_com_mais_sessoes|slice:":3" %}
+                            <div class="activity-item" style="padding: 0.5rem 0; border-bottom: 1px solid var(--border-color);">
+                                <div class="activity-avatar" style="width: 28px; height: 28px; font-size: 0.75rem;">
+                                    {{ forloop.counter }}
+                                </div>
+                                <div class="activity-content">
+                                    <div class="activity-title">{{ codigo_data.codigo }}</div>
+                                    <div class="activity-subtitle">{{ codigo_data.total_sessoes }} sessões</div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state" style="padding: 1rem 0;">
+                        <div class="empty-state-title">Nenhum código encontrado</div>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Top Clients Card -->
+            <div class="nav-card animate-fade-in">
+                <div class="nav-card-header">
+                    <div class="nav-card-icon">
+                        <i class="fas fa-industry"></i>
+                    </div>
+                    <h3 class="nav-card-title">Clientes Mais Utilizados</h3>
+                </div>
+                <p class="nav-card-desc">
+                    Ranking dos clientes com maior volume de sessões de contagem realizadas no sistema.
+                </p>
+                
+                {% if clientes_com_mais_sessoes %}
+                    <div style="margin-top: 1rem;">
+                        {% for cliente_data in clientes_com_mais_sessoes|slice:":3" %}
+                            <div class="activity-item" style="padding: 0.5rem 0; border-bottom: 1px solid var(--border-color);">
+                                <div class="activity-avatar" style="width: 28px; height: 28px; font-size: 0.75rem;">
+                                    {{ forloop.counter }}
+                                </div>
+                                <div class="activity-content">
+                                    <div class="activity-title">{{ cliente_data.cliente }}</div>
+                                    <div class="activity-subtitle">{{ cliente_data.total_sessoes }} sessões</div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state" style="padding: 1rem 0;">
+                        <div class="empty-state-title">Nenhum cliente encontrado</div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
     </div>
 
 </div>

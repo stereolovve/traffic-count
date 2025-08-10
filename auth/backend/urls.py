@@ -25,6 +25,7 @@ from contagens import views
 from padroes import views
 from autenticacao.models import User
 from contagens.models import Session, Counting
+from trabalhos.models import Cliente, Codigo
 from django.db.models import Count
 from django.conf import settings
 from django.conf.urls.static import static
@@ -42,6 +43,39 @@ def home(request):
             count=Count('session')  # Using the correct reverse relation name
         ).order_by('-count')[:5]
         
+        # Top codes with most sessions
+        codigos_com_mais_sessoes = Session.objects.values('codigo').annotate(
+            total_sessoes=Count('id')
+        ).order_by('-total_sessoes')[:5]
+        
+        # Get clients with most sessions (through codes)
+        # First get all códigos from sessions, then group by client name
+        clientes_com_mais_sessoes = []
+        try:
+            # Get all sessions with their códigos
+            session_codigos = Session.objects.values_list('codigo', flat=True)
+            
+            # Count sessions per client by matching códigos
+            cliente_counts = {}
+            for session_codigo in session_codigos:
+                # Find the codigo object and its client
+                try:
+                    codigo_obj = Codigo.objects.get(codigo=session_codigo)
+                    cliente_name = codigo_obj.cliente.nome
+                    cliente_counts[cliente_name] = cliente_counts.get(cliente_name, 0) + 1
+                except Codigo.DoesNotExist:
+                    # If código doesn't exist in trabalhos, skip
+                    continue
+            
+            # Convert to list and sort by count
+            clientes_com_mais_sessoes = [
+                {'cliente': nome, 'total_sessoes': count}
+                for nome, count in sorted(cliente_counts.items(), key=lambda x: x[1], reverse=True)
+            ][:5]
+        except Exception:
+            # In case of any error, return empty list
+            clientes_com_mais_sessoes = []
+        
         # Most recent sessions
         sessoes_recentes = Session.objects.all().order_by('-id')[:5]  # Using 'id' as a fallback, use your date field instead
         
@@ -51,6 +85,8 @@ def home(request):
             'total_sessoes': total_sessoes,
             'total_usuarios': total_usuarios,
             'top_usuarios': top_usuarios,
+            'codigos_com_mais_sessoes': codigos_com_mais_sessoes,
+            'clientes_com_mais_sessoes': clientes_com_mais_sessoes,
             'sessoes_recentes': sessoes_recentes,
         }
         
@@ -66,7 +102,7 @@ urlpatterns = [
         redirect_authenticated_user=True,
         extra_context={'next': '/'}
     ), name='login'),
-    path('logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
+    path('logout/', auth_views.LogoutView.as_view(next_page='/login/'), name='logout'),
     path('register/', auth_views_custom.register, name='register'),
     path('contagens/', include('contagens.urls')),
     path('padroes/', include('padroes.urls')),

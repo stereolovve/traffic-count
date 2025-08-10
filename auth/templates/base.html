@@ -1055,7 +1055,7 @@
                 if (btn.type === 'submit') {
                     // Don't add loading state to login/auth forms
                     const form = btn.closest('form');
-                    if (form && (form.action.includes('/login/') || form.action.includes('/register/'))) {
+                    if (form && (form.action.includes('/login/') || form.action.includes('/register/') || form.action.includes('/logout/'))) {
                         return;
                     }
                     
