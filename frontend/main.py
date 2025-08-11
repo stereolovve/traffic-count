@@ -35,26 +35,6 @@ logging.basicConfig(
     ]
 )
 
-# Configurar loggers específicos para componentes internos
-logging.getLogger('flet').setLevel(logging.ERROR)
-logging.getLogger('flet_desktop').setLevel(logging.ERROR)
-logging.getLogger('app').setLevel(logging.ERROR)
-logging.getLogger('flet_socket_server').setLevel(logging.ERROR)
-
-# Ignorar erros de executor após shutdown (avoid "cannot schedule new futures after shutdown")
-def _ignore_executor_shutdown(loop, context):
-    msg = context.get("message", "")
-    if "cannot schedule new futures after shutdown" in msg:
-        return
-    loop.default_exception_handler(context)
-
-try:
-    loop = asyncio.get_running_loop()
-except RuntimeError:
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-loop.set_exception_handler(_ignore_executor_shutdown)
-
 class MyApp:
     def __init__(self, page: ft.Page):
         self.page = page
@@ -230,7 +210,7 @@ class MyApp:
             )
             
             self.page.window.width = 800
-            self.page.window.height = 600
+            self.page.window.height = 700
             
             self.page.update()
             
@@ -260,7 +240,7 @@ class MyApp:
             
             # Ajustar o tamanho da janela
             self.page.window.width = 800
-            self.page.window.height = 600
+            self.page.window.height = 700
             
             # Atualizar a página
             self.page.update()
@@ -294,7 +274,7 @@ class MyApp:
 async def main(page: ft.Page):
     page.title = "Contador Perplan"
     page.window.width = 800
-    page.window.height = 600
+    page.window.height = 700
 
     page.window.always_on_top = True
     page.scroll = ft.ScrollMode.AUTO
@@ -327,15 +307,3 @@ try:
     ft.app(target=main, assets_dir="assets")
 except Exception as e:
     logging.error(f"Erro ao executar como app desktop: {e}")
-    try:
-        # Fallback to web view if desktop fails
-        logging.info("Tentando executar como aplicativo web...")
-        ft.app(target=main, view=ft.AppView.WEB_BROWSER, assets_dir="assets", port=8080)
-    except Exception as web_error:
-        logging.error(f"Erro ao executar como web app: {web_error}")
-        print("ERRO: Não foi possível executar a aplicação.")
-        print("Possíveis soluções:")
-        print("1. Verificar conexão com a internet")
-        print("2. Verificar configurações de proxy/firewall")
-        print("3. Executar em um ambiente sem restrições de rede")
-        input("Pressione Enter para sair...")

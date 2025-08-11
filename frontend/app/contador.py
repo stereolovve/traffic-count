@@ -221,6 +221,55 @@ class ContadorPerplan(ft.Column):
         except Exception as ex:
             logging.error(f"[ERROR] Erro ao atualizar binds: {ex}")
 
+    def reload_binds_from_api(self, pattern_type):
+        """Recarrega binds da API e atualiza a UI imediatamente"""
+        try:
+            print(f"🔧 DEBUG: reload_binds_from_api chamado para pattern_type: {pattern_type}")
+            
+            # Usar o BindManager para recarregar
+            bind_manager = BindManager(self.page, self)
+            
+            # Executar de forma síncrona usando asyncio.run em thread
+            def run_reload():
+                try:
+                    import asyncio
+                    new_binds_list = asyncio.run(bind_manager.carregar_categorias(pattern_type))
+                    
+                    if new_binds_list:
+                        # Converter para dict
+                        new_binds = {}
+                        for categoria in new_binds_list:
+                            if isinstance(categoria, dict):
+                                veiculo = categoria.get('veiculo')
+                                bind = categoria.get('bind')
+                                if veiculo and bind:
+                                    new_binds[veiculo] = bind
+                        
+                        print(f"🔧 DEBUG: Novos binds: {new_binds}")
+                        
+                        # Atualizar no thread principal
+                        old_binds = self.binds.copy()
+                        self.binds = new_binds
+                        
+                        print(f"🔧 DEBUG: Binds atualizados de {old_binds} para {self.binds}")
+                        
+                        # Atualizar UI usando método existente
+                        self.page.run_task(self.atualizar_binds)
+                        
+                        logging.info("Binds recarregados da API e UI atualizada")
+                    else:
+                        print("🔧 DEBUG: Nenhum bind retornado da API")
+                        
+                except Exception as ex:
+                    print(f"🔧 DEBUG: Erro em run_reload: {ex}")
+            
+            # Executar em thread separado
+            threading.Thread(target=run_reload, daemon=True).start()
+            
+        except Exception as ex:
+            print(f"🔧 DEBUG: Erro em reload_binds_from_api: {ex}")
+            logging.error(f"Erro ao recarregar binds da API: {ex}")
+
     def atualizar_bind_todos_movimentos(self, veiculo, novo_bind):
         if not novo_bind:
             logging.error("Bind inválido. Não foi possível atualizar.")

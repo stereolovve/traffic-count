@@ -1,12 +1,11 @@
 # utils/change_binds.py
 import logging
-import httpx
 import flet as ft
 import asyncio
 import threading
 from pathlib import Path
 import json
-from utils.config import API_URL,DESKTOP_DIR
+from utils.config import API_URL, DESKTOP_DIR
 from utils.api import async_api_request
 
 logging.getLogger(__name__).setLevel(logging.ERROR)
@@ -40,40 +39,40 @@ class BindManager:
             logging.error("❌ Falha ao recuperar token! Abortando requisição.")
             return []
         
-        response = await async_api_request(
-            "GET",
-            "/padroes/tipos-de-padrao/",
-            headers=headers
-        )
-        return response if isinstance(response, list) else []
+        try:
+            response = await async_api_request("GET", "padroes/tipos-de-padrao/", None, headers)
+            return response if isinstance(response, list) else []
+        except Exception as e:
+            logging.error(f"Erro ao carregar padrões: {e}")
+            return []
 
     async def carregar_categorias(self, tipo_padrao):
         headers = await self.get_authenticated_headers()
         if not headers:
             return []
         
-        response = await async_api_request(
-            "GET",
-            f"/padroes/merged-binds/?pattern_type={tipo_padrao}",
-            headers=headers
-        )
-        return response if isinstance(response, list) else []
+        try:
+            response = await async_api_request("GET", f"padroes/merged-binds/?pattern_type={tipo_padrao}", None, headers)
+            return response if isinstance(response, list) else []
+        except Exception as e:
+            logging.error(f"Erro ao carregar categorias: {e}")
+            return []
 
     async def salvar_bind(self, tipo_padrao, veiculo, novo_bind):
         headers = await self.get_authenticated_headers()
         if not headers:
             return False
         
-        dados = {"pattern_type": tipo_padrao, "veiculo": veiculo, "bind": novo_bind}
-        response = await async_api_request(
-            "POST",
-            "/padroes/user-padroes/",
-            data=dados,
-            headers=headers
-        )
-        return "error" not in response
+        try:
+            dados = {"pattern_type": tipo_padrao, "veiculo": veiculo, "bind": novo_bind}
+            response = await async_api_request("POST", "padroes/user-padroes/", dados, headers)
+            return "erro" not in response and "error" not in response
+        except Exception as e:
+            logging.error(f"Erro ao salvar bind: {e}")
+            return False
 
 def executar_async(coroutine):
+    """Execute async coroutine in a thread-safe way"""
     try:
         loop = asyncio.get_running_loop()
         loop.create_task(coroutine)  
@@ -81,124 +80,248 @@ def executar_async(coroutine):
         threading.Thread(target=lambda: asyncio.run(coroutine)).start()
 
 def abrir_configuracao_binds(page, contador):
-    if hasattr(page, 'dialog') and page.dialog is not None:
-        page.dialog.open = False
-        page.dialog = None
-
+    """Open bind configuration dialog using Flet 0.28.3+ syntax"""
+    
     bind_manager = BindManager(page, contador)
-
-    subtitulo = ft.Text(
-        "Escolha um tipo de padrão e defina as teclas de atalho para cada veículo.",
-        size=14, color="GRAY"
-    )
-
+    
+    # State variables for the dialog
+    padroes_list = []
+    categorias_list = []
+    
+    # UI Components
     padrao_dropdown = ft.Dropdown(
         label="Selecione um Tipo de Padrão",
-        options=[]
+        options=[ft.dropdown.Option("Carregando...")],
+        width=300
     )
-
-    binds_container = ft.Column(spacing=10, scroll=ft.ScrollMode.AUTO, expand=True)
-
-    async def carregar_padroes_e_atualizar():
-        padroes = await bind_manager.carregar_padroes()
-
-        if isinstance(padroes, list) and padroes:
-            padrao_dropdown.options = [ft.dropdown.Option(str(p)) for p in padroes]
-            padrao_dropdown.value = padroes[0] 
-
-            executar_async(carregar_categorias_e_atualizar(padroes[0]))
+    
+    binds_container = ft.Column(
+        spacing=10,
+        scroll=ft.ScrollMode.AUTO,
+        height=300,
+        controls=[
+            ft.Text(
+                "Aguardando seleção de padrão...",
+                size=14
+            )
+        ]
+    )
+    
+    def close_dialog(e=None):
+        """Close dialog using new Flet 0.28.3 syntax"""
+        page.close(dialog)
+    
+    def save_bind(veiculo, text_field):
+        """Save bind for a specific vehicle"""
+        def _save(e):
+            novo_bind = text_field.value.strip()
+            if not novo_bind:
+                page.open(ft.SnackBar(ft.Text("Digite uma tecla válida!")))
+                return
+                
+            tipo_padrao = padrao_dropdown.value
+            if not tipo_padrao:
+                page.open(ft.SnackBar(ft.Text("Selecione um tipo de padrão!")))
+                return
+            
+            # Execute async save operation
+            executar_async(save_bind_async(tipo_padrao, veiculo, novo_bind, text_field))
+        
+        return _save
+    
+    async def save_bind_async(tipo_padrao, veiculo, novo_bind, text_field):
+        """Async function to save bind"""
+        sucesso = await bind_manager.salvar_bind(tipo_padrao, veiculo, novo_bind)
+        if sucesso:
+            text_field.bgcolor = ft.Colors.GREEN_800
+            page.open(ft.SnackBar(ft.Text(f"Bind '{novo_bind}' salvo para {veiculo}!")))
+            
+            # Usar método direto do contador para recarregar binds
+            if contador and hasattr(contador, 'reload_binds_from_api'):
+                print(f"🔧 DEBUG: Chamando contador.reload_binds_from_api({tipo_padrao})")
+                contador.reload_binds_from_api(tipo_padrao)
+            else:
+                print("🔧 DEBUG: Contador não tem método reload_binds_from_api")
+            
         else:
-            logging.error("Erro: `padroes` não é uma lista válida.")
-            padrao_dropdown.options = [ft.dropdown.Option("Nenhum padrão encontrado")]
-
-        padrao_dropdown.update()
+            text_field.bgcolor = ft.Colors.RED_100
+            page.open(ft.SnackBar(ft.Text("Erro ao salvar bind!")))
         page.update()
-
-    async def carregar_categorias_e_atualizar(tipo_padrao):
-        categorias = await bind_manager.carregar_categorias(tipo_padrao)
+    
+    def on_padrao_change(e):
+        """Handle pattern type selection change"""
+        if not padrao_dropdown.value or padrao_dropdown.value == "Carregando...":
+            return
+            
+        executar_async(carregar_categorias_async(padrao_dropdown.value))
+    
+    async def carregar_categorias_async(tipo_padrao):
+        """Load categories for selected pattern type"""
         binds_container.controls.clear()
-
-        if isinstance(categorias, list) and categorias:
-            for cat in categorias:
-                veiculo = cat.get("veiculo", "Desconhecido")
-                bind_inicial = cat.get("bind", "Não definido")
-
-                bind_input = ft.TextField(
-                    value=bind_inicial,
-                    label=f"Tecla para {veiculo}",
-                    width=150,
-                    text_align=ft.TextAlign.CENTER
-                )
-
-                salvar_button = ft.IconButton(
-                    icon=ft.Icons.SAVE,
-                    tooltip="Salvar Bind",
-                    on_click=lambda e, v=veiculo, b=bind_input: executar_async(salvar_bind_e_atualizar(v, b.value, tipo_padrao))
-                )
-
-                binds_container.controls.append(ft.Row(
-                    controls=[
-                        ft.Text(veiculo, size=16, weight=ft.FontWeight.W_500),
-                        bind_input,
-                        salvar_button
-                    ],
-                    alignment=ft.MainAxisAlignment.SPACE_BETWEEN
-                ))
-
-        else:
+        binds_container.controls.append(
+            ft.Text("Carregando categorias...")
+        )
+        page.update()
+        
+        categorias = await bind_manager.carregar_categorias(tipo_padrao)
+        
+        binds_container.controls.clear()
+        
+        if not categorias:
             binds_container.controls.append(
-                ft.Text("Nenhuma categoria encontrada.", color="RED")
+                ft.Text("Nenhuma categoria encontrada.")
             )
-
-        binds_container.update()
-        page.update()
-
-    async def salvar_bind_e_atualizar(veiculo, novo_bind, tipo_padrao):
-        if await bind_manager.salvar_bind(tipo_padrao, veiculo, novo_bind):
-            snackbar = ft.SnackBar(
-                ft.Text(f"✅ Bind atualizado para {veiculo}!"),
-                bgcolor="GREEN"
-            )
-
-            if hasattr(contador, "binds"):
-                contador.binds[veiculo] = novo_bind
-                await contador.atualizar_binds()
         else:
-            snackbar = ft.SnackBar(
-                ft.Text(f"❌ Erro ao atualizar bind para {veiculo}."), bgcolor="RED"
-            )
-
-        page.overlay.append(snackbar)
-        snackbar.open = True
+            for categoria in categorias:
+                veiculo = categoria.get('veiculo', 'N/A')
+                bind_atual = categoria.get('bind', '')
+                
+                # Create text field for bind input
+                bind_field = ft.TextField(
+                    label=f"Tecla para {veiculo}",
+                    value=bind_atual,
+                    width=200,
+                    max_length=10,
+                    hint_text="Ex: a, 1, np1, f1, space"
+                )
+                
+                # Save button for this bind
+                save_btn = ft.ElevatedButton(
+                    "Salvar",
+                    on_click=save_bind(veiculo, bind_field)
+                )
+                
+                # Row with vehicle name, input field, and save button
+                bind_row = ft.Row([
+                    ft.Text(veiculo, width=100),
+                    bind_field,
+                    save_btn
+                ], alignment=ft.MainAxisAlignment.START)
+                
+                binds_container.controls.append(bind_row)
+        
         page.update()
-
-    def fechar_dialogo():
-        page.dialog.open = False
-        page.update()
-
-    padrao_dropdown.on_change = lambda e: executar_async(carregar_categorias_e_atualizar(e.control.value))
-
+    
+    # Set dropdown change handler
+    padrao_dropdown.on_change = on_padrao_change
+    
+    # Create the dialog
     dialog = ft.AlertDialog(
         title=ft.Text("Configuração de Binds"),
         content=ft.Container(
             content=ft.Column([
-                subtitulo,
+                ft.Text(
+                    "Escolha um tipo de padrão e defina as teclas de atalho para cada veículo.",
+                    size=14
+                ),
                 padrao_dropdown,
                 ft.Divider(),
                 binds_container,
             ], spacing=15, scroll=ft.ScrollMode.AUTO),
             height=500,
-            expand=True
+            width=600,
+            border_radius=10,
+            padding=20
         ),
         actions=[
-            ft.TextButton("Fechar", on_click=lambda e: fechar_dialogo())
+            ft.TextButton(
+                "Fechar",
+                on_click=close_dialog
+            )
         ],
         modal=True
     )
+    
+    # Load pattern types async
+    async def carregar_padroes_async():
+        padroes = await bind_manager.carregar_padroes()
+        padrao_dropdown.options.clear()
+        
+        if padroes:
+            padrao_dropdown.options = [
+                ft.dropdown.Option(padrao if isinstance(padrao, str) else padrao.get('tipo', 'N/A'))
+                for padrao in padroes
+            ]
+        else:
+            padrao_dropdown.options = [ft.dropdown.Option("Nenhum padrão encontrado")]
+        
+        page.update()
+    
+    
+    # Open dialog using new Flet 0.28.3 syntax
+    page.open(dialog)
+    
+    # Load pattern types
+    executar_async(carregar_padroes_async())
 
-    page.dialog = dialog
-    page.dialog.open = True
-    page.update()
+def criar_dialog_completo(page, contador):
+    """Create the full bind configuration dialog (separate function for testing)"""
+    
+    bind_manager = BindManager(page, contador)
 
-    executar_async(carregar_padroes_e_atualizar())
+    # Dark theme components following UI guidelines
+    subtitulo = ft.Text(
+        "Escolha um tipo de padrão e defina as teclas de atalho para cada veículo.",
+        size=14, 
+        color=ft.Colors.GREY_400  # Light text on dark background
+    )
 
+    padrao_dropdown = ft.Dropdown(
+        label="Selecione um Tipo de Padrão",
+        options=[ft.dropdown.Option("Carregando...")],
+        bgcolor=ft.Colors.GREY_800,  # Dark background
+        color=ft.Colors.WHITE,       # Light text for contrast
+        border_color=ft.Colors.GREY_600
+    )
+
+    binds_container = ft.Column(
+        spacing=10, 
+        scroll=ft.ScrollMode.AUTO, 
+        expand=True,
+        controls=[
+            ft.Text(
+                "Aguardando seleção de padrão...", 
+                color=ft.Colors.GREY_400,
+                size=14
+            )
+        ]
+    )
+
+    def fechar_dialogo(e=None):
+        """Close dialog safely"""
+        if page.dialog:
+            page.dialog.open = False
+            page.dialog = None
+            page.update()
+
+    # Create dialog with complete dark theme following UI guidelines
+    dialog = ft.AlertDialog(
+        title=ft.Text("Configuração de Binds", color=ft.Colors.WHITE),
+        content=ft.Container(
+            content=ft.Column([
+                subtitulo,
+                padrao_dropdown,
+                ft.Divider(color=ft.Colors.GREY_600),  # Dark theme divider
+                binds_container,
+            ], spacing=15, scroll=ft.ScrollMode.AUTO),
+            height=500,
+            width=600,  # Added explicit width
+            bgcolor=ft.Colors.GREY_900,  # Dark background
+            border_radius=10,
+            padding=20
+        ),
+        actions=[
+            ft.TextButton(
+                "Fechar", 
+                on_click=fechar_dialogo,
+                style=ft.ButtonStyle(
+                    color=ft.Colors.WHITE,           # Light text
+                    bgcolor=ft.Colors.GREY_700       # Dark background
+                )
+            )
+        ],
+        modal=True,
+        bgcolor=ft.Colors.GREY_900  # Dark dialog background
+    )
+
+    return dialog
