@@ -72,10 +72,26 @@ class SessionManager:
                 self.contador.sessao = f"{base_sessao}_{counter}"
                 counter += 1
 
-            # 5. Limpar categorias anteriores para evitar duplicação
-            logging.info("Limpando categorias anteriores para evitar duplicação...")
+            # 5. ✅ Limpeza robusta para evitar duplicação
+            logging.info("Limpando dados da sessão anterior...")
+            
+            # Limpar categorias
             self.categorias.clear()
             self.contador.categorias.clear()
+            
+            # ✅ Limpar labels e contagens de sessão anterior
+            self.labels.clear()
+            self.contador.labels.clear()
+            
+            # ✅ Limpar contagens da sessão anterior (apenas se for nova sessão)
+            if not hasattr(self.contador, '_current_session') or self.contador._current_session != base_sessao:
+                self.contador.contagens.clear()
+                self.contador._current_session = base_sessao
+                logging.info("Nova sessão detectada - contagens zeradas")
+            
+            # ✅ Marcar UI components para reconstrução
+            if 'contagem' in self.contador.ui_components:
+                self.contador.ui_components['contagem']._session_loaded = False
             
             # 6. Carregar binds e categorias em paralelo (otimização)
             logging.info("Iniciando carregamento paralelo de binds e categorias...")

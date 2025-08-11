@@ -43,10 +43,26 @@ class AbaContagem(ft.Column):
 
     def setup_ui(self):
         try:
+            # ✅ Limpeza mais robusta para evitar duplicação
             self.controls.clear()
-            self.contador.contagem_ativa = False
-            self.labels = {}  
-            self.contador.labels = self.labels  
+            
+            # ✅ Preservar estado ativo se já estava funcionando
+            if not hasattr(self.contador, 'contagem_ativa'):
+                self.contador.contagem_ativa = False
+                
+            # ✅ Limpar labels apenas se for uma nova sessão
+            if not hasattr(self, '_session_loaded') or not self._session_loaded:
+                self.labels = {}  
+                self.contador.labels = self.labels
+                self._session_loaded = True
+            
+            # ✅ Resetar referências de UI
+            self.session_info = None
+            self.toggle_button = None
+            self.last_save_label = None
+            self.period_label = None
+            self.status_container = None
+            self.movimento_tabs = None  
             main_content = ft.Column(
                 controls=[],
             )
@@ -461,17 +477,19 @@ class AbaContagem(ft.Column):
             self.contador.pressed_keys.clear()
 
     def update_labels(self, veiculo, movimento):
+        """Atualização otimizada - apenas o label específico"""
         key = (veiculo, movimento)
         if key in self.labels:
             label_count, label_bind = self.labels[key]
-            label_count.value = str(self.contador.contagens.get(key, 0))
-            label_count.update()
-            if hasattr(self, 'page') and self.page is not None:
-                self.page.update()
-            elif hasattr(self.contador, 'page') and self.contador.page is not None:
-                self.contador.page.update()
+            new_value = str(self.contador.contagens.get(key, 0))
+            
+            # ✅ Otimização: só atualizar se o valor realmente mudou
+            if label_count.value != new_value:
+                label_count.value = new_value
+                label_count.update()
+                # ✅ Não chamar page.update() - muito custoso para cada incremento
         else:
-            logging.warning(f"[WARNING] Label não encontrada para {key}. Aguardando criação.")
+            logging.debug(f"[DEBUG] Label não encontrada para {key}. Será criado no próximo setup_ui.")
 
     def _get_page(self):
         if hasattr(self, 'page') and self.page is not None:
@@ -649,7 +667,7 @@ class AbaContagem(ft.Column):
         self.page.update()
 
     def force_ui_update(self):
-        """Força a atualização da UI após carregamento de dados da sessão"""
+        """Força a atualização da UI após carregamento de dados da sessão - OTIMIZADO"""
         try:
             logging.info("Forçando atualização da UI de contagem...")
             
@@ -664,36 +682,45 @@ class AbaContagem(ft.Column):
                 logging.warning("Nenhum movimento definido na sessão")
                 return
             
+            # ✅ OTIMIZAÇÃO: Marcar como nova sessão para permitir reconstrução
+            self._session_loaded = False
+            
             # Reconstruir a UI com os novos dados
             self.setup_ui()
             
-            # Atualizar as contagens existentes se houver
+            # ✅ OTIMIZAÇÃO: Batch update - atualizar todas as contagens de uma só vez
+            batch_updates = []
             if hasattr(self.contador, 'contagens') and self.contador.contagens:
                 for (veiculo, movimento), count in self.contador.contagens.items():
                     key = (veiculo, movimento)
                     if key in self.labels:
                         label_count, _ = self.labels[key]
-                        label_count.value = str(count)
-                        label_count.update()
-            
-            # Atualizar a página
-            if self.page:
-                self.page.update()
-            
-            # ✅ Atualizar informações de tempo após a UI estar pronta
-            if hasattr(self, 'session_time_label'):
-                # Usar um timer pequeno para garantir que a página foi atualizada
-                import threading
-                def delayed_update():
-                    import time
-                    time.sleep(0.5)  # Aguardar 500ms
-                    try:
-                        self.update_session_time_info()
-                    except:
-                        pass  # Falha silenciosa
-                threading.Thread(target=delayed_update, daemon=True).start()
+                        if label_count.value != str(count):
+                            label_count.value = str(count)
+                            batch_updates.append(label_count)
                 
-            logging.info("UI de contagem atualizada com sucesso")
+                # Atualizar todos os labels modificados de uma vez
+                for label in batch_updates:
+                    label.update()
+            
+            # ✅ Uma única atualização da página no final
+            page = self._get_page()
+            if page:
+                page.update()
+            
+            # ✅ Atualizar informações de tempo de forma assíncrona
+            if hasattr(self, 'session_time_label'):
+                asyncio.create_task(self._delayed_time_update())
+                
+            logging.info(f"UI de contagem atualizada com sucesso - {len(batch_updates)} labels atualizados")
             
         except Exception as ex:
             logging.error(f"Erro ao forçar atualização da UI: {ex}")
+    
+    async def _delayed_time_update(self):
+        """Atualização assíncrona das informações de tempo"""
+        try:
+            await asyncio.sleep(0.1)  # Aguardar 100ms - mais rápido
+            self.update_session_time_info()
+        except Exception as ex:
+            logging.debug(f"Erro na atualização de tempo: {ex}")  # Debug, não error

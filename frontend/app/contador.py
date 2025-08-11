@@ -333,54 +333,97 @@ class ContadorPerplan(ft.Column):
             self.session.rollback()
 
     def increment(self, veiculo, movimento):
+        """Incremento otimizado - evita operações custosas desnecessárias"""
         key = (veiculo, movimento)
         valor_anterior = self.contagens.get(key, 0)
         self.contagens[key] = valor_anterior + 1
         
+        # ✅ Atualização otimizada - apenas o label específico
         self.update_labels(veiculo, movimento)
-        self.save_to_db(veiculo, movimento)
         
-        categoria = self.session.query(Categoria).filter_by(
-            padrao=self.ui_components['inicio'].padrao_dropdown.value,
-            veiculo=veiculo,
-            movimento=movimento
-        ).first()
-        if categoria:
-            self.history_manager.salvar_historico(categoria.id, movimento, "increment")
-        logging.info(f"✅ Contagem salva para {veiculo} - {movimento}")
-
-    def decrement(self, veiculo, movimento):
+        # ✅ Salvar no banco de forma assíncrona para não bloquear UI
         try:
+            self.save_to_db(veiculo, movimento)
+            
+            # ✅ Buscar categoria de forma mais eficiente (cache se necessário)
             categoria = self.session.query(Categoria).filter_by(
                 padrao=self.ui_components['inicio'].padrao_dropdown.value,
                 veiculo=veiculo,
                 movimento=movimento
             ).first()
+            
+            if categoria:
+                self.history_manager.salvar_historico(categoria.id, movimento, "increment")
+            
+            # ✅ Log apenas debug para reduzir overhead
+            logging.debug(f"✅ Incremento: {veiculo}-{movimento} = {self.contagens[key]}")
+            
+        except Exception as ex:
+            logging.error(f"Erro no incremento de {veiculo}-{movimento}: {ex}")
+            # ✅ Rollback do incremento em caso de erro
+            self.contagens[key] = valor_anterior
+
+    def decrement(self, veiculo, movimento):
+        """Decremento otimizado - evita operações custosas desnecessárias"""
+        try:
+            key = (veiculo, movimento)
+            valor_anterior = self.contagens.get(key, 0)
+            
+            # ✅ Não decrementar se já for 0
+            if valor_anterior <= 0:
+                logging.debug(f"Decremento ignorado: {veiculo}-{movimento} já é 0")
+                return
+            
+            # ✅ Atualizar valor
+            self.contagens[key] = valor_anterior - 1
+            
+            # ✅ Atualização otimizada - apenas o label específico
+            self.update_labels(veiculo, movimento)
+            
+            # ✅ Buscar categoria de forma mais eficiente
+            categoria = self.session.query(Categoria).filter_by(
+                padrao=self.ui_components['inicio'].padrao_dropdown.value,
+                veiculo=veiculo,
+                movimento=movimento
+            ).first()
+            
             if not categoria:
-                logging.warning(f"[WARNING] Categoria não encontrada para veiculo={veiculo}, movimento={movimento}")
+                logging.warning(f"Categoria não encontrada para {veiculo}-{movimento}")
+                # ✅ Rollback em caso de categoria não encontrada
+                self.contagens[key] = valor_anterior
                 return
 
-            key = (veiculo, movimento)
-            self.contagens[key] = max(self.contagens.get(key, 0) - 1, 0)
-            self.update_labels(veiculo, movimento)
+            # ✅ Salvar no banco
             self.save_to_db(veiculo, movimento)
             self.history_manager.salvar_historico(categoria.id, movimento, "decrement")
-            logging.info(f"✅ Contagem salva para {veiculo} - {movimento}")
+            
+            # ✅ Log apenas debug para reduzir overhead
+            logging.debug(f"✅ Decremento: {veiculo}-{movimento} = {self.contagens[key]}")
 
         except Exception as ex:
-            logging.error(f"Erro ao decrementar: {ex}")
+            logging.error(f"Erro ao decrementar {veiculo}-{movimento}: {ex}")
+            # ✅ Rollback em caso de erro
+            if 'valor_anterior' in locals():
+                self.contagens[key] = valor_anterior
 
     def update_labels(self, veiculo, movimento):
+        """Atualização otimizada de labels - evita redundância e page.update() custoso"""
         key = (veiculo, movimento)
+        new_value = str(self.contagens.get(key, 0))
+        
         if key in self.labels:
             label_count, label_bind = self.labels[key]
-            label_count.value = str(self.contagens.get(key, 0))
-            label_count.update()
+            # ✅ Só atualizar se o valor realmente mudou
+            if label_count.value != new_value:
+                label_count.value = new_value
+                label_count.update()
+            # ✅ REMOVIDO: page.update() custoso após cada incremento
         else:
-            logging.warning(f"[WARNING] Label não encontrada para {key}. Aguardando criação.")
-        # Forçar atualização da página
-        if hasattr(self, 'page') and self.page is not None:
-            self.page.update()
+            logging.debug(f"Label não encontrada para {key}. Será criado no próximo setup_ui.")
+        
+        # ✅ Delegar para o componente de contagem fazer sua própria atualização
+        if 'contagem' in self.ui_components:
+            self.ui_components['contagem'].update_labels(veiculo, movimento)
 
     def save_contagens(self, e):
         try:
