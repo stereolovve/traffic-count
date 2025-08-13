@@ -6,21 +6,23 @@ import os
 from sqlalchemy.orm import relationship
 Base = declarative_base()
 
-db_path = os.path.join(os.getenv('USERPROFILE'), 'contadordb.db')
+# Banco na raiz do projeto (diretório onde o app é iniciado)
+db_path = os.path.join(os.getcwd(), 'contador.db')
 
-engine = create_engine('sqlite:///contadordb.db')
+engine = create_engine(f'sqlite:///{db_path}')
 
 Session = sessionmaker(bind=engine)
 
 class Categoria(Base):
     __tablename__ = 'categorias'
     id = Column(Integer, primary_key=True, autoincrement=True)
-    padrao = Column(String, nullable=False)
+    padrao = Column(String, nullable=False, index=True)  # Índice para performance
     veiculo = Column(String, nullable=False)
     movimento = Column(String, nullable=False)
     bind = Column(String)
-    count = Column(Integer, default=0)
+    ativo = Column(Boolean, default=True)  # Soft delete
     criado_em = Column(DateTime, default=datetime.now)
+    atualizado_em = Column(DateTime, default=datetime.now, onupdate=datetime.now)  # Auditoria
     __table_args__ = (
         UniqueConstraint('padrao', 'veiculo', 'movimento', name='uq_categorias_padrao_veiculo_movimento'),
     )

@@ -10,7 +10,18 @@
       "Bash(.venvScriptsActivate.ps1)",
       "Bash(npm run build:css:*)",
       "Bash(npm install)",
-      "WebFetch(domain:prnt.sc)"
+      "WebFetch(domain:prnt.sc)",
+      "Bash(pip show:*)",
+      "Bash(rm:*)",
+      "WebFetch(domain:perplan.tech)",
+      "Bash(mv:*)",
+      "Bash(mkdir:*)",
+      "Bash(copy:*)",
+      "Bash(cp:*)",
+      "Bash(npm start)",
+      "Bash(set PORT=3001)",
+      "Bash(npm cache clean:*)",
+      "Bash(git add:*)"
     ],
     "deny": []
   }

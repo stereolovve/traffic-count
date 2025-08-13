@@ -323,7 +323,10 @@ class AbaContagem(ft.Column):
             content.controls.append(ft.Text("⚠ Aguardando carregamento das categorias...", color="yellow"))
             return content
         
-        categorias = [c for c in self.contador.categorias if movimento.strip().upper() == c.movimento.strip().upper()]
+        # Busca case-insensitive e normalizada
+        movimento_normalizado = movimento.strip().upper()
+        categorias = [c for c in self.contador.categorias 
+                     if c.movimento.strip().upper() == movimento_normalizado]
         
         logging.debug(f"[DEBUG] Categorias encontradas para {movimento}: {[(c.veiculo, c.movimento) for c in categorias]}")
 
@@ -342,9 +345,11 @@ class AbaContagem(ft.Column):
 
     def create_category_control(self, veiculo, bind, movimento):
         bind = self.contador.binds.get(veiculo, "N/A")
+        # Busca case-insensitive para veículo e movimento
         categoria = next(
             (c for c in self.contador.categorias 
-             if c.veiculo == veiculo and c.movimento == movimento),
+             if c.veiculo.strip() == veiculo.strip() and 
+                c.movimento.strip().upper() == movimento.strip().upper()),
             None
         )
         if not categoria:

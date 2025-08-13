@@ -36,7 +36,6 @@ class AbaConfig(ft.Column):
                 ft.Container(
                     self.username_text, 
                     alignment=ft.alignment.center,
-                    bgcolor=ft.Colors.GREY_800,  # Dark background
                     border_radius=8,
                     padding=10
                 ),
@@ -197,7 +196,6 @@ class AbaConfig(ft.Column):
             logging.error(f"Erro no logout: {ex}")
 
     def theme_changed(self, e):
-        """Handle theme switching with proper dark theme support"""
         try:
             self.contador.page.theme_mode = (
                 ft.ThemeMode.DARK if self.contador.page.theme_mode == ft.ThemeMode.LIGHT 
@@ -212,7 +210,6 @@ class AbaConfig(ft.Column):
             logging.error(f"Erro ao mudar tema: {ex}")
 
     def ajustar_opacidade(self, e):
-        """Handle window opacity adjustment"""
         try:
             nova_opacidade = e.control.value / 100
             self.contador.page.window.opacity = nova_opacidade
@@ -221,7 +218,6 @@ class AbaConfig(ft.Column):
             logging.error(f"Erro ao ajustar opacidade: {ex}")
 
     def force_ui_update(self):
-        """Required method for session resuming - update username if needed"""
         try:
             if hasattr(self.contador, 'username'):
                 self.username_text.value = f"Conectado como: {self.contador.username}"

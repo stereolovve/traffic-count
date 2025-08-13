@@ -36,7 +36,8 @@ class SessionManager:
             if not session_data.get("movimentos"):
                 raise ValueError("É necessário definir pelo menos um movimento")
 
-            # 2. Configurar detalhes da sessão (em memória)
+            # 2. Configurar detalhes da sessão com normalização de movimentos
+            movimentos_normalizados = [mov.strip().upper() for mov in session_data["movimentos"]]
             self.contador.details = {
                 "Pesquisador": session_data["pesquisador"],
                 "Código": session_data["codigo"],
@@ -44,8 +45,9 @@ class SessionManager:
                 "HorarioInicio": session_data["horario_inicio"],
                 "HorarioFim": session_data.get("horario_fim", ""),
                 "Data do Ponto": session_data["data_ponto"],
-                "Movimentos": session_data["movimentos"]
+                "Movimentos": movimentos_normalizados
             }
+            logging.info(f"Movimentos normalizados: {movimentos_normalizados}")
 
             # 3. Configurar horário inicial
             hoje = datetime.now().date()
@@ -72,24 +74,20 @@ class SessionManager:
                 self.contador.sessao = f"{base_sessao}_{counter}"
                 counter += 1
 
-            # 5. ✅ Limpeza robusta para evitar duplicação
+            # 5. Limpeza da sessão anterior (otimizada)
             logging.info("Limpando dados da sessão anterior...")
             
-            # Limpar categorias
-            self.categorias.clear()
-            self.contador.categorias.clear()
-            
-            # ✅ Limpar labels e contagens de sessão anterior
+            # Limpar apenas dados da sessão, não categorias globais
             self.labels.clear()
             self.contador.labels.clear()
             
-            # ✅ Limpar contagens da sessão anterior (apenas se for nova sessão)
+            # Contagens são específicas por sessão
             if not hasattr(self.contador, '_current_session') or self.contador._current_session != base_sessao:
                 self.contador.contagens.clear()
                 self.contador._current_session = base_sessao
-                logging.info("Nova sessão detectada - contagens zeradas")
+                logging.info("Nova sessão - contagens zeradas")
             
-            # ✅ Marcar UI components para reconstrução
+            # Marcar UI para reconstrução
             if 'contagem' in self.contador.ui_components:
                 self.contador.ui_components['contagem']._session_loaded = False
             
@@ -119,7 +117,7 @@ class SessionManager:
             else:
                 logging.warning("Falha ao carregar categorias do servidor")
 
-            # Carregar categorias locais (já limpo anteriormente)
+            # Carregar categorias do padrão (globais, não por sessão)
             self.carregar_categorias_locais(session_data["padrao"])
 
             # 7. Criar sessão no banco local
@@ -130,10 +128,10 @@ class SessionManager:
                 ponto=session_data["ponto"],
                 data=session_data["data_ponto"],
                 horario_inicio=session_data["horario_inicio"],
-                horario_fim=session_data.get("horario_fim", ""),
+                horario_fim=session_data["horario_fim"],
                 criada_em=datetime.now(),
                 status="Em andamento",
-                movimentos=json.dumps(session_data["movimentos"])  # Salvar movimentos como JSON
+                movimentos=json.dumps(movimentos_normalizados)  # Salvar movimentos normalizados
             )
             with self.contador.session_lock:
                 self.contador.session.add(nova_sessao)
@@ -568,10 +566,19 @@ class SessionManager:
         padrao_atual = sessao_ativa.padrao
         logging.info(f"Carregando dados para padrão: {padrao_atual}")
         
-        # Limpar categorias anteriores para evitar duplicação
-        logging.info("Limpando categorias anteriores para evitar duplicação...")
-        self.categorias.clear()
-        self.contador.categorias.clear()
+        # Categorias são globais por padrão - apenas recarregar se necessário
+        logging.info(f"Verificando categorias para padrão: {padrao_atual}")
+        categoria_count_antes = len(self.categorias)
+        padrao_anterior = getattr(self, '_ultimo_padrao_carregado', None)
+        
+        # Só limpar/recarregar se mudou o padrão
+        if padrao_anterior != padrao_atual:
+            logging.info(f"Padrão mudou de '{padrao_anterior}' para '{padrao_atual}' - recarregando")
+            self.categorias.clear()
+            self.contador.categorias.clear()
+            self._ultimo_padrao_carregado = padrao_atual
+        else:
+            logging.info(f"Mesmo padrão '{padrao_atual}' - reutilizando {categoria_count_antes} categorias")
         
         # Carregar binds
         try:
@@ -593,8 +600,11 @@ class SessionManager:
         except Exception as ex:
             logging.error(f"Erro ao carregar categorias: {ex}")
         
-        # Carregar categorias locais (já limpo anteriormente)
-        self.carregar_categorias_locais(padrao_atual)
+        # Carregar categorias apenas se necessário
+        if padrao_anterior != padrao_atual or not self.categorias:
+            self.carregar_categorias_locais(padrao_atual)
+        else:
+            logging.info("Reutilizando categorias já carregadas")
         
         # Atualizar a UI de contagem após carregar os dados
         if 'contagem' in self.contador.ui_components:
@@ -751,39 +761,55 @@ class SessionManager:
                 label_count.update()
 
     def save_categories_in_local(self, categorias):
+        """Salva categorias globalmente por padrão, evitando duplicação"""
         try:
             with self.contador.session_lock:
-                # Lista para armazenar novas categorias em lote
                 novas_categorias = []
+                duplicadas = 0
                 
                 for categoria_dict in categorias:
-                    movimento = categoria_dict['movimento']
+                    movimento = categoria_dict['movimento'].strip().upper()
+                    veiculo = categoria_dict['veiculo'].strip()
+                    padrao = categoria_dict['pattern_type'].strip()
 
-                    existe = self.session.query(Categoria).filter_by(
-                        padrao=categoria_dict['pattern_type'],
-                        veiculo=categoria_dict['veiculo'],
-                        movimento=movimento
+                    # Verificar existência com case-insensitive
+                    existe = self.session.query(Categoria).filter(
+                        Categoria.padrao == padrao,
+                        Categoria.veiculo == veiculo,
+                        Categoria.movimento == movimento,
+                        Categoria.ativo == True
                     ).first()
 
                     if not existe:
                         nova_categoria = Categoria(
-                            padrao=categoria_dict['pattern_type'],
-                            veiculo=categoria_dict['veiculo'],
+                            padrao=padrao,
+                            veiculo=veiculo,
                             movimento=movimento,
-                            bind=categoria_dict.get('bind', 'N/A')
+                            bind=categoria_dict.get('bind', 'N/A'),
+                            ativo=True
                         )
                         novas_categorias.append(nova_categoria)
                     else:
-                        logging.debug(f"[DEBUG] Categoria já existente no banco: {categoria_dict['veiculo']} - {movimento}")
+                        duplicadas += 1
+                        # Atualizar bind se necessário
+                        new_bind = categoria_dict.get('bind')
+                        if new_bind and new_bind != 'N/A' and existe.bind != new_bind:
+                            existe.bind = new_bind
+                            existe.atualizado_em = datetime.now()
 
                 # Inserção em lote para melhor performance
                 if novas_categorias:
                     self.session.bulk_save_objects(novas_categorias)
+                    logging.info(f"Salvadas {len(novas_categorias)} novas categorias (ignoradas {duplicadas} duplicadas)")
+                else:
+                    logging.info(f"Nenhuma categoria nova para salvar (ignoradas {duplicadas} duplicadas)")
                 
                 self.session.commit()
 
         except Exception as ex:
+            logging.error(f"Erro ao salvar categorias: {ex}")
             self.session.rollback()
+            raise
 
     def _carregar_binds_locais(self, padrao=None):
         try:
@@ -803,60 +829,55 @@ class SessionManager:
             return {}
 
     def carregar_categorias_locais(self, padrao=None):
+        """Carrega categorias ativas para o padrão especificado"""
         if not self.ui_components or 'inicio' not in self.ui_components:
-            logging.warning("[WARNING] UI components não inicializados corretamente")
+            logging.warning("UI components não inicializados")
             return []
             
         padrao_atual = padrao or self.ui_components['inicio'].padrao_dropdown.value
-
         if not padrao_atual:
-            logging.warning("[WARNING] Nenhum padrão selecionado")
+            logging.warning("Nenhum padrão selecionado")
             return []
 
-        logging.info(f"Carregando categorias locais para padrão: {padrao_atual}")
+        logging.info(f"Carregando categorias para padrão: {padrao_atual}")
 
         with self.contador.session_lock:
             try:
-                # NÃO limpar categorias aqui - já foram limpas antes da chamada
-                # self.categorias.clear()
-                # self.contador.categorias.clear()
+                # Limpar listas antes de carregar (evita duplicação)
+                self.categorias.clear()
+                self.contador.categorias.clear()
                 
+                # Query com filtros, preservando ordem original de inserção (por ID)
                 categorias_db = (
                     self.session.query(Categoria)
-                    .filter(Categoria.padrao == padrao_atual)
-                    .order_by(Categoria.id)
+                    .filter(
+                        Categoria.padrao == padrao_atual,
+                        Categoria.ativo == True  # Apenas categorias ativas
+                    )
+                    .order_by(Categoria.id)  # Ordem original de criação
                     .all()
                 )
-                self.session.commit()
 
-                # Atualizar as listas de categorias (extend mantém referências)
+                # Atualizar listas de forma thread-safe
                 self.categorias.extend(categorias_db)
-                self.contador.categorias.extend(categorias_db)
+                self.contador.categorias = self.categorias  # Manter referência sincronizada
 
-                logging.info(f"Categorias locais carregadas: {len(self.categorias)} itens")
+                logging.info(f"Carregadas {len(self.categorias)} categorias ativas")
                 
-                if self.categorias:
-                    logging.info(f"[DEBUG] Primeiras 5 categorias carregadas: {[(c.veiculo, c.movimento, c.padrao) for c in self.categorias[:5]]}")
-                    
-                    movimentos_unicos = set(c.movimento for c in self.categorias)
-                    logging.info(f"[DEBUG] Movimentos únicos nas categorias: {sorted(movimentos_unicos)}")
-                    
+                # Debug: verificar coerência com movimentos da sessão
+                if self.categorias and hasattr(self.contador, 'details'):
                     movimentos_sessao = self.contador.details.get("Movimentos", [])
-                    logging.info(f"[DEBUG] Movimentos da sessão: {movimentos_sessao}")
-                    
-                    for movimento_sessao in movimentos_sessao:
-                        categorias_movimento = [c for c in self.categorias if movimento_sessao.strip().upper() == c.movimento.strip().upper()]
-                        logging.info(f"[DEBUG] Movimento '{movimento_sessao}': {len(categorias_movimento)} categorias encontradas")
-                else:
-                    logging.warning(f"[WARNING] Nenhuma categoria encontrada para o padrão: {padrao_atual}")
-
-                # Garantir sincronização das referências
-                self.contador.categorias = self.categorias
+                    for movimento in movimentos_sessao:
+                        count = sum(1 for c in self.categorias 
+                                  if c.movimento.strip().upper() == movimento.strip().upper())
+                        logging.debug(f"Movimento '{movimento}': {count} categorias")
 
             except Exception as ex:
-                logging.error(f"[ERROR] Erro ao carregar categorias locais: {ex}")
+                logging.error(f"Erro ao carregar categorias: {ex}")
                 self.session.rollback()
-                self.categorias = []
+                self.categorias.clear()
+                self.contador.categorias.clear()
+                raise
 
         return self.categorias
 

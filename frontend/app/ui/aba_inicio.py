@@ -348,11 +348,13 @@ class AbaInicio(ft.Column):
                 self.page.update()
                 return
             
+            # Ordenar pontos alfabeticamente por nome
+            pontos_ordenados = sorted(response, key=lambda p: p['nome'].lower())
             self.ponto_dropdown.options = [
                 ft.dropdown.Option(
                     key=str(ponto['id']),
                     text=ponto['nome']  # Agora só o nome, sem localização
-                ) for ponto in response
+                ) for ponto in pontos_ordenados
             ]
             
             self.ponto_dropdown.value = None

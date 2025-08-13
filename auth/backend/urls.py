@@ -97,16 +97,12 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('auth/', include('autenticacao.urls')),
     path('', home, name='home'),
-    path('login/', auth_views.LoginView.as_view(
-        template_name='registration/login.html',
-        redirect_authenticated_user=True,
-        extra_context={'next': '/'}
-    ), name='login'),
-    path('logout/', auth_views.LogoutView.as_view(next_page='/login/'), name='logout'),
+    path('logout/', auth_views.LogoutView.as_view(next_page='/auth/login/'), name='logout'),
     path('register/', auth_views_custom.register, name='register'),
     path('contagens/', include('contagens.urls')),
     path('padroes/', include('padroes.urls')),
     path('trabalhos/', include('trabalhos.urls')),
     path('updates/', include('updates.urls')),
     path('tickets/', include('tickets.urls')),
+    path('api/', include('folha_ponto.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

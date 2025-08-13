@@ -103,10 +103,12 @@ class ExcelManager:
                     ws = wb.create_sheet(title=movimento)
                     # Adicionar cabeçalhos padrão
                     headers = ["das", "às", "observacao"]
-                    # Adicionar veículos como colunas
+                    # Adicionar veículos como colunas na ordem original (por ID)
+                    veiculos_movimento = []
                     for categoria in self.contador.categorias:
-                        if categoria.movimento == movimento and categoria.veiculo not in headers:
-                            headers.append(categoria.veiculo)
+                        if categoria.movimento == movimento and categoria.veiculo not in veiculos_movimento:
+                            veiculos_movimento.append(categoria.veiculo)
+                    headers.extend(veiculos_movimento)
                     ws.append(headers)
                     logging.info(f"Planilha criada para movimento: {movimento} com colunas: {headers}")
 

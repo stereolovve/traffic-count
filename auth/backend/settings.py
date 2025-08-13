@@ -52,7 +52,8 @@ INSTALLED_APPS = [
     'autenticacao',
     'trabalhos',
     'updates',
-    'tickets'
+    'tickets',
+    'folha_ponto'
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True

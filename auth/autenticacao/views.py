@@ -20,6 +20,7 @@ from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from django.shortcuts import render, redirect
 from django.contrib.auth import login
+from django.contrib.auth.views import LoginView as BaseLoginView
 from .forms import CustomUserCreationForm
 from django.contrib import messages
 
@@ -27,7 +28,15 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
-class LoginView(APIView):
+class LoginView(BaseLoginView):
+    """HTML Login View for Django Admin and Web Interface"""
+    template_name = 'registration/login.html'
+    redirect_authenticated_user = True
+    
+    def get_success_url(self):
+        return '/'
+
+class APILoginView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):

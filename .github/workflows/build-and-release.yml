@@ -1,0 +1,237 @@
+name: Build and Release Counter App
+
+# Executar quando:
+# - Push de tags com formato v* (ex: v1.0.0)
+# - Manualmente via workflow dispatch
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to build (ex: 1.0.0)'
+        required: true
+        default: '1.0.0'
+      release_notes:
+        description: 'Release notes/changelog'
+        required: false
+        default: 'Melhorias e correções'
+
+env:
+  PYTHON_VERSION: '3.12'
+  APP_NAME: 'ContadorPerplan'
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    steps:
+    # 1. Checkout do código
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    # 2. Configurar Python
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        
+    # 3. Cache das dependências Python
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~\AppData\Local\pip\Cache
+        key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+          
+    # 4. Instalar dependências
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pyinstaller
+        
+    # 5. Determinar versão
+    - name: Determine version
+      id: version
+      run: |
+        if ("${{ github.event_name }}" -eq "push") {
+          $version = "${{ github.ref_name }}".TrimStart('v')
+        } else {
+          $version = "${{ github.event.inputs.version }}"
+        }
+        echo "VERSION=$version" >> $env:GITHUB_OUTPUT
+        echo "Building version: $version"
+      shell: powershell
+      
+    # 6. Atualizar versão nos arquivos
+    - name: Update version in files
+      run: |
+        $version = "${{ steps.version.outputs.VERSION }}"
+        
+        # Atualizar config.py
+        $configFile = "frontend\utils\config.py"
+        (Get-Content $configFile) -replace 'APP_VERSION = "[^"]*"', "APP_VERSION = `"$version`"" | Set-Content $configFile
+        
+        # Atualizar version_info.txt
+        $versionInfoFile = "frontend\version_info.txt"
+        $versionParts = $version.Split('.')
+        while ($versionParts.Length -lt 4) { $versionParts += "0" }
+        $versionTuple = "($($versionParts[0]),$($versionParts[1]),$($versionParts[2]),$($versionParts[3]))"
+        
+        $content = Get-Content $versionInfoFile -Raw
+        $content = $content -replace 'filevers=\([^)]*\)', "filevers=$versionTuple"
+        $content = $content -replace 'prodvers=\([^)]*\)', "prodvers=$versionTuple"
+        $content = $content -replace "StringStruct\('FileVersion', '[^']*'\)", "StringStruct('FileVersion', '$version')"
+        $content = $content -replace "StringStruct\('ProductVersion', '[^']*'\)", "StringStruct('ProductVersion', '$version')"
+        Set-Content $versionInfoFile -Value $content
+        
+        Write-Host "Version updated to: $version"
+      shell: powershell
+      
+    # 7. Build com PyInstaller
+    - name: Build application
+      run: |
+        cd frontend
+        pyinstaller --clean --noconfirm main.spec
+        
+        # Verificar se o executável foi criado
+        $exePath = "dist\${{ env.APP_NAME }}.exe"
+        if (Test-Path $exePath) {
+          $fileSize = (Get-Item $exePath).Length
+          $sizeMB = [math]::Round($fileSize / 1MB, 2)
+          Write-Host "Build successful! File size: $sizeMB MB"
+          echo "BUILD_SUCCESS=true" >> $env:GITHUB_ENV
+          echo "EXE_PATH=$exePath" >> $env:GITHUB_ENV
+          echo "FILE_SIZE_MB=$sizeMB" >> $env:GITHUB_ENV
+        } else {
+          Write-Error "Build failed! Executable not found."
+          exit 1
+        }
+      shell: powershell
+      
+    # 8. Renomear executável com versão
+    - name: Rename executable
+      run: |
+        $version = "${{ steps.version.outputs.VERSION }}"
+        $originalPath = "frontend\${{ env.EXE_PATH }}"
+        $newName = "${{ env.APP_NAME }}_v$version.exe"
+        $newPath = "frontend\dist\$newName"
+        
+        Move-Item $originalPath $newPath
+        echo "RELEASE_EXE_PATH=$newPath" >> $env:GITHUB_ENV
+        echo "RELEASE_EXE_NAME=$newName" >> $env:GITHUB_ENV
+        
+        Write-Host "Executable renamed to: $newName"
+      shell: powershell
+      
+    # 9. Upload do executável como artefato
+    - name: Upload build artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ env.RELEASE_EXE_NAME }}
+        path: ${{ env.RELEASE_EXE_PATH }}
+        retention-days: 30
+        
+    # 10. Criar release no GitHub
+    - name: Create GitHub Release
+      if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+      uses: softprops/action-gh-release@v1
+      with:
+        files: ${{ env.RELEASE_EXE_PATH }}
+        name: "Release ${{ steps.version.outputs.VERSION }}"
+        body: |
+          ## 🚀 Contador Perplan v${{ steps.version.outputs.VERSION }}
+          
+          ### 📥 Download
+          - **Windows**: `${{ env.RELEASE_EXE_NAME }}` (${{ env.FILE_SIZE_MB }} MB)
+          
+          ### 📋 Changelog
+          ${{ github.event.inputs.release_notes || 'Melhorias e correções de bugs.' }}
+          
+          ### 🔧 Instalação
+          1. Feche o aplicativo atual se estiver executando
+          2. Baixe o arquivo `${{ env.RELEASE_EXE_NAME }}`
+          3. Execute o novo arquivo
+          4. O sistema de auto-update detectará automaticamente futuras atualizações
+          
+          ### ⚠️ Notas Importantes
+          - Mantenha sempre o aplicativo atualizado para ter acesso às últimas funcionalidades
+          - Em caso de problemas, mantenha a versão anterior como backup
+          - O sistema de auto-update funcionará automaticamente nas próximas atualizações
+          
+          ---
+          **Build Info:**
+          - Commit: `${{ github.sha }}`
+          - Python: ${{ env.PYTHON_VERSION }}
+          - Build Date: ${{ github.event.head_commit.timestamp }}
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
+    # 11. Upload para servidor Django (se configurado)
+    - name: Upload to Django Server
+      if: success() && vars.DJANGO_SERVER_URL
+      run: |
+        $version = "${{ steps.version.outputs.VERSION }}"
+        $releaseNotes = "${{ github.event.inputs.release_notes || 'Melhorias e correções de bugs.' }}"
+        $filePath = "${{ env.RELEASE_EXE_PATH }}"
+        
+        # Preparar dados para upload
+        $headers = @{
+          'Authorization' = 'Token ${{ secrets.DJANGO_API_TOKEN }}'
+        }
+        
+        $form = @{
+          'version' = $version
+          'changelog' = $releaseNotes
+          'file' = Get-Item $filePath
+        }
+        
+        try {
+          Write-Host "Uploading to Django server..."
+          $response = Invoke-RestMethod -Uri "${{ vars.DJANGO_SERVER_URL }}/updates/api/upload/" -Method POST -Headers $headers -Form $form
+          Write-Host "Upload successful: $($response.download_url)"
+          echo "DJANGO_UPLOAD_SUCCESS=true" >> $env:GITHUB_ENV
+        } catch {
+          Write-Warning "Django upload failed: $($_.Exception.Message)"
+          echo "DJANGO_UPLOAD_SUCCESS=false" >> $env:GITHUB_ENV
+        }
+      shell: powershell
+      
+    # 12. Notificação de sucesso
+    - name: Build Summary
+      if: always()
+      run: |
+        Write-Host "=== BUILD SUMMARY ===" -ForegroundColor Green
+        Write-Host "Version: ${{ steps.version.outputs.VERSION }}"
+        Write-Host "File: ${{ env.RELEASE_EXE_NAME }}"
+        Write-Host "Size: ${{ env.FILE_SIZE_MB }} MB"
+        Write-Host "GitHub Release: ${{ github.event_name == 'push' && 'Created' || 'Skipped' }}"
+        Write-Host "Django Upload: ${{ env.DJANGO_UPLOAD_SUCCESS || 'Not configured' }}"
+        Write-Host "================================"
+      shell: powershell
+      
+  # Job opcional para notificação por email ou Slack
+  notify:
+    runs-on: ubuntu-latest
+    needs: build
+    if: always() && vars.NOTIFICATION_WEBHOOK
+    
+    steps:
+    - name: Notify build result
+      run: |
+        if [ "${{ needs.build.result }}" == "success" ]; then
+          status="✅ SUCCESS"
+          color="good"
+        else
+          status="❌ FAILED"  
+          color="danger"
+        fi
+        
+        curl -X POST -H 'Content-type: application/json' \
+          --data "{\"text\":\"Build $status: Contador Perplan v${{ needs.build.outputs.version }}\"}" \
+          ${{ vars.NOTIFICATION_WEBHOOK }}

@@ -10,6 +10,7 @@ import sys
 from app.contador import ContadorPerplan
 from utils.config import API_URL, EXCEL_BASE_DIR, DESKTOP_DIR, LOG_FILE, AUTH_TOKENS_FILE, APP_VERSION
 from utils.api import async_api_request
+from utils.updater import app_updater
 from loginregister.register import RegisterPage
 from loginregister.login import LoginPage
 
@@ -138,10 +139,188 @@ class MyApp:
             
             # Atualizar binds (a verificação de sessão ativa será feita automaticamente pelo contador)
             await self.contador.atualizar_binds()
+            
+            # Verificar atualizações em background (não bloqueia a interface)
+            self.page.run_task(self.check_for_updates)
+            
             self.page.update()
             
         except Exception as ex:
             logging.error(f"[ERROR] Erro ao mudar para app principal: {ex}")
+
+    async def check_for_updates(self):
+        """Verifica se há atualizações disponíveis e notifica o usuário"""
+        try:
+            logging.info("Verificando atualizações disponíveis...")
+            
+            # Verificar atualizações
+            update_info = await app_updater.check_for_updates(silent=True)
+            
+            if update_info.get('error'):
+                logging.warning(f"Erro ao verificar atualizações: {update_info['error']}")
+                return
+            
+            if not update_info.get('has_update'):
+                logging.info("Aplicativo está atualizado")
+                return
+            
+            # Atualização disponível
+            latest_version = update_info['latest_version']
+            is_required = update_info.get('update_required', False)
+            changelog = update_info.get('changelog', 'Melhorias e correções')
+            
+            logging.info(f"Atualização disponível: v{latest_version}")
+            
+            # Mostrar notificação no snackbar
+            if self.page and hasattr(self.page, 'show_snack_bar'):
+                update_type = "Atualização Obrigatória" if is_required else "Nova Versão"
+                message = f"{update_type} v{latest_version} disponível!"
+                
+                snack_bar = ft.SnackBar(
+                    content=ft.Text(message),
+                    action=ft.TextButton("Atualizar", on_click=lambda e: self.page.run_task(self.show_update_dialog)),
+                    action_color=ft.colors.BLUE,
+                    duration=10000,  # 10 segundos
+                    bgcolor=ft.colors.ORANGE if is_required else ft.colors.BLUE,
+                )
+                
+                self.page.show_snack_bar(snack_bar)
+            
+        except Exception as ex:
+            logging.error(f"Erro ao verificar atualizações: {ex}")
+
+    async def show_update_dialog(self):
+        """Mostra dialog para confirmar atualização"""
+        try:
+            if not app_updater.update_info:
+                return
+            
+            update_info = app_updater.update_info
+            latest_version = update_info['latest_version']
+            changelog = update_info.get('changelog', 'Melhorias e correções')
+            is_required = update_info.get('update_required', False)
+            file_size = update_info.get('file_size', 0)
+            size_mb = round(file_size / (1024 * 1024), 1) if file_size > 0 else '?'
+            
+            # Criar dialog de atualização
+            dialog_content = ft.Column([
+                ft.Text(
+                    f"Nova Versão Disponível: v{latest_version}",
+                    size=18,
+                    weight=ft.FontWeight.BOLD
+                ),
+                ft.Text(f"Versão atual: v{app_updater.current_version}"),
+                ft.Text(f"Tamanho: {size_mb} MB"),
+                ft.Divider(),
+                ft.Text("Novidades:", weight=ft.FontWeight.BOLD),
+                ft.Text(changelog, selectable=True),
+                ft.Divider(),
+                ft.Text(
+                    "⚠️ Esta atualização é obrigatória!" if is_required else "Recomendamos manter o aplicativo sempre atualizado.",
+                    color=ft.colors.ORANGE if is_required else ft.colors.BLUE
+                ),
+            ])
+            
+            def handle_update(e):
+                dialog.open = False
+                self.page.update()
+                self.page.run_task(self.perform_update)
+            
+            def handle_later(e):
+                if not is_required:
+                    dialog.open = False
+                    self.page.update()
+            
+            actions = [
+                ft.TextButton("Atualizar Agora", on_click=handle_update),
+            ]
+            
+            if not is_required:
+                actions.append(ft.TextButton("Mais Tarde", on_click=handle_later))
+            
+            dialog = ft.AlertDialog(
+                title=ft.Text("Atualização Disponível"),
+                content=dialog_content,
+                actions=actions,
+                modal=True,
+            )
+            
+            self.page.dialog = dialog
+            dialog.open = True
+            self.page.update()
+            
+        except Exception as ex:
+            logging.error(f"Erro ao mostrar dialog de atualização: {ex}")
+
+    async def perform_update(self):
+        """Executa o processo de atualização"""
+        try:
+            # Mostrar dialog de progresso
+            progress_bar = ft.ProgressBar(value=0, width=300)
+            status_text = ft.Text("Preparando download...")
+            
+            progress_dialog = ft.AlertDialog(
+                title=ft.Text("Atualizando..."),
+                content=ft.Column([
+                    status_text,
+                    progress_bar,
+                    ft.Text("Não feche o aplicativo durante a atualização.", size=12, color=ft.colors.ORANGE)
+                ]),
+                modal=True,
+            )
+            
+            self.page.dialog = progress_dialog
+            progress_dialog.open = True
+            self.page.update()
+            
+            # Callback para atualizar progresso
+            def update_progress(percent):
+                progress_bar.value = percent / 100
+                status_text.value = f"Baixando... {percent}%"
+                self.page.update()
+            
+            # Fazer download
+            status_text.value = "Baixando atualização..."
+            self.page.update()
+            
+            success = await app_updater.download_update(progress_callback=update_progress)
+            
+            if not success:
+                status_text.value = "Erro no download!"
+                status_text.color = ft.colors.RED
+                self.page.update()
+                await asyncio.sleep(3)
+                progress_dialog.open = False
+                self.page.update()
+                return
+            
+            # Instalar atualização
+            status_text.value = "Instalando..."
+            progress_bar.value = 1.0
+            self.page.update()
+            
+            install_success = app_updater.install_update()
+            
+            if install_success:
+                status_text.value = "Reiniciando aplicativo..."
+                self.page.update()
+                await asyncio.sleep(2)
+                
+                # Fechar aplicativo (o script de atualização cuidará do restart)
+                self.page.window_close()
+            else:
+                status_text.value = "Erro na instalação!"
+                status_text.color = ft.colors.RED
+                self.page.update()
+                await asyncio.sleep(3)
+                progress_dialog.open = False
+                self.page.update()
+            
+        except Exception as ex:
+            logging.error(f"Erro durante atualização: {ex}")
+            if hasattr(self, 'page') and self.page.dialog:
+                self.page.dialog.open = False
+                self.page.update()
 
     def show_login_page(self):
         """Mostra a página de login usando a abordagem de views"""

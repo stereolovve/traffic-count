@@ -108,7 +108,6 @@ def abrir_configuracao_binds(page, contador):
     )
     
     def close_dialog(e=None):
-        """Close dialog using new Flet 0.28.3 syntax"""
         page.close(dialog)
     
     def save_bind(veiculo, text_field):
@@ -138,7 +137,6 @@ def abrir_configuracao_binds(page, contador):
             
             # Usar método direto do contador para recarregar binds
             if contador and hasattr(contador, 'reload_binds_from_api'):
-                print(f"🔧 DEBUG: Chamando contador.reload_binds_from_api({tipo_padrao})")
                 contador.reload_binds_from_api(tipo_padrao)
             else:
                 print("🔧 DEBUG: Contador não tem método reload_binds_from_api")
@@ -248,10 +246,8 @@ def abrir_configuracao_binds(page, contador):
         page.update()
     
     
-    # Open dialog using new Flet 0.28.3 syntax
     page.open(dialog)
     
-    # Load pattern types
     executar_async(carregar_padroes_async())
 
 def criar_dialog_completo(page, contador):
@@ -263,15 +259,11 @@ def criar_dialog_completo(page, contador):
     subtitulo = ft.Text(
         "Escolha um tipo de padrão e defina as teclas de atalho para cada veículo.",
         size=14, 
-        color=ft.Colors.GREY_400  # Light text on dark background
     )
 
     padrao_dropdown = ft.Dropdown(
         label="Selecione um Tipo de Padrão",
         options=[ft.dropdown.Option("Carregando...")],
-        bgcolor=ft.Colors.GREY_800,  # Dark background
-        color=ft.Colors.WHITE,       # Light text for contrast
-        border_color=ft.Colors.GREY_600
     )
 
     binds_container = ft.Column(
@@ -281,7 +273,6 @@ def criar_dialog_completo(page, contador):
         controls=[
             ft.Text(
                 "Aguardando seleção de padrão...", 
-                color=ft.Colors.GREY_400,
                 size=14
             )
         ]
@@ -301,27 +292,21 @@ def criar_dialog_completo(page, contador):
             content=ft.Column([
                 subtitulo,
                 padrao_dropdown,
-                ft.Divider(color=ft.Colors.GREY_600),  # Dark theme divider
+                ft.Divider(),  # Dark theme divider
                 binds_container,
             ], spacing=15, scroll=ft.ScrollMode.AUTO),
             height=500,
             width=600,  # Added explicit width
-            bgcolor=ft.Colors.GREY_900,  # Dark background
             border_radius=10,
             padding=20
         ),
         actions=[
             ft.TextButton(
                 "Fechar", 
-                on_click=fechar_dialogo,
-                style=ft.ButtonStyle(
-                    color=ft.Colors.WHITE,           # Light text
-                    bgcolor=ft.Colors.GREY_700       # Dark background
-                )
+                on_click=fechar_dialogo
             )
         ],
         modal=True,
-        bgcolor=ft.Colors.GREY_900  # Dark dialog background
     )
 
     return dialog
