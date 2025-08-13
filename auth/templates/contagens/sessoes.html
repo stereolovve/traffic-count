@@ -925,11 +925,11 @@
                         <td class="text-gray-700">{{ sessao.sessao.data|default:"-" }}</td>
                         <td class="text-gray-700">{{ sessao.sessao.horario_inicio|default:"-" }}</td>
                         <td class="text-gray-700">
-                            {% if sessao.sessao.horario_fim %}
+                            {% if sessao.sessao.horario_fim and sessao.sessao.horario_fim != "" %}
                                 {{ sessao.sessao.horario_fim }}
                             {% else %}
                                 {% if sessao.sessao.status == "Concluída" %}
-                                    <span class="text-gray-400 italic">-</span>
+                                    <span class="text-gray-400 italic">Não definido</span>
                                 {% else %}
                                     <span class="text-blue-600 italic">Em andamento</span>
                                 {% endif %}

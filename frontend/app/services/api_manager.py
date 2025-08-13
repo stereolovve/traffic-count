@@ -49,7 +49,7 @@ class ApiManager:
             ponto = self.contador.details.get("Ponto", "") or f"PONTO_{datetime.now().strftime('%Y%m%d%H%M%S')}"
             data_ponto = self.contador.details.get("Data do Ponto", "") or datetime.now().strftime("%d/%m/%Y")
             horario_inicio = self.contador.details.get("HorarioInicio", "") or datetime.now().strftime("%H:%M")
-            # horario_fim removido - Django não suporta este campo
+            horario_fim = self.contador.details.get("HorarioFim", "")
             padrao = self.contador.details.get("padrao_usado", "")
             
             # Tratar movimentos
@@ -65,7 +65,7 @@ class ApiManager:
                 "ponto": ponto,
                 "data": data_ponto,
                 "horario_inicio": horario_inicio,
-                # "horario_fim": horario_fim,  # Campo removido - não suportado pelo Django
+                "horario_fim": horario_fim,
                 "usuario": self.username,
                 "status": "Em andamento",
                 "movimentos": movimentos,
