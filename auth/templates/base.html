@@ -728,6 +728,7 @@
             </a>
             {% endif %}
             
+            {% if not is_contagem_user %}
             <a href="{% url 'ticket_list' %}" class="sidebar-item {% if 'ticket_list' in request.resolver_match.url_name %}active{% endif %}" data-tooltip="Tickets">
                 <i class="fas fa-ticket-alt sidebar-item-icon"></i>
                 <span class="sidebar-item-text sidebar-text">Tickets</span>
@@ -747,6 +748,7 @@
                 <i class="fas fa-chart-line sidebar-item-icon"></i>
                 <span class="sidebar-item-text sidebar-text">Padrões</span>
             </a>
+            {% endif %}
             
             
             <div class="divider"></div>

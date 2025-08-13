@@ -47,6 +47,20 @@ def can_edit(user):
         return True
     return False
 
+def is_contagem_user(user):
+    """
+    Verifica se o usuário é do setor de Contagem.
+    Retorna True se o setor for 'CON' (Contagem)
+    """
+    if not user.is_authenticated:
+        return False
+    
+    # Verificar campo setor no User
+    if hasattr(user, 'setor'):
+        return user.setor == 'CON'
+    
+    return False
+
 # Decorator personalizado
 def Supervisao_required(view_func):
     """Decorator que permite acesso a usuários logados que podem editar"""
