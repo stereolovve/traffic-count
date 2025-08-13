@@ -893,7 +893,7 @@
                         </th>
                         <th onclick="sortTable('updated_at')" class="cursor-pointer hover:bg-gray-700 transition-colors">
                             <div class="flex items-center justify-between">
-                                <span><i class="fas fa-calendar-check mr-2"></i>Finalização</span>
+                                <span><i class="fas fa-calendar-check mr-2"></i>Finalizada em</span>
                                 {% if request.GET.sort == 'updated_at' %}
                                     <i class="fas fa-sort-up sort-icon"></i>
                                 {% elif request.GET.sort == '-updated_at' %}
@@ -971,9 +971,11 @@
                         <td class="text-sm text-gray-600">{{ sessao.sessao.created_at|date:"d/m/Y H:i"|default:"-" }}</td>
                         <td class="text-sm text-gray-600">
                             {% if sessao.sessao.status == "Concluída" %}
-                                {{ sessao.sessao.updated_at|date:"d/m/Y H:i"|default:"-" }}
+                                {{ sessao.sessao.updated_at|date:"H:i"|default:"-" }}
+                                <br>
+                                <span class="text-xs text-gray-500">{{ sessao.sessao.updated_at|date:"d/m/Y" }}</span>
                             {% else %}
-                                <span class="text-gray-400 italic">-</span>
+                                <span class="text-gray-400 italic">Em andamento</span>
                             {% endif %}
                         </td>
                         <td>

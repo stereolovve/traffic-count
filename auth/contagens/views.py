@@ -338,9 +338,8 @@ def finalizar_sessao(request):
         from datetime import datetime
         
         sessao.status = "Concluída"
-        # Se horario_fim não estiver preenchido, usar o horário atual
-        if not sessao.horario_fim:
-            sessao.horario_fim = datetime.now().strftime("%H:%M")
+        # Manter o horario_fim original (do planejamento) - não sobrescrever
+        # O horário real de finalização será registrado no updated_at
         sessao.save()
         
         return JsonResponse({
@@ -641,9 +640,8 @@ def finalizar_por_nome(request):
         from datetime import datetime
         
         sessao.status = "Concluída"
-        # Se horario_fim não estiver preenchido, usar o horário atual
-        if not sessao.horario_fim:
-            sessao.horario_fim = datetime.now().strftime("%H:%M")
+        # Manter o horario_fim original (do planejamento) - não sobrescrever
+        # O horário real de finalização será registrado no updated_at
         sessao.save()
         
         return JsonResponse({
