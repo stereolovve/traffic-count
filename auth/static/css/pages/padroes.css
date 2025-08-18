@@ -1,0 +1,73 @@
+/* Padrões Page Specific CSS - Traffic Count */
+
+.pattern-section {
+    transition: all 0.3s ease;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+}
+
+.pattern-section:hover {
+    background: var(--bg-card-hover);
+    box-shadow: var(--shadow-md);
+}
+
+.drag-handle {
+    cursor: grab;
+    color: var(--text-muted);
+}
+
+.drag-handle:active {
+    cursor: grabbing;
+}
+
+.dragging {
+    opacity: 0.5;
+    background: var(--bg-secondary);
+    transform: scale(1.02);
+}
+
+.drop-indicator {
+    border: 2px dashed var(--primary-color);
+    height: 2px;
+    margin: 8px 0;
+    display: none;
+    border-radius: 2px;
+}
+
+.pattern-type-selector {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+}
+
+.pattern-type-btn {
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    font-weight: 500;
+    text-decoration: none;
+    border: 1px solid var(--border-color);
+}
+
+.pattern-type-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+.pattern-type-btn.active {
+    background: var(--primary-gradient);
+    color: var(--text-on-primary);
+    border-color: transparent;
+}
+
+.pattern-type-btn:not(.active) {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+.pattern-type-btn:not(.active):hover {
+    background: var(--bg-tertiary);
+    color: var(--text-accent);
+}

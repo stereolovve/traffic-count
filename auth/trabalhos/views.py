@@ -166,6 +166,9 @@ def codigo_create(request):
                 descricao=descricao
             )
             messages.success(request, 'Código criado com sucesso!')
+            
+            # Redirect back to the current cliente view
+            return redirect(f'/trabalhos/?cliente_id={cliente_id}')
         else:
             messages.error(request, 'Código e cliente são obrigatórios!')
     return redirect('trabalho_list')
@@ -219,6 +222,9 @@ def ponto_create(request):
                 localizacao=localizacao
             )
             messages.success(request, 'Ponto criado com sucesso!')
+            
+            # Redirect back to the current codigo view
+            return redirect(f'/trabalhos/?cliente_id={codigo.cliente.id}&codigo_id={codigo.id}')
         else:
             messages.error(request, 'Nome e código são obrigatórios!')
     return redirect('trabalho_list')

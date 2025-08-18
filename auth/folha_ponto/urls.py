@@ -21,8 +21,6 @@ urlpatterns = [
     # Refresh token (reutiliza o do sistema principal)
     path('accounts/token/refresh/', include('autenticacao.urls')),
     
-    # =================== DASHBOARD ===================
-    path('timetrack/dashboard/', views.dashboard, name='dashboard'),
     
     # =================== RELATÓRIOS ===================
     path('timetrack/relatorio/<int:ano>/<int:mes>/', views.relatorio_mensal, name='relatorio_mensal'),

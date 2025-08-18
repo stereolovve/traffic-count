@@ -192,17 +192,6 @@ class SalarySerializer(serializers.ModelSerializer):
         ]
         return meses[obj.mes - 1]
 
-class DashboardSerializer(serializers.Serializer):
-    """Serializer para dados do dashboard"""
-    mes_atual = serializers.IntegerField()
-    ano_atual = serializers.IntegerField()
-    horas_mes_atual = serializers.DecimalField(max_digits=8, decimal_places=2)
-    previsao_salario = serializers.DecimalField(max_digits=12, decimal_places=2)
-    registros_pendentes = serializers.IntegerField()
-    total_registros_mes = serializers.IntegerField()
-    registros_aprovados = serializers.IntegerField()
-    registros_rejeitados = serializers.IntegerField()
-    valor_hora_atual = serializers.DecimalField(max_digits=10, decimal_places=2)
 
 class RelatorioMensalSerializer(serializers.Serializer):
     """Serializer para relatório mensal"""

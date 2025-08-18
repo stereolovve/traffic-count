@@ -15,7 +15,7 @@ from .models import UserProfile, WorkCode, TimeRecord, Salary
 from .serializers import (
     UserProfileSerializer, UserSerializer, UserRegistrationSerializer,
     WorkCodeSerializer, TimeRecordSerializer, TimeRecordCreateSerializer,
-    TimeRecordSupervisorSerializer, SalarySerializer, DashboardSerializer,
+    TimeRecordSupervisorSerializer, SalarySerializer,
     RelatorioMensalSerializer
 )
 
@@ -192,48 +192,6 @@ class TimeRecordViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
-# =================== DASHBOARD ===================
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def dashboard(request):
-    """Dashboard com métricas do usuário"""
-    user = request.user
-    profile, created = UserProfile.objects.get_or_create(user=user)
-    
-    today = date.today()
-    mes_atual = today.month
-    ano_atual = today.year
-    
-    # Registros do mês atual
-    registros_mes = TimeRecord.objects.filter(
-        user=user,
-        data__year=ano_atual,
-        data__month=mes_atual
-    )
-    
-    # Calcular métricas
-    horas_mes = sum(r.horas_trabalhadas for r in registros_mes)
-    previsao_salario = horas_mes * profile.valor_hora
-    
-    registros_pendentes = registros_mes.filter(status='pendente').count()
-    registros_aprovados = registros_mes.filter(status='aprovado').count()
-    registros_rejeitados = registros_mes.filter(status='rejeitado').count()
-    total_registros = registros_mes.count()
-    
-    data = {
-        'mes_atual': mes_atual,
-        'ano_atual': ano_atual,
-        'horas_mes_atual': horas_mes,
-        'previsao_salario': previsao_salario,
-        'registros_pendentes': registros_pendentes,
-        'total_registros_mes': total_registros,
-        'registros_aprovados': registros_aprovados,
-        'registros_rejeitados': registros_rejeitados,
-        'valor_hora_atual': profile.valor_hora
-    }
-    
-    return Response(data)
 
 # =================== RELATÓRIOS ===================
 

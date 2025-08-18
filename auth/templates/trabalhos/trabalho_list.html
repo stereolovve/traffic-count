@@ -21,6 +21,10 @@
     {% endif %}
 {% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/trabalhos.css' %}">
+{% endblock %}
+
 {% block content %}
 <div class="space-y-6">
     <!-- Enhanced Breadcrumb -->
@@ -414,76 +418,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
-    console.log('Template carregado - Antes de carregar trabalhos.js');
-    
-    // Enhanced button handling with better error checking
-    document.addEventListener('DOMContentLoaded', function() {
-        // Handle multiple new cliente buttons
-        const newClienteBtns = document.querySelectorAll('#newClienteBtn, #newClienteBtn2');
-        newClienteBtns.forEach(btn => {
-            if (btn) {
-                btn.addEventListener('click', function() {
-                    console.log('Clique no botão de novo cliente');
-                    const modal = document.getElementById('newClienteModal');
-                    if (modal) {
-                        modal.classList.remove('hidden');
-                    } else {
-                        console.error('Modal de novo cliente não encontrado');
-                    }
-                });
-            }
-        });
-
-        // Handle multiple new codigo buttons  
-        const newCodigoBtns = document.querySelectorAll('#newCodigoBtn, #newCodigoBtn2');
-        newCodigoBtns.forEach(btn => {
-            if (btn) {
-                btn.addEventListener('click', function() {
-                    console.log('Clique no botão de novo código');
-                    const modal = document.getElementById('newCodigoModal');
-                    if (modal) {
-                        modal.classList.remove('hidden');
-                    } else {
-                        console.error('Modal de novo código não encontrado');
-                    }
-                });
-            }
-        });
-
-        // Handle multiple new ponto buttons
-        const newPontoBtns = document.querySelectorAll('#newPontoBtn, #newPontoBtn2');
-        newPontoBtns.forEach(btn => {
-            if (btn) {
-                btn.addEventListener('click', function() {
-                    console.log('Clique no botão de novo ponto');
-                    const modal = document.getElementById('newPontoModal');
-                    if (modal) {
-                        modal.classList.remove('hidden');
-                    } else {
-                        console.error('Modal de novo ponto não encontrado');
-                    }
-                });
-            }
-        });
-
-        // Handle bulk create pontos button
-        const bulkCreateBtn = document.getElementById('bulkCreatePontosBtn');
-        if (bulkCreateBtn) {
-            bulkCreateBtn.addEventListener('click', function() {
-                console.log('Clique no botão de criar pontos em massa');
-                const modal = document.getElementById('bulkCreatePontosModal');
-                if (modal) {
-                    modal.classList.remove('hidden');
-                } else {
-                    console.error('Modal de criar pontos em massa não encontrado');
-                }
-            });
-        }
-    });
-</script>
-<script src="{% static 'js/trabalhos.js' %}"></script>
-<script>
-    console.log('Template carregado - Depois de carregar trabalhos.js');
-</script>
+<script src="{% static 'js/pages/trabalhos.js' %}"></script>
 {% endblock %}

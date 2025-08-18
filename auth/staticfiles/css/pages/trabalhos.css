@@ -1,0 +1,167 @@
+/* Trabalhos Page Specific CSS - Traffic Count */
+
+/* Client/Code/Point specific styling */
+.cliente-row {
+    transition: all 0.15s ease;
+}
+
+.cliente-row:hover {
+    background: rgba(51, 65, 85, 0.5) !important;
+}
+
+/* Breadcrumb styling */
+.breadcrumb {
+    background: rgba(30, 41, 59, 0.8);
+    backdrop-filter: blur(40px);
+    border: 1px solid rgba(51, 65, 85, 0.5);
+    border-radius: 0.5rem;
+    box-shadow: var(--shadow-lg);
+    padding: 1.5rem;
+}
+
+.breadcrumb-item {
+    display: flex;
+    align-items: center;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
+.breadcrumb-item.active {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.breadcrumb-separator {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    margin: 0 0.5rem;
+}
+
+/* Enhanced table styling for trabalhos */
+.trabalhos-table {
+    background: rgba(30, 41, 59, 0.8);
+    backdrop-filter: blur(40px);
+    border: 1px solid rgba(51, 65, 85, 0.5);
+    border-radius: 0.75rem;
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+}
+
+.trabalhos-table-header {
+    background: linear-gradient(to right, #2563eb, #3b82f6);
+    padding: 2rem;
+}
+
+.trabalhos-table-header.green {
+    background: linear-gradient(to right, #059669, #10b981);
+}
+
+.trabalhos-table-header.purple {
+    background: linear-gradient(to right, #7c3aed, #8b5cf6);
+}
+
+.trabalhos-table-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: white;
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.25rem;
+}
+
+.trabalhos-table-subtitle {
+    color: rgba(255, 255, 255, 0.8);
+    margin-top: 0.25rem;
+}
+
+/* Avatar styling */
+.avatar-circle {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.125rem;
+    flex-shrink: 0;
+}
+
+.avatar-blue {
+    background: rgba(59, 130, 246, 0.2);
+    color: #60a5fa;
+}
+
+.avatar-green {
+    background: rgba(16, 185, 129, 0.2);
+    color: #34d399;
+}
+
+.avatar-purple {
+    background: rgba(139, 92, 246, 0.2);
+    color: #a78bfa;
+}
+
+/* Empty state styling */
+.empty-state {
+    padding: 3rem;
+    text-align: center;
+}
+
+.empty-state-icon {
+    width: 6rem;
+    height: 6rem;
+    margin: 0 auto 1rem;
+    color: var(--text-muted);
+}
+
+.empty-state-title {
+    font-size: 1.125rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.empty-state-description {
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+}
+
+/* Bulk operations styling */
+.bulk-operations {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.bulk-select-all {
+    width: 1rem;
+    height: 1rem;
+    accent-color: var(--primary-color);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+}
+
+.bulk-delete-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Enhanced button styling for trabalhos */
+.trabalhos-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    border-radius: 0.5rem;
+    transition: all 0.2s;
+    transform: scale(1);
+    box-shadow: var(--shadow-md);
+}
+
+.trabalhos-btn:hover {
+    transform: scale(1.02) translateY(-1px);
+    box-shadow: var(--shadow-lg);
+}

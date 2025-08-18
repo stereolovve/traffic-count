@@ -64,7 +64,6 @@ python manage.py createsuperuser
 - **`contagens/`**: Session and counting data management
 - **`trabalhos/`**: Project hierarchy (Cliente → Codigo → Ponto)
 - **`padroes/`**: Vehicle counting patterns and user preferences
-- **`tickets/`**: Task management system
 - **`updates/`**: Version control
 
 ### Key Patterns

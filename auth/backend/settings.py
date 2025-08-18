@@ -52,7 +52,6 @@ INSTALLED_APPS = [
     'autenticacao',
     'trabalhos',
     'updates',
-    'tickets',
     'folha_ponto'
 ]
 

@@ -6,7 +6,6 @@ from decimal import Decimal
 from datetime import datetime, timedelta
 
 class UserProfile(models.Model):
-    """Perfil estendido do usuário para folha de ponto"""
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL, 
         on_delete=models.CASCADE,
