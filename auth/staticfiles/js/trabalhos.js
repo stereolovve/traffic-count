@@ -386,6 +386,7 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             const response = await fetch(`/trabalhos/cliente/${id}/delete/`, {
                 method: 'POST',
+                credentials: 'same-origin',
                 headers: {
                     'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
                 },
@@ -412,6 +413,7 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             const response = await fetch(`/trabalhos/codigo/${id}/delete/`, {
                 method: 'POST',
+                credentials: 'same-origin',
                 headers: {
                     'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
                 },
@@ -438,6 +440,7 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             const response = await fetch(`/trabalhos/ponto/${id}/delete/`, {
                 method: 'POST',
+                credentials: 'same-origin',
                 headers: {
                     'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
                 },
@@ -466,6 +469,24 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 console.error('Modal não encontrado para fechar');
             }
+        });
+    });
+
+    // Bulk-delete select-all logic
+    const selectAll = document.getElementById('select-all');
+    const checkboxes = document.querySelectorAll('.select-checkbox');
+    const bulkDeleteBtn = document.getElementById('bulk-delete-btn');
+    if (selectAll) {
+        selectAll.addEventListener('change', () => {
+            checkboxes.forEach(cb => { cb.checked = selectAll.checked; });
+            bulkDeleteBtn.disabled = !selectAll.checked;
+        });
+    }
+    checkboxes.forEach(cb => {
+        cb.addEventListener('change', () => {
+            const anyChecked = Array.from(checkboxes).some(c => c.checked);
+            bulkDeleteBtn.disabled = !anyChecked;
+            if (!anyChecked) selectAll.checked = false;
         });
     });
 

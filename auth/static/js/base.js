@@ -61,7 +61,33 @@ window.TrafficCount = {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             
-            return await response.json();
+            // Check if response has content to parse as JSON
+            const contentType = response.headers.get('content-type');
+            const contentLength = response.headers.get('content-length');
+            
+            // If it's a 204 No Content or empty response, return null
+            if (response.status === 204 || contentLength === '0') {
+                return null;
+            }
+            
+            // If response has JSON content, parse it
+            if (contentType && contentType.includes('application/json')) {
+                return await response.json();
+            }
+            
+            // For other content types or if no content-type header, try to parse as JSON
+            // but handle the case where it might be empty
+            const text = await response.text();
+            if (!text.trim()) {
+                return null;
+            }
+            
+            try {
+                return JSON.parse(text);
+            } catch (jsonError) {
+                // If JSON parsing fails, return the raw text
+                return text;
+            }
         } catch (error) {
             console.error('API request failed:', error);
             throw error;

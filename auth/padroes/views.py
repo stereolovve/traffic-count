@@ -15,7 +15,7 @@ from django.db import transaction
 
 from .models import PadraoContagem, UserPadraoContagem
 from .serializers import PadraoContagemSerializer, UserPadraoContagemSerializer
-from .forms import PadraoContagemForm
+from .validators import PadraoValidator, UserPadraoValidator, ValidationResult
 
 
 # ViewSets
@@ -85,79 +85,125 @@ class PadraoContagemListView(ListView):
         context['selected_type'] = self.selected_type if hasattr(self, 'selected_type') else None
         return context
 
-class PadraoContagemCreateView(CreateView):
-    model = PadraoContagem
-    form_class = PadraoContagemForm
-    template_name = 'padroes/padrao_form.html'
-    success_url = reverse_lazy('padrao_list')
-    
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['tipos_padroes'] = PadraoContagem.objects.values_list('pattern_type', flat=True).distinct()
-        return context
-    
-    def post(self, request, *args, **kwargs):
-        # Debug
-        print("Form data:", request.POST)
-        
+def padrao_create(request):
+    if request.method == 'POST':
         # Verificar se é o formulário múltiplo
         if 'pattern_type_final' in request.POST:
-            pattern_type = request.POST.get('pattern_type_final')
-            veiculos = request.POST.getlist('veiculo[]')
-            binds = request.POST.getlist('bind[]')
+            pattern_type = request.POST.get('pattern_type_final', '').strip()
+            veiculos = [v.strip() for v in request.POST.getlist('veiculo[]') if v.strip()]
+            binds = [b.strip() for b in request.POST.getlist('bind[]') if b.strip()]
             
-            print(f"Criando padrões múltiplos: tipo={pattern_type}, veículos={veiculos}, binds={binds}")
+            # Usar validador para criação múltipla
+            errors = PadraoValidator.validate_multiple_data(pattern_type, veiculos, binds)
             
-            if not pattern_type or len(veiculos) == 0:
-                messages.error(request, "Erro: Tipo de padrão e pelo menos um veículo são obrigatórios.")
-                return redirect('padrao_create')
-            
-            # Criar padrões em massa
-            count = 0
-            for i, (veiculo, bind) in enumerate(zip(veiculos, binds)):
-                if not veiculo or not bind:
-                    continue
+            if not errors:
+                count = 0
+                with transaction.atomic():
+                    for i, (veiculo, bind) in enumerate(zip(veiculos, binds)):
+                        try:
+                            order = (i + 1) * 10
+                            
+                            # Verificar se já existe
+                            existing = PadraoContagem.objects.filter(
+                                pattern_type=pattern_type,
+                                veiculo=veiculo
+                            ).first()
+                            
+                            if existing:
+                                existing.bind = bind
+                                existing.order = order
+                                existing.save()
+                            else:
+                                PadraoContagem.objects.create(
+                                    pattern_type=pattern_type,
+                                    veiculo=veiculo,
+                                    bind=bind,
+                                    order=order
+                                )
+                            count += 1
+                            
+                        except Exception as e:
+                            messages.error(request, f'Erro ao processar {veiculo}: {str(e)}')
+                
+                if count > 0:
+                    messages.success(request, f'{count} padrões foram salvos com sucesso!')
                     
-                try:
-                    # Calcular ordem baseada na posição
-                    order = (i + 1) * 10
-                    
-                    # Verificar se já existe um padrão igual
-                    existing = PadraoContagem.objects.filter(
-                        pattern_type=pattern_type,
-                        veiculo=veiculo
-                    ).first()
-                    
-                    if existing:
-                        # Atualizar existente
-                        existing.bind = bind
-                        existing.order = order
-                        existing.save()
+                return redirect('padrao_list')
+            else:
+                # Exibir erros
+                for error_list in errors.values():
+                    if isinstance(error_list, list):
+                        for error in error_list:
+                            messages.error(request, error)
                     else:
-                        # Criar novo
-                        PadraoContagem.objects.create(
-                            pattern_type=pattern_type,
-                            veiculo=veiculo,
-                            bind=bind,
-                            order=order
-                        )
-                    count += 1
+                        messages.error(request, error_list)
+        
+        else:
+            # Formulário individual
+            data = {
+                'pattern_type': request.POST.get('pattern_type', '').strip(),
+                'veiculo': request.POST.get('veiculo', '').strip(),
+                'bind': request.POST.get('bind', '').strip(),
+                'order': request.POST.get('order', 0),
+            }
+            
+            # Usar serializer para validação
+            serializer = PadraoContagemSerializer(data=data)
+            
+            if serializer.is_valid():
+                try:
+                    serializer.save()
+                    messages.success(request, 'Padrão criado com sucesso!')
+                    return redirect('padrao_list')
                 except Exception as e:
-                    messages.error(request, f"Erro ao salvar o padrão {veiculo}: {str(e)}")
-            
-            if count > 0:
-                messages.success(request, f"{count} padrões foram salvos com sucesso!")
-            
-            return redirect('padrao_list')
-            
-        # Caso seja o formulário padrão (para edição de um único padrão)
-        return super().post(request, *args, **kwargs)
+                    messages.error(request, f'Erro ao salvar: {str(e)}')
+            else:
+                # Exibir erros de validação
+                for field, errors in serializer.errors.items():
+                    for error in errors:
+                        messages.error(request, f'{error}')
+    
+    # Preparar context para o template
+    tipos_padroes = PadraoContagem.objects.values_list('pattern_type', flat=True).distinct()
+    
+    return render(request, 'padroes/padrao_form.html', {
+        'tipos_padroes': tipos_padroes,
+    })
 
-class PadraoContagemUpdateView(UpdateView):
-    model = PadraoContagem
-    form_class = PadraoContagemForm
-    template_name = 'padroes/padrao_form.html'
-    success_url = reverse_lazy('padrao_list')
+def padrao_update(request, pk):
+    padrao = get_object_or_404(PadraoContagem, pk=pk)
+    
+    if request.method == 'POST':
+        data = {
+            'pattern_type': request.POST.get('pattern_type', '').strip(),
+            'veiculo': request.POST.get('veiculo', '').strip(),
+            'bind': request.POST.get('bind', '').strip(),
+            'order': request.POST.get('order', padrao.order),
+        }
+        
+        # Usar serializer para validação e atualização
+        serializer = PadraoContagemSerializer(padrao, data=data)
+        
+        if serializer.is_valid():
+            try:
+                serializer.save()
+                messages.success(request, 'Padrão atualizado com sucesso!')
+                return redirect('padrao_list')
+            except Exception as e:
+                messages.error(request, f'Erro ao salvar: {str(e)}')
+        else:
+            # Exibir erros de validação
+            for field, errors in serializer.errors.items():
+                for error in errors:
+                    messages.error(request, f'{error}')
+    
+    # Preparar context para o template
+    tipos_padroes = PadraoContagem.objects.values_list('pattern_type', flat=True).distinct()
+    
+    return render(request, 'padroes/padrao_form.html', {
+        'object': padrao,
+        'tipos_padroes': tipos_padroes,
+    })
 
 class PadraoContagemDeleteView(DeleteView):
     model = PadraoContagem

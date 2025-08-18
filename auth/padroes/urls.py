@@ -10,8 +10,8 @@ router.register(r'user-padroes', views.UserPadraoContagemViewSet, basename='user
 
 urlpatterns = [
     path('', views.PadraoContagemListView.as_view(), name='padrao_list'),
-    path('padroes/create/', views.PadraoContagemCreateView.as_view(), name='padrao_create'),
-    path('padroes/<int:pk>/edit/', views.PadraoContagemUpdateView.as_view(), name='padrao_edit'),
+    path('padroes/create/', views.padrao_create, name='padrao_create'),
+    path('padroes/<int:pk>/edit/', views.padrao_update, name='padrao_edit'),
     path('padroes/<int:pk>/delete/', views.PadraoContagemDeleteView.as_view(), name='padrao_delete'),
     path('padroes/reorder/', views.reorder_patterns, name='reorder_patterns'),
     path('tipos-de-padrao/', views.listar_tipos_padrao, name='listar_tipos_padrao'),

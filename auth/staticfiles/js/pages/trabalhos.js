@@ -15,6 +15,7 @@ class TrabalhosManager {
         this.bindEditButtons();
         this.bindDeleteButtons();
         this.bindBulkOperations();
+        this.bindFormSubmissions();
     }
 
     getClienteId() {
@@ -89,7 +90,8 @@ class TrabalhosManager {
             btn.addEventListener('click', (e) => {
                 const id = btn.dataset.id;
                 const nome = btn.dataset.nome;
-                this.openEditPontoModal(id, nome);
+                const localizacao = btn.dataset.localizacao;
+                this.openEditPontoModal(id, nome, localizacao);
             });
         });
     }
@@ -195,14 +197,16 @@ class TrabalhosManager {
         }
     }
 
-    openEditPontoModal(id, nome) {
+    openEditPontoModal(id, nome, localizacao) {
         const modal = document.getElementById('editPontoModal');
         if (modal) {
             const form = modal.querySelector('form');
             const nomeInput = form.querySelector('[name="nome"]');
+            const localizacaoInput = form.querySelector('[name="localizacao"]');
             const idInput = form.querySelector('[name="ponto_id"]');
             
             if (nomeInput) nomeInput.value = nome;
+            if (localizacaoInput) localizacaoInput.value = localizacao || '';
             if (idInput) idInput.value = id;
             
             window.modalManager.open('editPontoModal');
@@ -229,7 +233,7 @@ class TrabalhosManager {
 
     async deleteCliente(id) {
         try {
-            await window.TrafficCount.apiRequest(`/api/clientes/${id}/`, {
+            await window.TrafficCount.apiRequest(`/trabalhos/api/clientes/${id}/`, {
                 method: 'DELETE'
             });
             
@@ -243,7 +247,7 @@ class TrabalhosManager {
 
     async deleteCodigo(id) {
         try {
-            await window.TrafficCount.apiRequest(`/api/codigos/${id}/`, {
+            await window.TrafficCount.apiRequest(`/trabalhos/api/codigos/${id}/`, {
                 method: 'DELETE'
             });
             
@@ -257,7 +261,7 @@ class TrabalhosManager {
 
     async deletePonto(id) {
         try {
-            await window.TrafficCount.apiRequest(`/api/pontos/${id}/`, {
+            await window.TrafficCount.apiRequest(`/trabalhos/api/pontos/${id}/`, {
                 method: 'DELETE'
             });
             
@@ -271,7 +275,7 @@ class TrabalhosManager {
 
     async bulkCreatePontos(data) {
         try {
-            const result = await window.TrafficCount.apiRequest('/api/pontos/bulk-create/', {
+            const result = await window.TrafficCount.apiRequest('/trabalhos/api/pontos/bulk-create/', {
                 method: 'POST',
                 body: JSON.stringify(data)
             });
@@ -282,6 +286,78 @@ class TrabalhosManager {
             console.error('Erro na criação em massa:', error);
             window.TrafficCount.showToast('Erro ao criar pontos', 'error');
             throw error;
+        }
+    }
+
+    bindFormSubmissions() {
+        // Edit cliente form
+        const editClienteForm = document.getElementById('editClienteForm');
+        if (editClienteForm) {
+            editClienteForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const formData = new FormData(editClienteForm);
+                const clienteId = formData.get('cliente_id');
+                
+                if (clienteId) {
+                    editClienteForm.action = `/trabalhos/cliente/${clienteId}/update/`;
+                    editClienteForm.submit();
+                }
+            });
+        }
+
+        // Edit codigo form
+        const editCodigoForm = document.getElementById('editCodigoForm');
+        if (editCodigoForm) {
+            editCodigoForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const formData = new FormData(editCodigoForm);
+                const codigoId = formData.get('codigo_id');
+                
+                if (codigoId) {
+                    editCodigoForm.action = `/trabalhos/codigo/${codigoId}/update/`;
+                    editCodigoForm.submit();
+                }
+            });
+        }
+
+        // Edit ponto form
+        const editPontoForm = document.getElementById('editPontoForm');
+        if (editPontoForm) {
+            editPontoForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const formData = new FormData(editPontoForm);
+                const pontoId = formData.get('ponto_id');
+                
+                if (pontoId) {
+                    editPontoForm.action = `/trabalhos/ponto/${pontoId}/update/`;
+                    editPontoForm.submit();
+                }
+            });
+        }
+
+        // Bulk create pontos form
+        const bulkCreateForm = document.getElementById('bulkCreatePontosForm');
+        if (bulkCreateForm) {
+            bulkCreateForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(bulkCreateForm);
+                const data = {
+                    codigo_id: formData.get('codigo_id'),
+                    quantity: parseInt(formData.get('quantity')),
+                    prefix: formData.get('prefix'),
+                    suffix: formData.get('suffix'),
+                    startNumber: parseInt(formData.get('startNumber')),
+                    digits: parseInt(formData.get('digits'))
+                };
+
+                try {
+                    await this.bulkCreatePontos(data);
+                    window.modalManager.close('bulkCreatePontosModal');
+                    setTimeout(() => window.location.reload(), 1000);
+                } catch (error) {
+                    console.error('Bulk create error:', error);
+                }
+            });
         }
     }
 }

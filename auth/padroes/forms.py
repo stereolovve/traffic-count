@@ -1,9 +1,6 @@
-# auth/padroes/forms.py
-from django import forms
-from .models import PadraoContagem
+# Este arquivo não é mais necessário para Django Forms
+# Todo o processamento de formulários foi migrado para DRF Serializers
+# e validadores estruturados em validators.py
 
-
-class PadraoContagemForm(forms.ModelForm):
-    class Meta:
-        model = PadraoContagem
-        fields = ['pattern_type', 'veiculo', 'bind']
+# Funcionalidades migradas:
+# - PadraoContagemForm -> PadraoContagemSerializer + PadraoValidator

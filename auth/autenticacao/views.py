@@ -21,7 +21,7 @@ from django.urls import reverse_lazy
 from django.shortcuts import render, redirect
 from django.contrib.auth import login
 from django.contrib.auth.views import LoginView as BaseLoginView
-from .forms import CustomUserCreationForm
+from .validators import UserValidator, ValidationResult
 from django.contrib import messages
 
 logger = logging.getLogger(__name__)
@@ -206,12 +206,36 @@ def check_auth(request):
 
 def register(request):
     if request.method == 'POST':
-        form = CustomUserCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            login(request, user)
-            messages.success(request, 'Registro realizado com sucesso!')
-            return redirect('home')
-    else:
-        form = CustomUserCreationForm()
-    return render(request, 'registration/register.html', {'form': form})
+        data = {
+            'username': request.POST.get('username', ''),
+            'name': request.POST.get('name', ''),
+            'last_name': request.POST.get('last_name', ''),
+            'email': request.POST.get('email', ''),
+            'setor': request.POST.get('setor', ''),
+            'password1': request.POST.get('password1', ''),
+            'password2': request.POST.get('password2', ''),
+        }
+        
+        # Usar serializer para validação e criação
+        serializer = RegistroSerializer(data=data)
+        
+        if serializer.is_valid():
+            try:
+                user = serializer.save()
+                login(request, user)
+                messages.success(request, 'Registro realizado com sucesso!')
+                return redirect('home')
+            except Exception as e:
+                messages.error(request, f'Erro ao criar usuário: {str(e)}')
+        else:
+            # Exibir erros de validação
+            for field, errors in serializer.errors.items():
+                for error in errors:
+                    messages.error(request, f'{error}')
+    
+    # Preparar choices para o template
+    setor_choices = UserValidator.SETOR_CHOICES
+    
+    return render(request, 'registration/register.html', {
+        'setor_choices': setor_choices,
+    })
