@@ -1172,7 +1172,7 @@
             $('.action-dropdown').hide().removeClass('dropdown-up arrow-left');
         });
 
-        // Toggle action menu with smart positioning for viewport
+        // Toggle action menu with smart positioning for viewport and table position
         $('.js-toggle-menu').on('click', function(e) {
             e.stopPropagation();
             const button = $(this);
@@ -1184,13 +1184,26 @@
             if (menu.is(':visible')) {
                 menu.hide();
             } else {
-                // Check if dropdown would go out of viewport
+                // Get table and row information
+                const row = button.closest('tr');
+                const table = button.closest('table');
+                const allRows = table.find('tbody tr');
+                const rowIndex = allRows.index(row);
+                const totalRows = allRows.length;
+                
+                // Check viewport constraints
                 const buttonRect = this.getBoundingClientRect();
                 const viewportHeight = window.innerHeight;
                 const menuHeight = 150; // Approximate dropdown height
                 
-                // If dropdown would go below viewport, show it upward
-                if (buttonRect.bottom + menuHeight > viewportHeight) {
+                // Determine if we should open upward based on:
+                // 1. Row position in table (last 3 rows)
+                // 2. Viewport constraints
+                const isInLastRows = rowIndex >= totalRows - 3;
+                const wouldGoOutOfViewport = buttonRect.bottom + menuHeight > viewportHeight;
+                
+                if (isInLastRows || wouldGoOutOfViewport) {
+                    // Open upward
                     menu.addClass('dropdown-up');
                     menu.css({
                         'top': 'auto',
@@ -1199,6 +1212,7 @@
                         'margin-top': '0'
                     });
                 } else {
+                    // Open downward (default)
                     menu.removeClass('dropdown-up');
                     menu.css({
                         'top': '100%',
