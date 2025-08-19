@@ -64,7 +64,7 @@
 
     <!-- Clientes Section -->
     {% if not cliente %}
-    <div class="bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 rounded-xl shadow-lg overflow-hidden">
+    <div class="bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 rounded-xl shadow-lg overflow-hidden trabalhos-table-container">
         <!-- Header Section -->
         <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6">
             <div class="flex justify-between items-center">
@@ -83,7 +83,7 @@
         </div>
 
         <!-- Table Section -->
-        <div class="p-0">
+        <div class="p-0 trabalhos-table-body">
             {% if clientes %}
             <div class="overflow-x-auto">
                 <table class="min-w-full">
@@ -140,7 +140,7 @@
                 </table>
             </div>
             {% else %}
-            <div class="p-12 text-center">
+            <div class="p-12 text-center trabalhos-empty-state">
                 <div class="mx-auto h-24 w-24 text-slate-500 mb-4">
                     <i class="fas fa-building text-6xl"></i>
                 </div>
@@ -158,7 +158,7 @@
 
     <!-- Códigos Section -->
     {% if cliente and not codigo %}
-    <div class="bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 rounded-xl shadow-lg overflow-hidden">
+    <div class="bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 rounded-xl shadow-lg overflow-hidden trabalhos-table-container">
         <!-- Header Section -->
         <div class="bg-gradient-to-r from-green-600 to-green-700 px-8 py-6">
             <div class="flex justify-between items-center">
@@ -177,7 +177,7 @@
         </div>
 
         <!-- Table Section -->
-        <div class="p-0">
+        <div class="p-0 trabalhos-table-body">
             {% if codigos %}
             <div class="overflow-x-auto">
                 <table class="min-w-full">
@@ -240,7 +240,7 @@
                 </table>
             </div>
             {% else %}
-            <div class="p-12 text-center">
+            <div class="p-12 text-center trabalhos-empty-state">
                 <div class="mx-auto h-24 w-24 text-slate-500 mb-4">
                     <i class="fas fa-code text-6xl"></i>
                 </div>
@@ -258,7 +258,7 @@
 
     <!-- Pontos Section -->
     {% if codigo %}
-    <div class="bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 rounded-xl shadow-lg overflow-hidden max-w-none">
+    <div class="bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 rounded-xl shadow-lg overflow-hidden max-w-none trabalhos-table-container">
         <!-- Header Section -->
         <div class="bg-gradient-to-r from-purple-600 to-purple-700 px-8 py-6">
             <div class="flex justify-between items-center">
@@ -287,7 +287,7 @@
         </div>
 
         <!-- Form and Table Section -->
-        <form id="bulk-delete-form" method="post" action="{% url 'ponto_bulk_delete' %}" class="p-0">
+        <form id="bulk-delete-form" method="post" action="{% url 'ponto_bulk_delete' %}" class="p-0 trabalhos-table-body">
             {% csrf_token %}
             <input type="hidden" name="cliente_id" value="{{ cliente.id }}">
             <input type="hidden" name="codigo_id" value="{{ codigo.id }}">
@@ -346,7 +346,7 @@
                 </table>
             </div>
             {% else %}
-            <div class="p-12 text-center">
+            <div class="p-12 text-center trabalhos-empty-state">
                 <div class="mx-auto h-24 w-24 text-slate-500 mb-4">
                     <i class="fas fa-map-marker-alt text-6xl"></i>
                 </div>

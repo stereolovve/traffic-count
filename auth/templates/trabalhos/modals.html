@@ -1,296 +1,155 @@
-{% load static %}
-
-<!-- Toast -->
-<div id="toast" class="fixed bottom-4 right-4 px-4 py-2 rounded-md shadow-lg hidden">
-    <p id="toastMessage" class="text-white"></p>
-</div>
-
 <!-- Create Cliente Modal -->
-<div id="newClienteModal" class="modal hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
-    <div class="relative top-20 mx-auto p-5 border border-slate-600 w-96 shadow-2xl rounded-md bg-slate-800">
-        <div class="mt-3">
-            <h3 class="text-lg font-medium leading-6 text-white">Novo Cliente</h3>
-            <form id="clienteForm" method="post" action="{% url 'cliente_create' %}" class="mt-4">
-                {% csrf_token %}
-                <div class="mb-4">
-                    <label for="clienteNome" class="block text-sm font-medium text-slate-300">Nome</label>
-                    <input type="text" name="nome" id="clienteNome" required
-                        class="mt-1 block w-full rounded-md border-slate-600 bg-slate-700 text-white shadow-sm focus:border-blue-400 focus:ring-blue-400 placeholder-slate-400">
-                </div>
-                <div class="flex justify-end mt-6">
-                    <button type="button" class="modal-close mr-3 px-4 py-2 text-sm font-medium text-slate-300 bg-slate-600 hover:bg-slate-500 rounded-md" data-modal-close>
-                        Cancelar
-                    </button>
-                    <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-500 rounded-md">
-                        Criar
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
+<div id="newClienteModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+  <div class="bg-slate-800 border border-slate-600 p-6 rounded-lg w-96 mx-4">
+    <h2 class="text-xl mb-4 text-slate-200">Criar Novo Cliente</h2>
+    <form id="clienteForm" method="post" action="{% url 'cliente_create' %}">
+      {% csrf_token %}
+      <input type="text" name="nome" id="clienteNome" placeholder="Nome do cliente" class="w-full p-2 border border-slate-600 bg-slate-700 text-slate-200 placeholder-slate-400 rounded mb-3" required>
+      <div class="flex gap-2">
+        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Criar</button>
+        <button type="button" id="cancelClienteBtn" class="px-4 py-2 border border-slate-600 text-slate-300 bg-slate-700 rounded hover:bg-slate-600">Cancelar</button>
+      </div>
+    </form>
+  </div>
 </div>
 
 <!-- Edit Cliente Modal -->
-<div id="editClienteModal" class="modal hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
-    <div class="relative top-20 mx-auto p-5 border border-slate-600 w-96 shadow-2xl rounded-md bg-slate-800">
-        <div class="mt-3">
-            <h3 class="text-lg font-medium leading-6 text-white">Editar Cliente</h3>
-            <form id="editClienteForm" method="post" class="mt-4">
-                {% csrf_token %}
-                <input type="hidden" name="cliente_id" value="">
-                <div class="mb-4">
-                    <label for="editClienteNome" class="block text-sm font-medium text-slate-300">Nome</label>
-                    <input type="text" name="nome" id="editClienteNome" required
-                        class="mt-1 block w-full rounded-md border-slate-600 bg-slate-700 text-white shadow-sm focus:border-blue-400 focus:ring-blue-400 placeholder-slate-400">
-                </div>
-                <div class="flex justify-end mt-6">
-                    <button type="button" class="modal-close mr-3 px-4 py-2 text-sm font-medium text-slate-300 bg-slate-600 hover:bg-slate-500 rounded-md" data-modal-close>
-                        Cancelar
-                    </button>
-                    <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-500 rounded-md">
-                        Salvar
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<!-- Delete Cliente Modal -->
-<div id="deleteClienteModal" class="modal hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
-    <div class="relative top-20 mx-auto p-5 border border-slate-600 w-96 shadow-2xl rounded-md bg-slate-800">
-        <div class="mt-3">
-            <h3 class="text-lg font-medium leading-6 text-white">Excluir Cliente</h3>
-            <p class="mt-2 text-sm text-slate-400">Tem certeza que deseja excluir este cliente?</p>
-            <form id="deleteClienteForm" class="mt-4" method="post">
-                {% csrf_token %}
-                <div class="flex justify-end mt-6">
-                    <button type="button" class="modal-close mr-3 px-4 py-2 text-sm font-medium text-slate-300 bg-slate-600 hover:bg-slate-500 rounded-md" data-modal-close>
-                        Cancelar
-                    </button>
-                    <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-500 rounded-md">
-                        Excluir
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
+<div id="editClienteModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+  <div class="bg-slate-800 border border-slate-600 p-6 rounded-lg w-96 mx-4">
+    <h2 class="text-xl mb-4 text-slate-200">Editar Cliente</h2>
+    <form id="editClienteForm" method="post">
+      {% csrf_token %}
+      <input type="hidden" name="cliente_id" value="">
+      <input type="text" name="nome" id="editClienteNome" placeholder="Nome do cliente" class="w-full p-2 border border-slate-600 bg-slate-700 text-slate-200 placeholder-slate-400 rounded mb-3" required>
+      <div class="flex gap-2">
+        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Salvar</button>
+        <button type="button" id="cancelEditClienteBtn" class="px-4 py-2 border border-slate-600 text-slate-300 bg-slate-700 rounded hover:bg-slate-600">Cancelar</button>
+      </div>
+    </form>
+  </div>
 </div>
 
 <!-- Create Codigo Modal -->
-<div id="newCodigoModal" class="modal hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
-    <div class="relative top-20 mx-auto p-5 border border-slate-600 w-96 shadow-2xl rounded-md bg-slate-800">
-        <div class="mt-3">
-            <h3 class="text-lg font-medium leading-6 text-white">Novo Código</h3>
-            <form id="codigoForm" method="post" action="{% url 'codigo_create' %}" class="mt-4">
-                {% csrf_token %}
-                <input type="hidden" name="cliente_id" value="{{ cliente.id }}">
-                <div class="mb-4">
-                    <label for="codigoCodigo" class="block text-sm font-medium text-slate-300">Código</label>
-                    <input type="text" name="codigo" id="codigoCodigo" required
-                        class="mt-1 block w-full rounded-md border-slate-600 bg-slate-700 text-white shadow-sm focus:border-blue-400 focus:ring-blue-400 placeholder-slate-400">
-                </div>
-                <div class="mb-4">
-                    <label for="codigoDescricao" class="block text-sm font-medium text-slate-300">Descrição</label>
-                    <textarea name="descricao" id="codigoDescricao" rows="3"
-                        class="mt-1 block w-full rounded-md border-slate-600 bg-slate-700 text-white shadow-sm focus:border-blue-400 focus:ring-blue-400 placeholder-slate-400"></textarea>
-                </div>
-                <div class="flex justify-end mt-6">
-                    <button type="button" class="modal-close mr-3 px-4 py-2 text-sm font-medium text-slate-300 bg-slate-600 hover:bg-slate-500 rounded-md" data-modal-close>
-                        Cancelar
-                    </button>
-                    <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-500 rounded-md">
-                        Criar
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
+<div id="newCodigoModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+  <div class="bg-slate-800 border border-slate-600 p-6 rounded-lg w-96 mx-4">
+    <h2 class="text-xl mb-4 text-slate-200">Criar Novo Código</h2>
+    <form id="codigoForm" method="post" action="{% url 'codigo_create' %}">
+      {% csrf_token %}
+      <input type="hidden" name="cliente_id" value="{{ cliente.id }}">
+      <input type="text" name="codigo" id="codigoCodigo" placeholder="Código do projeto" class="w-full p-2 border border-slate-600 bg-slate-700 text-slate-200 placeholder-slate-400 rounded mb-3" required>
+      <textarea name="descricao" id="codigoDescricao" placeholder="Descrição (opcional)" class="w-full p-2 border border-slate-600 bg-slate-700 text-slate-200 placeholder-slate-400 rounded mb-3" rows="3"></textarea>
+      <div class="flex gap-2">
+        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Criar</button>
+        <button type="button" id="cancelCodigoBtn" class="px-4 py-2 border border-slate-600 text-slate-300 bg-slate-700 rounded hover:bg-slate-600">Cancelar</button>
+      </div>
+    </form>
+  </div>
 </div>
 
-<!-- Edit Código Modal -->
-<div id="editCodigoModal" class="modal hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
-    <div class="relative top-20 mx-auto p-5 border border-slate-600 w-96 shadow-2xl rounded-md bg-slate-800">
-        <div class="mt-3">
-            <h3 class="text-lg font-medium leading-6 text-white">Editar Código</h3>
-            <form id="editCodigoForm" method="post" class="mt-4">
-                {% csrf_token %}
-                <input type="hidden" name="codigo_id" value="">
-                <div class="mb-4">
-                    <label for="editCodigoCodigo" class="block text-sm font-medium text-slate-300">Código</label>
-                    <input type="text" name="codigo" id="editCodigoCodigo" required
-                        class="mt-1 block w-full rounded-md border-slate-600 bg-slate-700 text-white shadow-sm focus:border-blue-400 focus:ring-blue-400 placeholder-slate-400">
-                </div>
-                <div class="mb-4">
-                    <label for="editCodigoDescricao" class="block text-sm font-medium text-slate-300">Descrição</label>
-                    <textarea name="descricao" id="editCodigoDescricao" rows="3"
-                        class="mt-1 block w-full rounded-md border-slate-600 bg-slate-700 text-white shadow-sm focus:border-blue-400 focus:ring-blue-400 placeholder-slate-400"></textarea>
-                </div>
-                <div class="flex justify-end mt-6">
-                    <button type="button" class="modal-close mr-3 px-4 py-2 text-sm font-medium text-slate-300 bg-slate-600 hover:bg-slate-500 rounded-md" data-modal-close>
-                        Cancelar
-                    </button>
-                    <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-500 rounded-md">
-                        Salvar
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<!-- Delete Código Modal -->
-<div id="deleteCodigoModal" class="modal hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
-    <div class="relative top-20 mx-auto p-5 border border-slate-600 w-96 shadow-2xl rounded-md bg-slate-800">
-        <div class="mt-3">
-            <h3 class="text-lg font-medium leading-6 text-white">Excluir Código</h3>
-            <p class="mt-2 text-sm text-slate-400">Tem certeza que deseja excluir este código?</p>
-            <form id="deleteCodigoForm" class="mt-4" method="post">
-                {% csrf_token %}
-                <div class="flex justify-end mt-6">
-                    <button type="button" class="modal-close mr-3 px-4 py-2 text-sm font-medium text-slate-300 bg-slate-600 hover:bg-slate-500 rounded-md" data-modal-close>
-                        Cancelar
-                    </button>
-                    <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-500 rounded-md">
-                        Excluir
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
+<!-- Edit Codigo Modal -->
+<div id="editCodigoModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+  <div class="bg-slate-800 border border-slate-600 p-6 rounded-lg w-96 mx-4">
+    <h2 class="text-xl mb-4 text-slate-200">Editar Código</h2>
+    <form id="editCodigoForm" method="post">
+      {% csrf_token %}
+      <input type="hidden" name="codigo_id" value="">
+      <input type="text" name="codigo" id="editCodigoCodigo" placeholder="Código do projeto" class="w-full p-2 border border-slate-600 bg-slate-700 text-slate-200 placeholder-slate-400 rounded mb-3" required>
+      <textarea name="descricao" id="editCodigoDescricao" placeholder="Descrição (opcional)" class="w-full p-2 border border-slate-600 bg-slate-700 text-slate-200 placeholder-slate-400 rounded mb-3" rows="3"></textarea>
+      <div class="flex gap-2">
+        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Salvar</button>
+        <button type="button" id="cancelEditCodigoBtn" class="px-4 py-2 border border-slate-600 text-slate-300 bg-slate-700 rounded hover:bg-slate-600">Cancelar</button>
+      </div>
+    </form>
+  </div>
 </div>
 
 <!-- Create Ponto Modal -->
-<div id="newPontoModal" class="modal hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
-    <div class="relative top-20 mx-auto p-5 border border-slate-600 w-96 shadow-2xl rounded-md bg-slate-800">
-        <div class="mt-3">
-            <h3 class="text-lg font-medium leading-6 text-white">Novo Ponto</h3>
-            <form id="pontoForm" method="post" action="{% url 'ponto_create' %}" class="mt-4">
-                {% csrf_token %}
-                <input type="hidden" name="codigo_id" value="{{ codigo.id }}">
-                <div class="mb-4">
-                    <label for="pontoNome" class="block text-sm font-medium text-slate-300">Nome</label>
-                    <input type="text" name="nome" id="pontoNome" required
-                        class="mt-1 block w-full rounded-md border-slate-600 bg-slate-700 text-white shadow-sm focus:border-blue-400 focus:ring-blue-400 placeholder-slate-400">
-                </div>
-                <div class="mb-4">
-                    <label for="pontoLocalizacao" class="block text-sm font-medium text-slate-300">Localização</label>
-                    <input type="text" name="localizacao" id="pontoLocalizacao"
-                        class="mt-1 block w-full rounded-md border-slate-600 bg-slate-700 text-white shadow-sm focus:border-blue-400 focus:ring-blue-400 placeholder-slate-400">
-                    <p class="text-xs text-slate-400 mt-1">Campo opcional</p>
-                </div>
-                <div class="flex justify-end mt-6">
-                    <button type="button" class="modal-close mr-3 px-4 py-2 text-sm font-medium text-slate-300 bg-slate-600 hover:bg-slate-500 rounded-md" data-modal-close>
-                        Cancelar
-                    </button>
-                    <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-500 rounded-md">
-                        Criar
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
+<div id="newPontoModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+  <div class="bg-slate-800 border border-slate-600 p-6 rounded-lg w-96 mx-4">
+    <h2 class="text-xl mb-4 text-slate-200">Criar Novo Ponto</h2>
+    <form id="pontoForm" method="post" action="{% url 'ponto_create' %}">
+      {% csrf_token %}
+      <input type="hidden" name="codigo_id" value="{{ codigo.id }}">
+      <input type="text" name="nome" id="pontoNome" placeholder="Nome do ponto" class="w-full p-2 border border-slate-600 bg-slate-700 text-slate-200 placeholder-slate-400 rounded mb-3" required>
+      <input type="text" name="localizacao" id="pontoLocalizacao" placeholder="Localização (opcional)" class="w-full p-2 border border-slate-600 bg-slate-700 text-slate-200 placeholder-slate-400 rounded mb-3">
+      <div class="flex gap-2">
+        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Criar</button>
+        <button type="button" id="cancelPontoBtn" class="px-4 py-2 border border-slate-600 text-slate-300 bg-slate-700 rounded hover:bg-slate-600">Cancelar</button>
+      </div>
+    </form>
+  </div>
 </div>
 
 <!-- Edit Ponto Modal -->
-<div id="editPontoModal" class="modal hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
-    <div class="relative top-20 mx-auto p-5 border border-slate-600 w-96 shadow-2xl rounded-md bg-slate-800">
-        <div class="mt-3">
-            <h3 class="text-lg font-medium leading-6 text-white">Editar Ponto</h3>
-            <form id="editPontoForm" method="post" class="mt-4">
-                {% csrf_token %}
-                <input type="hidden" name="ponto_id" value="">
-                <div class="mb-4">
-                    <label for="editPontoNome" class="block text-sm font-medium text-slate-300">Nome</label>
-                    <input type="text" name="nome" id="editPontoNome" required
-                        class="mt-1 block w-full rounded-md border-slate-600 bg-slate-700 text-white shadow-sm focus:border-blue-400 focus:ring-blue-400 placeholder-slate-400">
-                </div>
-                <div class="mb-4">
-                    <label for="editPontoLocalizacao" class="block text-sm font-medium text-slate-300">Localização</label>
-                    <input type="text" name="localizacao" id="editPontoLocalizacao"
-                        class="mt-1 block w-full rounded-md border-slate-600 bg-slate-700 text-white shadow-sm focus:border-blue-400 focus:ring-blue-400 placeholder-slate-400">
-                    <p class="text-xs text-slate-400 mt-1">Campo opcional</p>
-                </div>
-                <div class="flex justify-end mt-6">
-                    <button type="button" class="modal-close mr-3 px-4 py-2 text-sm font-medium text-slate-300 bg-slate-600 hover:bg-slate-500 rounded-md" data-modal-close>
-                        Cancelar
-                    </button>
-                    <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-500 rounded-md">
-                        Salvar
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
+<div id="editPontoModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+  <div class="bg-slate-800 border border-slate-600 p-6 rounded-lg w-96 mx-4">
+    <h2 class="text-xl mb-4 text-slate-200">Editar Ponto</h2>
+    <form id="editPontoForm" method="post">
+      {% csrf_token %}
+      <input type="hidden" name="ponto_id" value="">
+      <input type="text" name="nome" id="editPontoNome" placeholder="Nome do ponto" class="w-full p-2 border border-slate-600 bg-slate-700 text-slate-200 placeholder-slate-400 rounded mb-3" required>
+      <input type="text" name="localizacao" id="editPontoLocalizacao" placeholder="Localização (opcional)" class="w-full p-2 border border-slate-600 bg-slate-700 text-slate-200 placeholder-slate-400 rounded mb-3">
+      <div class="flex gap-2">
+        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Salvar</button>
+        <button type="button" id="cancelEditPontoBtn" class="px-4 py-2 border border-slate-600 text-slate-300 bg-slate-700 rounded hover:bg-slate-600">Cancelar</button>
+      </div>
+    </form>
+  </div>
 </div>
 
-<!-- Delete Ponto Modal -->
-<div id="deletePontoModal" class="modal hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
-    <div class="relative top-20 mx-auto p-5 border border-slate-600 w-96 shadow-2xl rounded-md bg-slate-800">
-        <div class="mt-3">
-            <h3 class="text-lg font-medium leading-6 text-white">Excluir Ponto</h3>
-            <p class="mt-2 text-sm text-slate-400">Tem certeza que deseja excluir este ponto?</p>
-            <form id="deletePontoForm" class="mt-4" method="post">
-                {% csrf_token %}
-                <div class="flex justify-end mt-6">
-                    <button type="button" class="modal-close mr-3 px-4 py-2 text-sm font-medium text-slate-300 bg-slate-600 hover:bg-slate-500 rounded-md" data-modal-close>
-                        Cancelar
-                    </button>
-                    <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-500 rounded-md">
-                        Excluir
-                    </button>
-                </div>
-            </form>
+<!-- Bulk Create Pontos Modal -->
+<div id="bulkCreatePontosModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+  <div class="bg-slate-800 border border-slate-600 p-6 rounded-lg w-96 mx-4 max-h-screen overflow-y-auto">
+    <h2 class="text-xl mb-4 text-slate-200">Criar Pontos em Massa</h2>
+    <form id="bulkCreatePontosForm">
+      {% csrf_token %}
+      <input type="hidden" name="codigo_id" id="codigo_id" value="{{ codigo.id }}">
+      
+      <div class="grid grid-cols-2 gap-3 mb-3">
+        <div>
+          <label class="block text-sm font-medium text-slate-300 mb-1">Quantidade</label>
+          <input type="number" name="quantity" id="quantity" min="1" max="100" value="10" class="w-full p-2 border border-slate-600 bg-slate-700 text-slate-200 rounded" required>
         </div>
-    </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-300 mb-1">Início</label>
+          <input type="number" name="startNumber" id="startNumber" min="1" value="1" class="w-full p-2 border border-slate-600 bg-slate-700 text-slate-200 rounded" required>
+        </div>
+      </div>
+      
+      <div class="grid grid-cols-2 gap-3 mb-3">
+        <div>
+          <label class="block text-sm font-medium text-slate-300 mb-1">Prefixo</label>
+          <input type="text" name="prefix" id="prefix" value="P" class="w-full p-2 border border-slate-600 bg-slate-700 text-slate-200 rounded">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-300 mb-1">Sufixo</label>
+          <input type="text" name="suffix" id="suffix" class="w-full p-2 border border-slate-600 bg-slate-700 text-slate-200 rounded">
+        </div>
+      </div>
+      
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-slate-300 mb-1">Dígitos</label>
+        <select name="digits" id="digits" class="w-full p-2 border border-slate-600 bg-slate-700 text-slate-200 rounded" required>
+          <option value="2">2 dígitos (01, 02, 03...)</option>
+          <option value="3" selected>3 dígitos (001, 002, 003...)</option>
+          <option value="4">4 dígitos (0001, 0002, 0003...)</option>
+        </select>
+      </div>
+      
+      <div class="bg-slate-700 border border-slate-600 p-3 rounded mb-4">
+        <p class="text-sm font-medium text-slate-300 mb-1">Preview:</p>
+        <div id="previewList" class="text-sm text-slate-400 font-mono">P001, P002, P003, P004, P005...</div>
+      </div>
+      
+      <div class="flex gap-2">
+        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Criar Pontos</button>
+        <button type="button" id="cancelBulkBtn" class="px-4 py-2 border border-slate-600 text-slate-300 bg-slate-700 rounded hover:bg-slate-600">Cancelar</button>
+      </div>
+    </form>
+  </div>
 </div>
 
-<!-- Bulk Add Pontos Modal -->
-<div id="bulkCreatePontosModal" class="modal hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
-    <div class="relative top-10 mx-auto p-5 border border-slate-600 w-full max-w-md shadow-2xl rounded-md bg-slate-800">
-        <div class="mt-3">
-            <h3 class="text-lg font-medium leading-6 text-white">Criar Pontos em Massa</h3>
-            <form id="bulkCreatePontosForm" class="mt-4">
-                {% csrf_token %}
-                <input type="hidden" name="codigo_id" id="codigo_id" value="{{ codigo.id }}">
-                <div class="mb-4">
-                    <label for="quantity" class="block text-sm font-medium text-slate-300">Quantidade de Pontos</label>
-                    <input type="number" name="quantity" id="quantity" min="1" value="10" required
-                        class="mt-1 block w-full rounded-md border-slate-600 bg-slate-700 text-white shadow-sm focus:border-blue-400 focus:ring-blue-400 placeholder-slate-400">
-                </div>
-                <div class="mb-4">
-                    <label for="prefix" class="block text-sm font-medium text-slate-300">Prefixo</label>
-                    <input type="text" name="prefix" id="prefix" value="P" placeholder="Ex: P"
-                        class="mt-1 block w-full rounded-md border-slate-600 bg-slate-700 text-white shadow-sm focus:border-blue-400 focus:ring-blue-400 placeholder-slate-400">
-                </div>
-                <div class="mb-4">
-                    <label for="suffix" class="block text-sm font-medium text-slate-300">Sufixo (opcional)</label>
-                    <input type="text" name="suffix" id="suffix" placeholder="Ex: _A"
-                        class="mt-1 block w-full rounded-md border-slate-600 bg-slate-700 text-white shadow-sm focus:border-blue-400 focus:ring-blue-400 placeholder-slate-400">
-                </div>
-                <div class="mb-4">
-                    <label for="startNumber" class="block text-sm font-medium text-slate-300">Início da Numeração</label>
-                    <input type="number" name="startNumber" id="startNumber" min="1" value="1" required
-                        class="mt-1 block w-full rounded-md border-slate-600 bg-slate-700 text-white shadow-sm focus:border-blue-400 focus:ring-blue-400 placeholder-slate-400">
-                </div>
-                <div class="mb-4">
-                    <label for="digits" class="block text-sm font-medium text-slate-300">Dígitos da Numeração</label>
-                    <select name="digits" id="digits" required
-                        class="mt-1 block w-full rounded-md border-slate-600 bg-slate-700 text-white shadow-sm focus:border-blue-400 focus:ring-blue-400 placeholder-slate-400">
-                        <option value="2">2 (Ex: 01, 02, 03...)</option>
-                        <option value="3" selected>3 (Ex: 001, 002, 003...)</option>
-                        <option value="4">4 (Ex: 0001, 0002, 0003...)</option>
-                    </select>
-                </div>
-                <div class="flex justify-end mt-6">
-                    <button type="button" class="modal-close mr-3 px-4 py-2 text-sm font-medium text-slate-300 bg-slate-600 hover:bg-slate-500 rounded-md" data-modal-close>
-                        Cancelar
-                    </button>
-                    <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-500 rounded-md">
-                        Criar
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
+<!-- Toast Notification -->
+<div id="toast" class="fixed bottom-4 right-4 px-4 py-2 rounded-md shadow-lg hidden z-50">
+    <p id="toastMessage" class="text-white"></p>
 </div>

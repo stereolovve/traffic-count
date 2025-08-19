@@ -1,4 +1,37 @@
 {
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python C:\\Users\\lucas.melo\\traffic-count\\.claude\\hook_handler.py"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python C:\\Users\\lucas.melo\\traffic-count\\.claude\\hook_handler.py"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "TodoWrite",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python C:\\Users\\lucas.melo\\traffic-count\\.claude\\hook_handler.py"
+          }
+        ]
+      }
+    ]
+  },
   "permissions": {
     "allow": [
       "Bash(python manage.py:*)",

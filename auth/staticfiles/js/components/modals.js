@@ -1,138 +1,127 @@
-/**
- * Modal Manager - Traffic Count
- * Handles modal functionality
- */
+// Simple Modal System - Traffic Count
+// Based on the clean pattern provided by the user
 
-class ModalManager {
-    constructor() {
-        this.modals = new Map();
-        this.init();
-    }
+// Elements DOM state
+let items = [];
 
-    init() {
-        // Find all modals and register them
-        const modalElements = document.querySelectorAll('[id$="Modal"]');
-        modalElements.forEach(modal => {
-            this.registerModal(modal.id);
-        });
-        
-        // Global escape key handler
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                this.closeTopModal();
-            }
-        });
-    }
-
-    registerModal(modalId) {
-        const modal = document.getElementById(modalId);
-        if (!modal) return;
-
-        this.modals.set(modalId, {
-            element: modal,
-            isOpen: false
-        });
-
-        // Set up backdrop click to close
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                this.close(modalId);
-            }
-        });
-
-        // Set up close buttons
-        const closeButtons = modal.querySelectorAll('[data-modal-close]');
-        closeButtons.forEach(btn => {
-            btn.addEventListener('click', () => this.close(modalId));
-        });
-    }
-
-    open(modalId) {
-        const modalData = this.modals.get(modalId);
-        if (!modalData) {
-            console.error(`Modal ${modalId} not found`);
-            return;
-        }
-
-        const modal = modalData.element;
-        modal.classList.remove('hidden');
-        modalData.isOpen = true;
-        
-        // Focus management
-        const firstFocusable = modal.querySelector('input, select, textarea, button');
-        if (firstFocusable) {
-            setTimeout(() => firstFocusable.focus(), 100);
-        }
-
-        // Prevent body scroll
-        document.body.style.overflow = 'hidden';
-        
-        // Add fade-in animation
-        modal.style.opacity = '0';
-        setTimeout(() => {
-            modal.style.transition = 'opacity 0.3s ease';
-            modal.style.opacity = '1';
-        }, 10);
-    }
-
-    close(modalId) {
-        const modalData = this.modals.get(modalId);
-        if (!modalData) return;
-
-        const modal = modalData.element;
-        
-        // Fade out animation
-        modal.style.opacity = '0';
-        setTimeout(() => {
-            modal.classList.add('hidden');
-            modal.style.opacity = '';
-            modal.style.transition = '';
-            modalData.isOpen = false;
-            
-            // Restore body scroll if no other modals are open
-            const hasOpenModals = Array.from(this.modals.values()).some(m => m.isOpen);
-            if (!hasOpenModals) {
-                document.body.style.overflow = '';
-            }
-        }, 300);
-
-        // Clear form if exists
-        const form = modal.querySelector('form');
-        if (form) {
-            form.reset();
-            // Clear validation states
-            const inputs = form.querySelectorAll('.form-input');
-            inputs.forEach(input => {
-                input.classList.remove('error', 'success');
-            });
-        }
-    }
-
-    closeTopModal() {
-        // Close the most recently opened modal
-        const openModals = Array.from(this.modals.entries())
-            .filter(([_, data]) => data.isOpen);
-        
-        if (openModals.length > 0) {
-            const [modalId] = openModals[openModals.length - 1];
-            this.close(modalId);
-        }
-    }
-
-    isOpen(modalId) {
-        const modalData = this.modals.get(modalId);
-        return modalData ? modalData.isOpen : false;
-    }
-}
-
-// Global modal manager instance
-window.modalManager = new ModalManager();
-
-// Utility functions for backward compatibility
-window.showModal = function(modalId) {
-    window.modalManager.open(modalId);
+// Modal open/close functions - defined globally
+window.openModal = function(modalId) {
+  const modal = document.getElementById(modalId);
+  if (modal) {
+    modal.classList.remove('hidden');
+  }
 };
 
-window.hideModal = function(modalId) {
-    window.modalManager.close(modalId);
+window.closeModal = function(modalId) {
+  const modal = document.getElementById(modalId);
+  if (modal) {
+    modal.classList.add('hidden');
+    const form = modal.querySelector('form');
+    if (form) {
+      form.reset();
+    }
+  }
 };
+
+// Initialize modal functionality when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+  // Bind close buttons
+  const cancelButtons = [
+    'cancelClienteBtn',
+    'cancelEditClienteBtn', 
+    'cancelCodigoBtn',
+    'cancelEditCodigoBtn',
+    'cancelPontoBtn',
+    'cancelEditPontoBtn',
+    'cancelBulkBtn'
+  ];
+
+  cancelButtons.forEach(btnId => {
+    const btn = document.getElementById(btnId);
+    if (btn) {
+      btn.addEventListener('click', () => {
+        // Simple mapping of cancel buttons to modals
+        const modalMap = {
+          'cancelClienteBtn': 'newClienteModal',
+          'cancelEditClienteBtn': 'editClienteModal',
+          'cancelCodigoBtn': 'newCodigoModal',
+          'cancelEditCodigoBtn': 'editCodigoModal',
+          'cancelPontoBtn': 'newPontoModal',
+          'cancelEditPontoBtn': 'editPontoModal',
+          'cancelBulkBtn': 'bulkCreatePontosModal'
+        };
+        
+        const modalId = modalMap[btnId];
+        if (modalId) {
+          window.closeModal(modalId);
+        }
+      });
+    }
+  });
+
+  // Close modal when clicking on backdrop
+  document.addEventListener('click', (e) => {
+    if (e.target.classList.contains('bg-black') && e.target.classList.contains('bg-opacity-50')) {
+      const modalId = e.target.id;
+      window.closeModal(modalId);
+    }
+  });
+
+  // Close modal on ESC key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      const openModals = document.querySelectorAll('[id$="Modal"]:not(.hidden)');
+      openModals.forEach(modal => modal.classList.add('hidden'));
+    }
+  });
+
+  // Bulk create pontos preview functionality
+  const bulkModal = document.getElementById('bulkCreatePontosModal');
+  if (bulkModal) {
+    const quantityInput = bulkModal.querySelector('#quantity');
+    const prefixInput = bulkModal.querySelector('#prefix');
+    const suffixInput = bulkModal.querySelector('#suffix');
+    const startNumberInput = bulkModal.querySelector('#startNumber');
+    const digitsSelect = bulkModal.querySelector('#digits');
+    const previewList = bulkModal.querySelector('#previewList');
+    
+    function updatePreview() {
+      const quantity = parseInt(quantityInput.value) || 10;
+      const prefix = prefixInput.value || '';
+      const suffix = suffixInput.value || '';
+      const startNumber = parseInt(startNumberInput.value) || 1;
+      const digits = parseInt(digitsSelect.value) || 3;
+      
+      const previews = [];
+      const maxPreview = Math.min(quantity, 5);
+      
+      for (let i = 0; i < maxPreview; i++) {
+        const number = (startNumber + i).toString().padStart(digits, '0');
+        const name = `${prefix}${number}${suffix}`;
+        previews.push(name);
+      }
+      
+      let previewText = previews.join(', ');
+      if (quantity > 5) {
+        previewText += '...';
+      }
+      
+      if (previewList) {
+        previewList.textContent = previewText;
+      }
+    }
+    
+    // Update preview on input change
+    [quantityInput, prefixInput, suffixInput, startNumberInput, digitsSelect].forEach(input => {
+      if (input) {
+        input.addEventListener('input', updatePreview);
+        input.addEventListener('change', updatePreview);
+      }
+    });
+    
+    // Initialize preview
+    updatePreview();
+  }
+});
+
+// Functions are already defined globally above

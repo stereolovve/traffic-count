@@ -1,6 +1,6 @@
 /**
  * Trabalhos Page JavaScript - Traffic Count
- * Handles client/code/point management functionality
+ * Simplified modal system
  */
 
 class TrabalhosManager {
@@ -33,7 +33,7 @@ class TrabalhosManager {
         const newClienteBtns = document.querySelectorAll('#newClienteBtn, #newClienteBtn2');
         newClienteBtns.forEach(btn => {
             btn.addEventListener('click', () => {
-                window.modalManager.open('newClienteModal');
+                window.openModal('newClienteModal');
             });
         });
 
@@ -41,7 +41,7 @@ class TrabalhosManager {
         const newCodigoBtns = document.querySelectorAll('#newCodigoBtn, #newCodigoBtn2');
         newCodigoBtns.forEach(btn => {
             btn.addEventListener('click', () => {
-                window.modalManager.open('newCodigoModal');
+                window.openModal('newCodigoModal');
             });
         });
 
@@ -49,7 +49,7 @@ class TrabalhosManager {
         const newPontoBtns = document.querySelectorAll('#newPontoBtn, #newPontoBtn2');
         newPontoBtns.forEach(btn => {
             btn.addEventListener('click', () => {
-                window.modalManager.open('newPontoModal');
+                window.openModal('newPontoModal');
             });
         });
 
@@ -57,7 +57,7 @@ class TrabalhosManager {
         const bulkCreateBtn = document.getElementById('bulkCreatePontosBtn');
         if (bulkCreateBtn) {
             bulkCreateBtn.addEventListener('click', () => {
-                window.modalManager.open('bulkCreatePontosModal');
+                window.openModal('bulkCreatePontosModal');
             });
         }
     }
@@ -167,7 +167,6 @@ class TrabalhosManager {
     }
 
     openEditClienteModal(id, nome) {
-        // Populate edit form
         const modal = document.getElementById('editClienteModal');
         if (modal) {
             const form = modal.querySelector('form');
@@ -177,7 +176,7 @@ class TrabalhosManager {
             if (nameInput) nameInput.value = nome;
             if (idInput) idInput.value = id;
             
-            window.modalManager.open('editClienteModal');
+            window.openModal('editClienteModal');
         }
     }
 
@@ -193,7 +192,7 @@ class TrabalhosManager {
             if (descricaoInput) descricaoInput.value = descricao || '';
             if (idInput) idInput.value = id;
             
-            window.modalManager.open('editCodigoModal');
+            window.openModal('editCodigoModal');
         }
     }
 
@@ -209,24 +208,24 @@ class TrabalhosManager {
             if (localizacaoInput) localizacaoInput.value = localizacao || '';
             if (idInput) idInput.value = id;
             
-            window.modalManager.open('editPontoModal');
+            window.openModal('editPontoModal');
         }
     }
 
     confirmDeleteCliente(id, nome) {
-        if (confirm(`Tem certeza que deseja excluir o cliente "${nome}"?\\n\\nEsta ação não pode ser desfeita.`)) {
+        if (confirm(`Tem certeza que deseja excluir o cliente "${nome}"?\n\nEsta ação não pode ser desfeita.`)) {
             this.deleteCliente(id);
         }
     }
 
     confirmDeleteCodigo(id, codigo) {
-        if (confirm(`Tem certeza que deseja excluir o código "${codigo}"?\\n\\nEsta ação não pode ser desfeita.`)) {
+        if (confirm(`Tem certeza que deseja excluir o código "${codigo}"?\n\nEsta ação não pode ser desfeita.`)) {
             this.deleteCodigo(id);
         }
     }
 
     confirmDeletePonto(id) {
-        if (confirm('Tem certeza que deseja excluir este ponto?\\n\\nEsta ação não pode ser desfeita.')) {
+        if (confirm('Tem certeza que deseja excluir este ponto?\n\nEsta ação não pode ser desfeita.')) {
             this.deletePonto(id);
         }
     }
@@ -352,7 +351,7 @@ class TrabalhosManager {
 
                 try {
                     await this.bulkCreatePontos(data);
-                    window.modalManager.close('bulkCreatePontosModal');
+                    window.closeModal('bulkCreatePontosModal');
                     setTimeout(() => window.location.reload(), 1000);
                 } catch (error) {
                     console.error('Bulk create error:', error);
