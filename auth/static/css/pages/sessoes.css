@@ -1,0 +1,547 @@
+/* Sessões de Contagem - Página Específica CSS */
+
+/* Select2 Dark Mode Styling */
+.select2-container--default .select2-selection--single {
+    height: 42px !important;
+    border: 2px solid #374151 !important;
+    border-radius: 8px !important;
+    padding-left: 12px !important;
+    background-color: #1f2937 !important;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 38px !important;
+    color: #f9fafb !important;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 38px !important;
+}
+
+.select2-container--default.select2-container--focus .select2-selection--single {
+    border-color: #60a5fa !important;
+    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2) !important;
+}
+
+.select2-dropdown {
+    background-color: #1f2937 !important;
+    border: 1px solid #374151 !important;
+}
+
+.select2-results__option {
+    color: #f9fafb !important;
+    background-color: #1f2937 !important;
+}
+
+.select2-results__option:hover {
+    background-color: #374151 !important;
+}
+
+.select2-results__option[aria-selected="true"] {
+    background-color: #1e40af !important;
+}
+
+/* Filter Expandable */
+.filter-container {
+    transition: all 0.3s ease;
+}
+
+.filter-header {
+    cursor: pointer;
+    user-select: none;
+}
+
+.filter-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.filter-content.expanded {
+    max-height: 1000px;
+}
+
+.filter-toggle-icon {
+    transition: transform 0.3s ease;
+}
+
+.filter-toggle-icon.rotated {
+    transform: rotate(180deg);
+}
+
+.filter-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.filter-summary-tag {
+    background: linear-gradient(135deg, #374151, #4b5563);
+    color: #e5e7eb;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.quick-filter-bar {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.quick-filter-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.quick-filter-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #d1d5db;
+    white-space: nowrap;
+}
+
+.quick-filter-select {
+    min-width: 120px;
+    padding: 6px 12px;
+    border: 1px solid #4b5563;
+    border-radius: 6px;
+    font-size: 13px;
+    background: #1f2937;
+    color: #f9fafb;
+    cursor: pointer;
+}
+
+.quick-filter-select:focus {
+    outline: none;
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2);
+}
+
+/* Filter Tags */
+.filter-tag {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+}
+
+.filter-tag i {
+    cursor: pointer;
+    padding: 2px;
+    border-radius: 50%;
+    transition: all 0.2s;
+}
+
+.filter-tag i:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+
+.status-badge {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-active {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+    box-shadow: 0 2px 4px rgba(245, 158, 11, 0.3);
+}
+
+.status-finished {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+}
+
+/* Movement Badges */
+.movement-badge {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    color: white;
+    padding: 3px 8px;
+    border-radius: 8px;
+    font-size: 10px;
+    font-weight: 500;
+    margin: 1px;
+    display: inline-block;
+}
+
+/* Table Enhancements - Dark Mode */
+.table-modern {
+    background: #111827;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+}
+
+/* Posicionamento fixo resolve problemas de overflow */
+
+.table-modern th {
+    background: linear-gradient(135deg, #1f2937, #111827);
+    color: white;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 16px 12px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.table-modern th:hover {
+    background: linear-gradient(135deg, #374151, #1f2937);
+}
+
+.table-modern td {
+    padding: 16px 12px;
+    border-bottom: 1px solid #374151;
+    vertical-align: middle;
+    color: #f9fafb;
+}
+
+.table-modern tr:hover {
+    background: linear-gradient(135deg, #1f2937, #374151);
+}
+
+/* Action Menu */
+.action-menu {
+    position: relative;
+}
+
+.action-btn {
+    background: linear-gradient(135deg, #6b7280, #4b5563);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.action-btn:hover {
+    background: linear-gradient(135deg, #4b5563, #374151);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.action-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: #1f2937;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+    z-index: 9999;
+    min-width: 180px;
+    border: 1px solid #4b5563;
+    overflow: visible;
+    display: none;
+    margin-top: 5px;
+}
+
+/* Dropdown que aparece para cima quando não há espaço */
+.action-dropdown.dropdown-up {
+    margin-bottom: 5px;
+}
+
+/* Ajuste da seta quando dropdown aparece para cima */
+.action-dropdown.dropdown-up::before {
+    top: auto;
+    bottom: -6px;
+    transform: rotate(225deg);
+    border-right: 1px solid #4b5563;
+    border-bottom: 1px solid #4b5563;
+    border-left: none;
+    border-top: none;
+}
+
+.action-dropdown::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    right: 16px;
+    width: 12px;
+    height: 12px;
+    background: #1f2937;
+    transform: rotate(45deg);
+    border-left: 1px solid #4b5563;
+    border-top: 1px solid #4b5563;
+}
+
+/* Ajustar posição da seta dinamicamente */
+.action-dropdown.arrow-left::before {
+    right: auto;
+    left: 16px;
+}
+
+.dropdown-item {
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 13px;
+    color: #f9fafb;
+    text-decoration: none;
+}
+
+.dropdown-item:hover {
+    background: #374151;
+    color: #f9fafb;
+}
+
+.dropdown-item.danger {
+    color: #ef4444;
+}
+
+.dropdown-item.danger:hover {
+    background: #7f1d1d;
+    color: #fca5a5;
+}
+
+/* Pagination - Dark Mode */
+.pagination-modern {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 24px;
+    padding: 20px;
+    background: #111827;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.pagination-btn {
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: #374151;
+    color: #d1d5db;
+    text-decoration: none;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    height: 40px;
+    font-weight: 500;
+}
+
+.pagination-btn:hover {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+}
+
+.pagination-info {
+    color: #d1d5db;
+    font-weight: 500;
+    margin: 0 16px;
+}
+
+/* Sort Icons */
+.sort-icon {
+    margin-left: 6px;
+    opacity: 0.7;
+    transition: all 0.2s;
+}
+
+.sort-active .sort-icon {
+    opacity: 1;
+    color: #3b82f6;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #9ca3af;
+}
+
+.empty-state i {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.empty-state h3 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #d1d5db;
+}
+
+.empty-state p {
+    font-size: 14px;
+    margin-bottom: 0;
+}
+
+/* Loading state for select fields */
+.loading-select {
+    position: relative;
+}
+
+.loading-select::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 30px;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #4b5563;
+    border-top: 2px solid #60a5fa;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    z-index: 10;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.select-disabled {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* Filter Select Dark Mode */
+.filter-select {
+    background-color: #374151 !important;
+    color: #f9fafb !important;
+    border: 2px solid #4b5563 !important;
+    border-radius: 8px !important;
+}
+
+.filter-select:focus {
+    border-color: #60a5fa !important;
+    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2) !important;
+}
+
+/* Input Dark Mode Placeholder */
+.bg-gray-700::placeholder {
+    color: #9ca3af !important;
+}
+
+.bg-gray-700::-webkit-input-placeholder {
+    color: #9ca3af !important;
+}
+
+.bg-gray-700::-moz-placeholder {
+    color: #9ca3af !important;
+    opacity: 1;
+}
+
+.bg-gray-700:-ms-input-placeholder {
+    color: #9ca3af !important;
+}
+
+/* Select Options Dark Mode */
+select.bg-gray-700 {
+    background-color: #374151 !important;
+    color: #f9fafb !important;
+}
+
+select.bg-gray-700 option {
+    background-color: #374151 !important;
+    color: #f9fafb !important;
+}
+
+select.bg-gray-700 option:hover {
+    background-color: #4b5563 !important;
+    color: #f9fafb !important;
+}
+
+select.bg-gray-700 option:checked {
+    background-color: #1e40af !important;
+    color: #f9fafb !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .table-modern {
+        font-size: 11px;
+    }
+    
+    .table-modern th,
+    .table-modern td {
+        padding: 8px 4px;
+        white-space: nowrap;
+    }
+    
+    .filter-group {
+        min-width: 100% !important;
+    }
+    
+    .action-btn {
+        padding: 6px 10px;
+        font-size: 10px;
+    }
+    
+    .action-btn span {
+        display: none; /* Hide "Ações" text on mobile */
+    }
+    
+    .quick-filter-bar {
+        display: none;
+    }
+    
+    .filter-header .flex {
+        justify-content: space-between;
+    }
+    
+    /* Add horizontal scroll hint for mobile tables */
+    .table-modern {
+        min-width: 1000px; /* Force horizontal scroll */
+    }
+    
+    /* Status badges smaller on mobile */
+    .status-badge {
+        padding: 2px 6px;
+        font-size: 9px;
+    }
+    
+    .movement-badge {
+        padding: 1px 4px;
+        font-size: 8px;
+    }
+}
+
+@media (max-width: 1024px) {
+    .quick-filter-bar {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .quick-filter-group {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+    
+    .quick-filter-select {
+        min-width: 100px;
+    }
+}

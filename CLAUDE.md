@@ -37,6 +37,21 @@ python manage.py migrate
 python manage.py createsuperuser
 ```
 
+### Static Files Management
+```powershell
+# CSS Build (TailwindCSS - run after CSS changes)
+npm run build:css
+
+# DEVELOPMENT: Django serves files from auth/static/ automatically
+# NO need to run collectstatic during development
+
+# PRODUCTION ONLY: Collect static files for deployment
+python manage.py collectstatic --noinput
+
+# IMPORTANT: auth/staticfiles/ is gitignored and only for production
+# Never commit the staticfiles/ directory to the repository
+```
+
 ### Development Workflow
 1. **Always activate venv first**: `.\venv\Scripts\Activate.ps1`
 2. **Run Django backend**: `cd auth && python manage.py runserver` (port 8000)
