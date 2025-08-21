@@ -31,7 +31,7 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-s(lp#!=-4k63p=^@81=
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['perplan.tech', 'www.perplan.tech', 'localhost', '127.0.0.1']
 
 AUTH_USER_MODEL = 'autenticacao.User'
 # Application definition
@@ -201,4 +201,20 @@ LOGGING = {
 
 
 CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1:8000", "https://perplan.tech", "http://www.perplan.tech"]  # Adicione seu domínio/IP
-CSRF_COOKIE_SECURE = False  # Desative se estiver usando HTTP
+
+# HTTPS Configuration for Production
+SECURE_SSL_REDIRECT = True  # Força redirect HTTP -> HTTPS
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')  # Para nginx/proxy reverso
+
+# Secure Cookies (apenas via HTTPS)
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
+# HSTS - HTTP Strict Transport Security
+SECURE_HSTS_SECONDS = 31536000  # 1 ano
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+
+# Outras configurações de segurança
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_BROWSER_XSS_FILTER = True
