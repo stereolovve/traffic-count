@@ -1,0 +1,30 @@
+2025-08-20 12:50:59,369 - main:_show_loading_screen:163 - [31mERROR[0m - Failed to show loading screen: type object 'Colors' has no attribute 'BACKGROUND'
+Thread: MainThread (10404)
+C:\Users\lucas.melo\traffic-count\frontend\main.py:163
+Failed to show loading screen: type object 'Colors' has no attribute 'BACKGROUND'
+--------------------------------------------------------------------------------
+2025-08-20 12:50:59,842 - main:safe_initialize:132 - [31mERROR[0m - Critical error during initialization: 'NoneType' object has no attribute 'start_initialization'
+Thread: MainThread (10404)
+C:\Users\lucas.melo\traffic-count\frontend\main.py:132
+Critical error during initialization: 'NoneType' object has no attribute 'start_initialization'
+--------------------------------------------------------------------------------
+2025-08-20 12:50:59,844 - main:safe_initialize:133 - [31mERROR[0m - Traceback: Traceback (most recent call last):
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 122, in safe_initialize
+    success = await self.loading_screen.start_initialization()
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'start_initialization'
+
+Thread: MainThread (10404)
+C:\Users\lucas.melo\traffic-count\frontend\main.py:133
+Traceback: Traceback (most recent call last):
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 122, in safe_initialize
+    success = await self.loading_screen.start_initialization()
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'start_initialization'
+
+--------------------------------------------------------------------------------
+2025-08-20 12:50:59,845 - main:main:728 - [31mERROR[0m - Safe initialization failed
+Thread: MainThread (10404)
+C:\Users\lucas.melo\traffic-count\frontend\main.py:728
+Safe initialization failed
+--------------------------------------------------------------------------------

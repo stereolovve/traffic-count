@@ -51,8 +51,7 @@ INSTALLED_APPS = [
     'padroes',
     'autenticacao',
     'trabalhos',
-    'updates',
-    'folha_ponto'
+    'updates'
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True
@@ -201,5 +200,5 @@ LOGGING = {
 }
 
 
-CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1:8000", "http://perplan.tech"]  # Adicione seu domínio/IP
+CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1:8000", "https://perplan.tech", "http://www.perplan.tech"]  # Adicione seu domínio/IP
 CSRF_COOKIE_SECURE = False  # Desative se estiver usando HTTP

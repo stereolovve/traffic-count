@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 from openpyxl import Workbook
 from openpyxl.utils.dataframe import dataframe_to_rows
 from utils.config import get_excel_dir
+import flet as ft
 
 class ExcelManager:
     def __init__(self, contador):
@@ -13,10 +14,15 @@ class ExcelManager:
         self.session = contador.session
 
     def save_contagens(self, current_timeslot):
+        feedback = None
         try:
-            # Verificar diretórios primeiro
-            self._ensure_directories()
-            arquivo_sessao = self._get_excel_path()
+            # Verificar diretórios primeiro com feedback
+            feedback = self._ensure_directories_with_feedback()
+            arquivo_sessao = self._get_excel_path_with_feedback()[0]  # Apenas o path
+            
+            # Mostrar feedback ao usuário sobre onde será salvo
+            if feedback and hasattr(self.contador, 'page'):
+                self._show_save_feedback(feedback)
             
             # Verificar se o arquivo existe e criar se necessário
             if not os.path.exists(arquivo_sessao):
@@ -61,10 +67,22 @@ class ExcelManager:
                     df_resultante.to_excel(writer, sheet_name=movimento, index=False)
 
             logging.info(f"Contagens salvas no Excel para o período: {periodo_str}")
+            
+            # Feedback de sucesso
+            if feedback and hasattr(self.contador, 'page'):
+                success_msg = f"✅ Período {periodo_str} salvo com sucesso!"
+                self._show_success_snackbar(success_msg)
+                
             return True
 
         except Exception as ex:
             logging.error(f"Erro ao salvar contagens no Excel: {ex}")
+            
+            # Feedback de erro
+            if hasattr(self.contador, 'page'):
+                error_msg = f"❌ Erro ao salvar: {str(ex)[:50]}..."
+                self._show_error_snackbar(error_msg)
+                
             return False
 
     def initialize_excel_file(self):
@@ -167,3 +185,122 @@ class ExcelManager:
         except Exception as ex:
             logging.error(f"Erro ao criar diretórios: {ex}")
             raise
+    
+    def _get_excel_path_with_feedback(self):
+        """Retorna o caminho do arquivo Excel com informações de feedback"""
+        nome_pesquisador = re.sub(r'[<>:"/\\|?*]', '', self.contador.username)
+        codigo = re.sub(r'[<>:"/\\|?*]', '', self.contador.details['Código'])
+        excel_dir, feedback = get_excel_dir(show_feedback=True)
+        diretorio_pesquisador_codigo = os.path.join(excel_dir, nome_pesquisador, codigo)
+        excel_path = os.path.join(diretorio_pesquisador_codigo, f'{self.contador.sessao}.xlsx')
+        return excel_path, feedback
+    
+    def _ensure_directories_with_feedback(self):
+        """Garante que os diretórios necessários existam e retorna feedback"""
+        try:
+            nome_pesquisador = re.sub(r'[<>:"/\\|?*]', '', self.contador.username)
+            codigo = re.sub(r'[<>:"/\\|?*]', '', self.contador.details['Código'])
+            
+            excel_dir, feedback = get_excel_dir(show_feedback=True)
+            
+            diretorio_pesquisador = os.path.join(excel_dir, nome_pesquisador)
+            diretorio_pesquisador_codigo = os.path.join(diretorio_pesquisador, codigo)
+            
+            # Criar diretórios com mensagens de log
+            if not os.path.exists(diretorio_pesquisador):
+                logging.info(f"Criando diretório do pesquisador: {diretorio_pesquisador}")
+                os.makedirs(diretorio_pesquisador)
+            
+            if not os.path.exists(diretorio_pesquisador_codigo):
+                logging.info(f"Criando diretório do código: {diretorio_pesquisador_codigo}")
+                os.makedirs(diretorio_pesquisador_codigo)
+            
+            # Atualizar feedback com path completo
+            if feedback:
+                feedback['full_path'] = diretorio_pesquisador_codigo
+                feedback['message'] = feedback['message'].replace(
+                    str(excel_dir), 
+                    f"{diretorio_pesquisador_codigo}"
+                )
+            
+            return feedback
+            
+        except Exception as ex:
+            logging.error(f"Erro ao criar diretórios: {ex}")
+            error_feedback = {
+                'success': False,
+                'location': 'error',
+                'message': f"❌ Erro ao criar diretórios: {str(ex)[:50]}...",
+                'error': str(ex)
+            }
+            return error_feedback
+    
+    def _show_save_feedback(self, feedback):
+        """Mostra feedback visual sobre onde o arquivo foi salvo"""
+        if not feedback or not hasattr(self.contador, 'page'):
+            return
+            
+        try:
+            # Determinar cor baseada no tipo de salvamento
+            if feedback['location'] == 'network':
+                bgcolor = ft.Colors.GREEN
+                text_color = ft.Colors.WHITE
+            elif feedback['location'] == 'local':
+                bgcolor = ft.Colors.AMBER
+                text_color = ft.Colors.BLACK
+            else:  # error
+                bgcolor = ft.Colors.RED
+                text_color = ft.Colors.WHITE
+            
+            # Criar snackbar com feedback
+            snackbar = ft.SnackBar(
+                content=ft.Row([
+                    ft.Icon(
+                        ft.Icons.SAVE if feedback['success'] else ft.Icons.ERROR,
+                        color=text_color,
+                        size=20
+                    ),
+                    ft.Text(
+                        feedback['message'],
+                        color=text_color,
+                        size=14,
+                        weight=ft.FontWeight.BOLD
+                    )
+                ]),
+                bgcolor=bgcolor,
+                duration=5000,  # 5 segundos
+                action=ft.TextButton(
+                    "OK",
+                    on_click=lambda e: None,
+                    style=ft.ButtonStyle(color=text_color)
+                )
+            )
+            
+            self.contador.page.show_snack_bar(snackbar)
+            
+        except Exception as e:
+            logging.error(f"Erro ao mostrar feedback: {e}")
+    
+    def _show_success_snackbar(self, message):
+        """Mostra snackbar de sucesso"""
+        try:
+            snackbar = ft.SnackBar(
+                content=ft.Text(message, color=ft.Colors.WHITE),
+                bgcolor=ft.Colors.GREEN,
+                duration=3000
+            )
+            self.contador.page.show_snack_bar(snackbar)
+        except Exception as e:
+            logging.error(f"Erro ao mostrar snackbar de sucesso: {e}")
+    
+    def _show_error_snackbar(self, message):
+        """Mostra snackbar de erro"""
+        try:
+            snackbar = ft.SnackBar(
+                content=ft.Text(message, color=ft.Colors.WHITE),
+                bgcolor=ft.Colors.RED,
+                duration=5000
+            )
+            self.contador.page.show_snack_bar(snackbar)
+        except Exception as e:
+            logging.error(f"Erro ao mostrar snackbar de erro: {e}")

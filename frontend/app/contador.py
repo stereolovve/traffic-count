@@ -30,10 +30,17 @@ from app.services.api_manager import ApiManager
 from app.services.excel_manager import ExcelManager
 from app.services.ui_manager import UIManager
 
-# Configurar logging apenas para este módulo (manter INFO para logs da aplicação)
-logging.getLogger(__name__).setLevel(logging.INFO)
+# Configurar logging para este módulo
+contador_logger = logging.getLogger('contador')
+contador_logger.setLevel(logging.INFO)
 
-init_db()
+# Initialize database with error handling
+try:
+    if not init_db():
+        contador_logger.error("Database initialization failed in contador.py")
+except Exception as e:
+    contador_logger.error(f"Critical database error in contador.py: {e}")
+    raise
 
 class ContadorPerplan(ft.Column):
     def __init__(self, page, username, app):

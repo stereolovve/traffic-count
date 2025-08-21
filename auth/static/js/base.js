@@ -248,9 +248,9 @@ class FormEnhancer {
     addLoadingStates() {
         const buttons = document.querySelectorAll('.btn[type="submit"]');
         buttons.forEach(btn => {
-            // Skip auth forms
+            // Skip auth forms and folha de ponto forms
             const form = btn.closest('form');
-            if (form && (form.action.includes('/login/') || form.action.includes('/register/') || form.action.includes('/logout/'))) {
+            if (form && (form.action.includes('/login/') || form.action.includes('/register/') || form.action.includes('/logout/') || form.action.includes('/folha-ponto/'))) {
                 return;
             }
             

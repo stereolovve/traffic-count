@@ -80,7 +80,7 @@ class LoginPage(ft.Container):
             payload = {"username": username, "password": password}
             response = await async_api_request(
                 "POST",
-                "/auth/login/",
+                "/auth/token/",
                 data=payload
             )
 

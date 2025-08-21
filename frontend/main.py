@@ -1,18 +1,22 @@
 #main.py
 import flet as ft
 import logging
+import traceback
 from dotenv import load_dotenv
 import os
 import json
 import asyncio
 from pathlib import Path
 import sys
+from datetime import datetime
 from app.contador import ContadorPerplan
 from utils.config import API_URL, EXCEL_BASE_DIR, DESKTOP_DIR, LOG_FILE, AUTH_TOKENS_FILE, APP_VERSION
 from utils.api import async_api_request
 from utils.updater import app_updater
 from loginregister.register import RegisterPage
 from loginregister.login import LoginPage
+from utils.diagnostic import run_quick_diagnostic
+from utils.logging_config import setup_application_logging
 
 load_dotenv()
 
@@ -26,15 +30,31 @@ if sys.platform == 'win32':
     except AttributeError:
         logging.warning("Não foi possível reconfigurar o encoding para UTF-8. Isso pode ocorrer quando executado como executável.")
 
-# Configurar logging com encoding UTF-8
-logging.basicConfig(
-    level=logging.WARNING,  # Mudado de INFO para WARNING para reduzir logs verbosos
-    format="%(asctime)s - %(levelname)s - %(module)s:%(funcName)s - %(message)s",
-    handlers=[
-        logging.FileHandler(LOG_FILE, encoding='utf-8'),
-        logging.StreamHandler(sys.stdout)
-    ]
-)
+# Setup enhanced logging system
+try:
+    # Determine if we're in debug mode
+    debug_mode = os.environ.get('DEBUG', 'False').lower() == 'true'
+    
+    # Setup application logging
+    app_logger = setup_application_logging(
+        app_name="contador_perplan",
+        debug_mode=debug_mode
+    )
+    
+    main_logger = logging.getLogger('main')
+    main_logger.info("=== APPLICATION STARTUP ===")
+    main_logger.info(f"App Version: {APP_VERSION}")
+    main_logger.info(f"Debug Mode: {debug_mode}")
+    
+except Exception as e:
+    print(f"Failed to setup enhanced logging: {e}")
+    # Fallback to basic logging
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - %(levelname)s - %(name)s:%(funcName)s - %(message)s"
+    )
+    main_logger = logging.getLogger('main')
+    main_logger.warning("Using fallback logging configuration")
 
 class MyApp:
     def __init__(self, page: ft.Page):
@@ -43,24 +63,175 @@ class MyApp:
         self.username = None
         self.user_preferences = {}
         self.contador = None
+        self.initialization_attempts = 0
+        self.max_initialization_attempts = 2  # Reduced from 3 to 2
+        
+        # Setup global error handler
+        self.setup_error_handling()
+    
+    def setup_error_handling(self):
+        """Setup global error handling for the application"""
+        try:
+            # Setup exception handler for asyncio
+            loop = asyncio.get_event_loop()
+            loop.set_exception_handler(self._handle_async_exception)
+        except RuntimeError:
+            # No event loop running yet, will be setup later
+            pass
+    
+    def _handle_async_exception(self, loop, context):
+        """Handle uncaught asyncio exceptions"""
+        exc = context.get('exception')
+        if exc:
+            main_logger.error(f"Uncaught async exception: {exc}")
+            main_logger.error(f"Context: {context}")
+            
+            # Show error to user if possible
+            if hasattr(self, 'page') and self.page:
+                try:
+                    self.show_error_snackbar(f"Erro interno: {str(exc)[:100]}")
+                except:
+                    pass  # Don't fail if UI is not available
+    
+    def show_error_snackbar(self, message: str, duration: int = 5000):
+        """Show error message to user"""
+        try:
+            if self.page:
+                snackbar = ft.SnackBar(
+                    content=ft.Text(message),
+                    bgcolor=ft.Colors.RED,
+                    duration=duration
+                )
+                self.page.show_snack_bar(snackbar)
+        except Exception as e:
+            main_logger.error(f"Failed to show error snackbar: {e}")
+    
+    async def safe_initialize(self):
+        """Simplified initialization with silent retry"""
+        self.initialization_attempts += 1
+        
+        try:
+            # Quick diagnostic check
+            quick_diag = run_quick_diagnostic()
+            if not quick_diag.get('overall', False):
+                main_logger.warning("Quick diagnostic failed, but continuing")
+            
+            # Initialize database with retry
+            from database.models import init_db
+            if not init_db():
+                main_logger.error("Database initialization failed")
+                if self.initialization_attempts < self.max_initialization_attempts:
+                    return await self.safe_initialize()  # Silent retry
+                else:
+                    self._show_critical_error("Falha na inicialização da base de dados")
+                    return False
+            
+            # Proceed with authentication flow
+            if self.load_tokens() and await self.verificar_token():
+                await self.switch_to_main_app()
+            else:
+                self.show_login_page()
+                
+            return True
+                
+        except Exception as e:
+            main_logger.error(f"Critical error during initialization: {e}")
+            main_logger.error(f"Traceback: {traceback.format_exc()}")
+            
+            if self.initialization_attempts < self.max_initialization_attempts:
+                return await self.safe_initialize()  # Silent retry
+            else:
+                self._show_critical_error(f"Erro crítico na inicialização: {str(e)}")
+                return False
+    
+    
+    def _show_critical_error(self, message: str):
+        """Show critical error screen"""
+        try:
+            error_content = ft.Column([
+                ft.Icon(ft.Icons.ERROR, size=64, color=ft.Colors.RED),
+                ft.Text("Erro Crítico", size=24, weight=ft.FontWeight.BOLD, color=ft.Colors.RED),
+                ft.Text(message, size=16, text_align=ft.TextAlign.CENTER),
+                ft.Divider(),
+                ft.Text("Possíveis soluções:", size=14, weight=ft.FontWeight.BOLD),
+                ft.Text("• Reinicie o aplicativo", size=12),
+                ft.Text("• Verifique as permissões de arquivo", size=12),
+                ft.Text("• Execute como administrador", size=12),
+                ft.Text("• Entre em contato com o suporte", size=12),
+                ft.Container(height=20),
+                ft.ElevatedButton(
+                    "Tentar Novamente",
+                    on_click=self._retry_initialization,
+                    bgcolor=ft.Colors.BLUE
+                ),
+                ft.TextButton(
+                    "Sair",
+                    on_click=lambda e: self.page.window_close()
+                )
+            ], horizontal_alignment=ft.CrossAxisAlignment.CENTER)
+            
+            self.page.views.clear()
+            self.page.views.append(
+                ft.View(
+                    "/error",
+                    [ft.Container(
+                        content=error_content,
+                        alignment=ft.alignment.center,
+                        expand=True,
+                        padding=40
+                    )],
+                    padding=20,
+                )
+            )
+            
+            self.page.update()
+            
+        except Exception as e:
+            main_logger.error(f"Failed to show critical error screen: {e}")
+            # Last resort - just exit
+            print(f"CRITICAL ERROR: {message}")
+            print("Application will exit.")
+    
+    def _retry_initialization(self, e=None):
+        """Retry initialization after error"""
+        if self.initialization_attempts < self.max_initialization_attempts:
+            main_logger.info(f"Retrying initialization (attempt {self.initialization_attempts + 1})")
+            self.page.run_task(self.safe_initialize)
+        else:
+            main_logger.error(f"Maximum initialization attempts ({self.max_initialization_attempts}) exceeded")
+            self._show_critical_error("Número máximo de tentativas excedido. Reinicie o aplicativo.")
 
-    async def load_user_preferences(self):
+    async def load_user_preferences(self, timeout: float = 10.0):
         try:
             headers = {"Authorization": f"Bearer {self.tokens['access']}"}
-            response = await async_api_request("GET", "/padroes/user/preferences/", headers=headers)
+            
+            # Implement timeout using asyncio.wait_for
+            response = await asyncio.wait_for(
+                async_api_request("GET", "/padroes/user/preferences/", headers=headers),
+                timeout=timeout
+            )
             
             self.user_preferences = response
-            logging.info("[OK] Preferências carregadas com sucesso!")
+            # Remove verbose success log
+        except asyncio.TimeoutError:
+            # Silent timeout handling
+            self.user_preferences = {}  # Use empty preferences as fallback
         except Exception as ex:
-            logging.error(f"[ERRO] Erro ao carregar preferências: {ex}")
+            main_logger.error(f"Erro ao carregar preferências: {ex}")
+            self.user_preferences = {}  # Use empty preferences as fallback
 
-    async def verificar_token(self):
+    async def verificar_token(self, timeout: float = 15.0):
         if not self.tokens or 'access' not in self.tokens:
             print("[ERRO] Nenhum token disponível!")
             return False
         try:
             headers = {"Authorization": f"Bearer {self.tokens['access']}"}
-            response = await async_api_request("GET", "/padroes/user/info/", headers=headers)
+            
+            # Implement timeout for token verification
+            response = await asyncio.wait_for(
+                async_api_request("GET", "/padroes/user/info/", headers=headers),
+                timeout=timeout
+            )
 
             if "error" in response:
                 print(f"[ERRO] Token inválido! Erro: {response['error']}")
@@ -77,11 +248,14 @@ class MyApp:
                     self.save_tokens()
                     print(f"[OK] Username atualizado de '{old_username}' para '{self.username}' e salvo nos tokens")
 
-            print("[OK] Token válido! Dados do usuário:", response)
+            # Remove verbose success log
             return True
 
+        except asyncio.TimeoutError:
+            # Silent timeout handling
+            return False
         except Exception as ex:
-            logging.error(f"[ERRO] Erro ao verificar token: {ex}")
+            main_logger.error(f"Erro ao verificar token: {ex}")
             return False
 
     def save_tokens(self):
@@ -451,38 +625,99 @@ class MyApp:
             logging.error(f"Erro ao mudar para tela de registro: {ex}")
 
 async def main(page: ft.Page):
-    page.title = "Contador Perplan"
-    page.window.width = 800
-    page.window.height = 700
-
-    page.window.always_on_top = True
-    page.scroll = ft.ScrollMode.AUTO
-    page.expand = True
-    page.window.center()
-    
-    page.theme = ft.Theme(
-        scrollbar_theme=ft.ScrollbarTheme(
-            thickness=10,
-            radius=5,
-            main_axis_margin=2,
-            cross_axis_margin=2,
+    """Main entry point with enhanced error handling"""
+    try:
+        main_logger.info("=== STARTING MAIN APPLICATION ===")
+        
+        # Configure page
+        page.title = "Contador Perplan"
+        page.window.width = 800
+        page.window.height = 700
+        page.window.always_on_top = True
+        page.scroll = ft.ScrollMode.AUTO
+        page.expand = True
+        page.window.center()
+        
+        page.theme = ft.Theme(
+            scrollbar_theme=ft.ScrollbarTheme(
+                thickness=10,
+                radius=5,
+                main_axis_margin=2,
+                cross_axis_margin=2,
+            )
         )
-    )
 
-    app = MyApp(page)
+        # Create app instance
+        app = MyApp(page)
+        
+        # Setup exception handler for the event loop
+        try:
+            loop = asyncio.get_event_loop()
+            loop.set_exception_handler(app._handle_async_exception)
+        except:
+            pass  # Already set or no loop
+        
+        # Use safe initialization
+        success = await app.safe_initialize()
+        
+        if success:
+            main_logger.info("Application started successfully")
+    
+    except Exception as e:
+        main_logger.critical(f"Critical error in main: {e}")
+        main_logger.critical(f"Traceback: {traceback.format_exc()}")
+        
+        try:
+            # Show critical error if page is available
+            page.views.clear()
+            error_view = ft.View(
+                "/critical_error",
+                [ft.Container(
+                    content=ft.Column([
+                        ft.Icon(ft.Icons.ERROR, size=64, color=ft.Colors.RED),
+                        ft.Text("Erro Crítico na Inicialização", size=20, weight=ft.FontWeight.BOLD),
+                        ft.Text(f"Erro: {str(e)}", size=14, text_align=ft.TextAlign.CENTER),
+                        ft.Container(height=20),
+                        ft.Text("O aplicativo não pode continuar.", size=12),
+                        ft.Container(height=20),
+                        ft.ElevatedButton(
+                            "Fechar",
+                            on_click=lambda e: page.window_close(),
+                            bgcolor=ft.Colors.RED
+                        )
+                    ], horizontal_alignment=ft.CrossAxisAlignment.CENTER),
+                    alignment=ft.alignment.center,
+                    expand=True,
+                    padding=40
+                )],
+                padding=20
+            )
+            page.views.append(error_view)
+            page.update()
+        except:
+            # Last resort
+            print(f"CRITICAL ERROR: {e}")
+            print("Application cannot start. Check logs for details.")
 
-    if app.load_tokens():
-        if await app.verificar_token():
-            await app.switch_to_main_app()
-            return
-        else:
-            print("❌ Token inválido!")
-            app.show_login_page()
-    else:
-        app.show_login_page()
+def run_application():
+    """Run the application with global exception handling"""
+    try:
+        main_logger.info("=== INITIALIZING FLET APPLICATION ===")
+        
+        # Check if assets directory exists
+        assets_dir = "assets"
+        if not os.path.exists(assets_dir):
+            main_logger.warning(f"Assets directory not found: {assets_dir}")
+            assets_dir = None
+        
+        # Run Flet application
+        ft.app(target=main, assets_dir=assets_dir)
+        
+    except Exception as e:
+        main_logger.critical(f"Failed to start Flet application: {e}")
+        main_logger.critical(f"Traceback: {traceback.format_exc()}")
+        print(f"CRITICAL ERROR: Cannot start application - {e}")
+        print("Check the log file for more details.")
 
-try:
-    # Try to run as desktop app first
-    ft.app(target=main, assets_dir="assets")
-except Exception as e:
-    logging.error(f"Erro ao executar como app desktop: {e}")
+if __name__ == "__main__":
+    run_application()

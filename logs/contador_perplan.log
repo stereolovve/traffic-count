@@ -1,0 +1,96 @@
+2025-08-20 12:50:58,545 - root:_setup_loggers:148 - [32mINFO[0m - === CONTADOR_PERPLAN LOGGING INITIALIZED ===
+2025-08-20 12:50:58,546 - root:_setup_loggers:149 - [32mINFO[0m - Log directory: C:\Users\lucas.melo\traffic-count\logs
+2025-08-20 12:50:58,547 - root:_setup_loggers:150 - [32mINFO[0m - Main log: C:\Users\lucas.melo\traffic-count\logs\contador_perplan.log
+2025-08-20 12:50:58,547 - root:_setup_loggers:151 - [32mINFO[0m - Error log: C:\Users\lucas.melo\traffic-count\logs\contador_perplan_errors.log
+2025-08-20 12:50:58,547 - root:_setup_loggers:152 - [32mINFO[0m - Debug log: C:\Users\lucas.melo\traffic-count\logs\contador_perplan_debug.json
+2025-08-20 12:50:58,587 - startup:log_startup_info:213 - [32mINFO[0m - System Information:
+2025-08-20 12:50:58,587 - startup:log_startup_info:215 - [32mINFO[0m -   platform: Windows-11-10.0.26100-SP0
+2025-08-20 12:50:58,587 - startup:log_startup_info:215 - [32mINFO[0m -   python_version: 3.12.7 (tags/v3.12.7:0b05ead, Oct  1 2024, 03:06:41) [MSC v.1941 64 bit (AMD64)]
+2025-08-20 12:50:58,587 - startup:log_startup_info:215 - [32mINFO[0m -   working_directory: C:\Users\lucas.melo\traffic-count
+2025-08-20 12:50:58,587 - startup:log_startup_info:215 - [32mINFO[0m -   psutil: Not available
+2025-08-20 12:50:58,587 - main:<module>:46 - [32mINFO[0m - === APPLICATION STARTUP ===
+2025-08-20 12:50:58,587 - main:<module>:47 - [32mINFO[0m - App Version: 6.4.2
+2025-08-20 12:50:58,587 - main:<module>:48 - [32mINFO[0m - Debug Mode: False
+2025-08-20 12:50:58,587 - main:run_application:772 - [32mINFO[0m - === INITIALIZING FLET APPLICATION ===
+2025-08-20 12:50:58,587 - main:run_application:777 - [33mWARNING[0m - Assets directory not found: assets
+2025-08-20 12:50:58,598 - flet:start:61 - [32mINFO[0m - Starting up TCP server on localhost:2719
+2025-08-20 12:50:58,606 - flet:app_async:171 - [32mINFO[0m - Flet app has started...
+2025-08-20 12:50:58,606 - flet:on_app_startup:131 - [32mINFO[0m - App URL: tcp://localhost:2719
+2025-08-20 12:50:58,606 - flet_desktop:__locate_and_unpack_flet_view:62 - [32mINFO[0m - Starting Flet View app...
+2025-08-20 12:50:58,606 - flet_desktop:__locate_and_unpack_flet_view:86 - [32mINFO[0m - Looking for Flet executable at: C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_desktop\app\flet\flet.exe
+2025-08-20 12:50:58,606 - flet_desktop:__locate_and_unpack_flet_view:88 - [32mINFO[0m - Flet View found in: C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_desktop\app\flet\flet.exe
+2025-08-20 12:50:59,367 - flet:on_session_created:240 - [32mINFO[0m - App session started
+2025-08-20 12:50:59,367 - main:main:693 - [32mINFO[0m - === STARTING MAIN APPLICATION ===
+2025-08-20 12:50:59,368 - main:main:724 - [32mINFO[0m - Starting safe initialization process
+2025-08-20 12:50:59,368 - main:safe_initialize:115 - [32mINFO[0m - Starting initialization attempt 1/3
+2025-08-20 12:50:59,369 - main:_show_loading_screen:163 - [31mERROR[0m - Failed to show loading screen: type object 'Colors' has no attribute 'BACKGROUND'
+2025-08-20 12:50:59,369 - main:_fallback_initialization:187 - [32mINFO[0m - Running fallback initialization
+2025-08-20 12:50:59,369 - diagnostic:run_quick_diagnostic:322 - [32mINFO[0m - === DIAGNÓSTICO RÁPIDO ===
+2025-08-20 12:50:59,369 - database:health_check:171 - [32mINFO[0m - Database health check passed
+2025-08-20 12:50:59,372 - database:init_db:116 - [32mINFO[0m - Initializing database (attempt 1/3)
+2025-08-20 12:50:59,373 - database:init_db:136 - [32mINFO[0m - Database initialized successfully with tables: ['categorias', 'sessoes', 'historico']
+2025-08-20 12:50:59,383 - root:load_tokens:350 - [32mINFO[0m - [OK] Tokens carregados de: C:\Users\lucas.melo\Contador\auth_tokens.json
+2025-08-20 12:50:59,383 - root:load_tokens:351 - [32mINFO[0m - [OK] Username carregado: lucas.melo
+2025-08-20 12:50:59,423 - main:verificar_token:314 - [32mINFO[0m - [OK] Token válido! Dados do usuário obtidos
+2025-08-20 12:50:59,774 - root:load_active_session:227 - [32mINFO[0m - Nenhuma sessão ativa encontrada
+2025-08-20 12:50:59,839 - main:load_user_preferences:278 - [32mINFO[0m - [OK] Preferências carregadas com sucesso!
+2025-08-20 12:50:59,842 - main:safe_initialize:132 - [31mERROR[0m - Critical error during initialization: 'NoneType' object has no attribute 'start_initialization'
+2025-08-20 12:50:59,844 - main:safe_initialize:133 - [31mERROR[0m - Traceback: Traceback (most recent call last):
+  File "C:\Users\lucas.melo\traffic-count\frontend\main.py", line 122, in safe_initialize
+    success = await self.loading_screen.start_initialization()
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'start_initialization'
+
+2025-08-20 12:50:59,845 - main:main:728 - [31mERROR[0m - Safe initialization failed
+2025-08-20 12:50:59,845 - root:check_for_updates:391 - [32mINFO[0m - Verificando atualizações disponíveis...
+2025-08-20 12:50:59,905 - utils.updater:check_for_updates:65 - [32mINFO[0m - Atualização disponível: v7.3.1
+2025-08-20 12:50:59,906 - root:check_for_updates:409 - [32mINFO[0m - Atualização disponível: v7.3.1
+2025-08-20 12:52:35,973 - root:_setup_loggers:148 - [32mINFO[0m - === CONTADOR_PERPLAN LOGGING INITIALIZED ===
+2025-08-20 12:52:35,974 - root:_setup_loggers:149 - [32mINFO[0m - Log directory: C:\Users\lucas.melo\traffic-count\logs
+2025-08-20 12:52:35,974 - root:_setup_loggers:150 - [32mINFO[0m - Main log: C:\Users\lucas.melo\traffic-count\logs\contador_perplan.log
+2025-08-20 12:52:35,974 - root:_setup_loggers:151 - [32mINFO[0m - Error log: C:\Users\lucas.melo\traffic-count\logs\contador_perplan_errors.log
+2025-08-20 12:52:35,974 - root:_setup_loggers:152 - [32mINFO[0m - Debug log: C:\Users\lucas.melo\traffic-count\logs\contador_perplan_debug.json
+2025-08-20 12:52:36,024 - startup:log_startup_info:213 - [32mINFO[0m - System Information:
+2025-08-20 12:52:36,025 - startup:log_startup_info:215 - [32mINFO[0m -   platform: Windows-11-10.0.26100-SP0
+2025-08-20 12:52:36,025 - startup:log_startup_info:215 - [32mINFO[0m -   python_version: 3.12.7 (tags/v3.12.7:0b05ead, Oct  1 2024, 03:06:41) [MSC v.1941 64 bit (AMD64)]
+2025-08-20 12:52:36,025 - startup:log_startup_info:215 - [32mINFO[0m -   working_directory: C:\Users\lucas.melo\traffic-count
+2025-08-20 12:52:36,025 - startup:log_startup_info:215 - [32mINFO[0m -   psutil: Not available
+2025-08-20 12:52:36,026 - main:<module>:46 - [32mINFO[0m - === APPLICATION STARTUP ===
+2025-08-20 12:52:36,027 - main:<module>:47 - [32mINFO[0m - App Version: 6.4.2
+2025-08-20 12:52:36,027 - main:<module>:48 - [32mINFO[0m - Debug Mode: False
+2025-08-20 12:52:36,027 - main:run_application:782 - [32mINFO[0m - === INITIALIZING FLET APPLICATION ===
+2025-08-20 12:52:36,027 - main:run_application:787 - [33mWARNING[0m - Assets directory not found: assets
+2025-08-20 12:52:36,034 - flet:start:61 - [32mINFO[0m - Starting up TCP server on localhost:2878
+2025-08-20 12:52:36,043 - flet:app_async:171 - [32mINFO[0m - Flet app has started...
+2025-08-20 12:52:36,046 - flet:on_app_startup:131 - [32mINFO[0m - App URL: tcp://localhost:2878
+2025-08-20 12:52:36,046 - flet_desktop:__locate_and_unpack_flet_view:62 - [32mINFO[0m - Starting Flet View app...
+2025-08-20 12:52:36,046 - flet_desktop:__locate_and_unpack_flet_view:86 - [32mINFO[0m - Looking for Flet executable at: C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_desktop\app\flet\flet.exe
+2025-08-20 12:52:36,047 - flet_desktop:__locate_and_unpack_flet_view:88 - [32mINFO[0m - Flet View found in: C:\Users\lucas.melo\traffic-count\venv\Lib\site-packages\flet_desktop\app\flet\flet.exe
+2025-08-20 12:52:36,331 - flet:on_session_created:240 - [32mINFO[0m - App session started
+2025-08-20 12:52:36,331 - main:main:703 - [32mINFO[0m - === STARTING MAIN APPLICATION ===
+2025-08-20 12:52:36,332 - main:main:734 - [32mINFO[0m - Starting safe initialization process
+2025-08-20 12:52:36,332 - main:safe_initialize:115 - [32mINFO[0m - Starting initialization attempt 1/3
+2025-08-20 12:52:36,337 - main:_show_loading_screen:167 - [32mINFO[0m - Loading screen displayed
+2025-08-20 12:52:36,337 - loading_screen:start_initialization:111 - [32mINFO[0m - Starting application initialization
+2025-08-20 12:52:36,339 - loading_screen:_update_progress:156 - [32mINFO[0m - Step: Verificando sistema... (10%)
+2025-08-20 12:52:36,339 - diagnostic:run_quick_diagnostic:322 - [32mINFO[0m - === DIAGNÓSTICO RÁPIDO ===
+2025-08-20 12:52:36,340 - database:health_check:171 - [32mINFO[0m - Database health check passed
+2025-08-20 12:52:36,340 - diagnostic:run_quick_diagnostic:351 - [33mWARNING[0m - API check failed: asyncio.run() cannot be called from a running event loop
+2025-08-20 12:52:36,837 - loading_screen:_update_progress:156 - [32mINFO[0m - Step: Inicializando banco de dados... (30%)
+2025-08-20 12:52:36,838 - database:init_db:116 - [32mINFO[0m - Initializing database (attempt 1/3)
+2025-08-20 12:52:36,840 - database:init_db:136 - [32mINFO[0m - Database initialized successfully with tables: ['categorias', 'sessoes', 'historico']
+2025-08-20 12:52:37,352 - loading_screen:_update_progress:156 - [32mINFO[0m - Step: Verificando conectividade... (50%)
+2025-08-20 12:52:38,170 - loading_screen:_update_progress:156 - [32mINFO[0m - Step: Carregando configurações... (70%)
+2025-08-20 12:52:38,688 - loading_screen:_update_progress:156 - [32mINFO[0m - Step: Inicializando interface... (90%)
+2025-08-20 12:52:39,720 - loading_screen:_update_progress:156 - [32mINFO[0m - Step: Finalizando... (100%)
+2025-08-20 12:52:41,240 - main:_on_loading_complete:181 - [32mINFO[0m - Loading complete, proceeding to main app
+2025-08-20 12:52:41,241 - root:load_tokens:360 - [32mINFO[0m - [OK] Tokens carregados de: C:\Users\lucas.melo\Contador\auth_tokens.json
+2025-08-20 12:52:41,242 - root:load_tokens:361 - [32mINFO[0m - [OK] Username carregado: lucas.melo
+2025-08-20 12:52:41,280 - main:verificar_token:324 - [32mINFO[0m - [OK] Token válido! Dados do usuário obtidos
+2025-08-20 12:52:42,144 - root:load_active_session:227 - [32mINFO[0m - Nenhuma sessão ativa encontrada
+2025-08-20 12:52:42,213 - main:load_user_preferences:288 - [32mINFO[0m - [OK] Preferências carregadas com sucesso!
+2025-08-20 12:52:42,224 - main:safe_initialize:126 - [32mINFO[0m - Initialization completed successfully
+2025-08-20 12:52:42,224 - main:main:741 - [32mINFO[0m - Application started successfully
+2025-08-20 12:52:42,225 - root:check_for_updates:401 - [32mINFO[0m - Verificando atualizações disponíveis...
+2025-08-20 12:52:42,279 - utils.updater:check_for_updates:65 - [32mINFO[0m - Atualização disponível: v7.3.1
+2025-08-20 12:52:42,280 - root:check_for_updates:419 - [32mINFO[0m - Atualização disponível: v7.3.1

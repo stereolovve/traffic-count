@@ -103,5 +103,4 @@ urlpatterns = [
     path('padroes/', include('padroes.urls')),
     path('trabalhos/', include('trabalhos.urls')),
     path('updates/', include('updates.urls')),
-    path('api/', include('folha_ponto.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
